@@ -1,6 +1,33 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getEvents } from "../services/events.service";
+import type { Event } from "../types/event.types";
+import { EventCard } from "../components/EventCard";
 
 export function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getEvents();
+        setEvents(data);
+      } catch (err) {
+        console.error(err);
+        setError("Could not load events");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEvents();
+  }, []);
+
   return (
     <section>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -19,30 +46,31 @@ export function EventsPage() {
         </Link>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <article className="rounded-2xl bg-white p-6 shadow-sm">
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-            Match
-          </span>
+      {loading && (
+        <p className="mt-8 text-sm text-slate-500">Loading events...</p>
+      )}
 
-          <h2 className="mt-4 text-lg font-bold text-slate-900">
-            Sunday Beach Match
-          </h2>
+      {error && (
+        <p className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error}
+        </p>
+      )}
 
+      {!loading && !error && events.length === 0 && (
+        <div className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
+          <p className="font-medium text-slate-900">No events yet</p>
           <p className="mt-2 text-sm text-slate-500">
-            Barceloneta Beach · 10:00
+            Create the first beach volley event.
           </p>
+        </div>
+      )}
 
-          <p className="mt-4 text-sm text-slate-600">4 / 8 players joined</p>
-
-          <Link
-            to="/events/demo-event"
-            className="mt-5 inline-block text-sm font-medium text-blue-600"
-          >
-            View details
-          </Link>
-        </article>
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        {events.map((event) => (
+          <EventCard key={event.id} event={event} />
+        ))}
       </div>
+      
     </section>
   );
 }
