@@ -23,6 +23,8 @@ const privateNavItems = [{ label: "Profile", path: "/profile", icon: User }];
 
 const adminNavItems = [
     { label: "Stats", path: "/stats", icon: LayoutDashboard },
+    // { label: "Manage Users", path: "/admin/users", icon: User },
+    // { label: "Manage Events", path: "/admin/events", icon: Trophy },
 ];
 
 export function AppLayout() {
