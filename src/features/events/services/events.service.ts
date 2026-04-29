@@ -71,3 +71,37 @@ export async function createEvent(
 
     return mapEvent(data);
 }
+
+export async function updateEvent(
+    eventId: string,
+    payload: CreateEventPayload
+): Promise<Event> {
+    const { data, error } = await supabase
+        .from("events")
+        .update({
+        title: payload.title,
+        description: payload.description,
+        type: payload.type,
+        location_name: payload.locationName,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        start_date: payload.startDate,
+        end_date: payload.endDate ?? null,
+        max_participants: payload.maxParticipants,
+        image_url: payload.imageUrl ?? null,
+        updated_at: new Date().toISOString(),
+        })
+        .eq("id", eventId)
+        .select()
+        .single();
+
+    if (error) throw error;
+
+    return mapEvent(data);
+}
+
+export async function deleteEvent(eventId: string): Promise<void> {
+    const { error } = await supabase.from("events").delete().eq("id", eventId);
+
+    if (error) throw error;
+}
