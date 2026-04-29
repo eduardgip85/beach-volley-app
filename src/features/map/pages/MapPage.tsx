@@ -29,7 +29,7 @@ export function MapPage() {
 
   return (
     <section>
-      <div className="mb-6">
+      <div className="md:mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Map</h1>
         <p className="mt-2 text-slate-500">
           Explore active beach volleyball matches and tournaments by location.
@@ -45,7 +45,7 @@ export function MapPage() {
       )}
 
       {!loading && !error && (
-        <div className="h-[calc(100vh-160px)] min-h-[500px] overflow-hidden rounded-3xl bg-white p-2 shadow-sm">
+        <div className="md:h-[calc(100vh-160px)] h-[calc(95vh-160px)] min-h-[500px] overflow-hidden rounded-3xl bg-white p-2 shadow-sm">
           <EventsMap events={events} />
         </div>
       )}
