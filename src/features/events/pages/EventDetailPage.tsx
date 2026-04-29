@@ -1,19 +1,48 @@
+import { CalendarDays, MapPin, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import {
+  getEventRegistrationsCount,
+  isUserRegistered,
+  registerToEvent,
+  unregisterFromEvent,
+} from "../../registrations/services/registrations.service";
 import { getEventById } from "../services/events.service";
 import type { Event } from "../types/event.types";
 
 export function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, profile } = useAuth();
+  const { isAuthenticated, profile, isAdmin } = useAuth();
 
   const [event, setEvent] = useState<Event | null>(null);
+  const [registrationsCount, setRegistrationsCount] = useState(0);
+  const [alreadyJoined, setAlreadyJoined] = useState(false);
+
   const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
   const [error, setError] = useState("");
 
-  const canEdit = Boolean(profile && event && profile.id === event.createdBy);
+  const canEdit = Boolean(
+    profile && event && (profile.id === event.createdBy || isAdmin)
+  );
+
+  const isFull = event
+    ? registrationsCount >= event.maxParticipants
+    : false;
+
+  async function loadRegistrationState(currentEventId: string) {
+    const count = await getEventRegistrationsCount(currentEventId);
+    setRegistrationsCount(count);
+
+    if (profile) {
+      const joined = await isUserRegistered(currentEventId, profile.id);
+      setAlreadyJoined(joined);
+    } else {
+      setAlreadyJoined(false);
+    }
+  }
 
   useEffect(() => {
     async function loadEvent() {
@@ -23,8 +52,10 @@ export function EventDetailPage() {
         setLoading(true);
         setError("");
 
-        const data = await getEventById(eventId);
-        setEvent(data);
+        const eventData = await getEventById(eventId);
+        setEvent(eventData);
+
+        await loadRegistrationState(eventId);
       } catch (err) {
         console.error(err);
         setError("Could not load event");
@@ -34,22 +65,60 @@ export function EventDetailPage() {
     }
 
     loadEvent();
-  }, [eventId]);
+  }, [eventId, profile?.id]);
 
-  function handleJoinEvent() {
-    if (!isAuthenticated) {
+  async function handleJoinEvent() {
+    if (!eventId) return;
+
+    if (!isAuthenticated || !profile) {
       navigate(`/login?redirect=/events/${eventId}`);
       return;
     }
 
-    alert("Registrations will be implemented in the next phase");
+    if (alreadyJoined) {
+      return;
+    }
+
+    if (isFull) {
+      return;
+    }
+
+    try {
+      setJoining(true);
+      setError("");
+
+      await registerToEvent(eventId, profile.id);
+      await loadRegistrationState(eventId);
+    } catch (err) {
+      console.error(err);
+      setError("Could not join this event");
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  async function handleLeaveEvent() {
+    if (!eventId || !profile) return;
+
+    try {
+      setJoining(true);
+      setError("");
+
+      await unregisterFromEvent(eventId, profile.id);
+      await loadRegistrationState(eventId);
+    } catch (err) {
+      console.error(err);
+      setError("Could not leave this event");
+    } finally {
+      setJoining(false);
+    }
   }
 
   if (loading) {
     return <p className="text-slate-500">Loading event...</p>;
   }
 
-  if (error || !event) {
+  if (error && !event) {
     return (
       <section className="rounded-2xl bg-white p-6 shadow-sm">
         <h1 className="text-xl font-bold text-slate-900">Event not found</h1>
@@ -61,10 +130,16 @@ export function EventDetailPage() {
     );
   }
 
+  if (!event) return null;
+
   return (
     <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium capitalize text-blue-700">
+      <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-bold uppercase text-white ${
+            event.type === "match" ? "bg-emerald-500" : "bg-blue-600"
+          }`}
+        >
           {event.type}
         </span>
 
@@ -76,25 +151,60 @@ export function EventDetailPage() {
           {event.description || "No description provided."}
         </p>
 
-        <div className="mt-6 space-y-2 text-sm text-slate-600">
-          <p>Date: {new Date(event.startDate).toLocaleString()}</p>
-          <p>Location: {event.locationName}</p>
-          <p>Max participants: {event.maxParticipants}</p>
-          <p>Status: {event.status}</p>
+        {error && (
+          <p className="mt-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </p>
+        )}
+
+        <div className="mt-6 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
+          <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
+            <CalendarDays size={18} className="text-blue-600" />
+            {new Date(event.startDate).toLocaleString()}
+          </div>
+
+          <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
+            <MapPin size={18} className="text-blue-600" />
+            {event.locationName}
+          </div>
+
+          <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
+            <Users size={18} className="text-blue-600" />
+            {registrationsCount}/{event.maxParticipants} joined
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-4 capitalize">
+            Status: {event.status}
+          </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <button
-            onClick={handleJoinEvent}
-            className="rounded-xl bg-blue-600 px-5 py-3 font-medium text-white"
-          >
-            Join Event
-          </button>
+          {!alreadyJoined ? (
+            <button
+              onClick={handleJoinEvent}
+              disabled={joining || isFull}
+              className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isFull
+                ? "Event Full"
+                : joining
+                  ? "Joining..."
+                  : "Join Event"}
+            </button>
+          ) : (
+            <button
+              onClick={handleLeaveEvent}
+              disabled={joining}
+              className="rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
+            >
+              {joining ? "Leaving..." : "Leave Event"}
+            </button>
+          )}
 
           {canEdit && (
             <Link
               to={`/events/${event.id}/edit`}
-              className="rounded-xl border border-slate-300 px-5 py-3 text-center font-medium text-slate-700"
+              className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-700"
             >
               Edit Event
             </Link>
@@ -102,14 +212,17 @@ export function EventDetailPage() {
         </div>
       </div>
 
-      <aside className="rounded-2xl bg-white p-6 shadow-sm">
+      <aside className="rounded-3xl bg-white p-6 shadow-sm">
         <h2 className="font-bold text-slate-900">Location</h2>
 
         <div className="mt-4 flex h-64 items-center justify-center rounded-2xl bg-slate-100 text-center text-slate-500">
-          Lat: {event.latitude}
-          <br />
-          Lng: {event.longitude}
+          Map preview coming soon
         </div>
+
+        <p className="mt-4 text-sm text-slate-500">
+          The exact meeting point is stored internally and will be displayed on
+          the map.
+        </p>
       </aside>
     </section>
   );

@@ -1,5 +1,7 @@
 import { CalendarDays, MapPin, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { getEventRegistrationsCount } from "../../registrations/services/registrations.service";
 import type { Event } from "../types/event.types";
 
 interface Props {
@@ -7,16 +9,32 @@ interface Props {
 }
 
 export function EventCard({ event }: Props) {
+  const [registrationsCount, setRegistrationsCount] = useState(0);
+
   const image =
     event.imageUrl ||
     (event.type === "match"
-      ? "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200"
+      ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200"
       : "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200");
 
-  return (
-    <article className="overflow-hidden rounded-3xl bg-white shadow-sm transition hover:shadow-md">
+  const isFull = registrationsCount >= event.maxParticipants;
 
-      <div className="relative h-40 w-full overflow-hidden">
+  useEffect(() => {
+    async function loadCount() {
+      try {
+        const count = await getEventRegistrationsCount(event.id);
+        setRegistrationsCount(count);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadCount();
+  }, [event.id]);
+
+  return (
+    <article className="overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+      <div className="relative h-44 w-full overflow-hidden">
         <img
           src={image}
           alt={event.title}
@@ -24,42 +42,43 @@ export function EventCard({ event }: Props) {
         />
 
         <span
-          className={`absolute left-3 top-3 rounded-full px-3 py-1 text-xs font-bold uppercase text-white ${
-            event.type === "match"
-              ? "bg-emerald-500"
-              : "bg-blue-600"
+          className={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold uppercase text-white ${
+            event.type === "match" ? "bg-emerald-500" : "bg-blue-600"
           }`}
         >
           {event.type}
         </span>
       </div>
 
-      <div className="p-5">
-        <h2 className="text-lg font-bold text-slate-900">
-          {event.title}
-        </h2>
+      <div className="p-6">
+        <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
 
-        <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-          <CalendarDays size={16} />
+        <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+          <CalendarDays size={17} className="text-blue-600" />
           {new Date(event.startDate).toLocaleString()}
         </div>
 
-        <div className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-          <MapPin size={16} />
+        <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+          <MapPin size={17} className="text-blue-600" />
           {event.locationName}
         </div>
 
-        <div className="mt-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Users size={16} />
-            <span>0/{event.maxParticipants}</span>
+        <div className="mt-6 flex items-center justify-between border-t pt-5">
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <Users size={17} />
+            <span>
+              {registrationsCount}/{event.maxParticipants}{" "}
+              {isFull ? "Full" : "joined"}
+            </span>
           </div>
 
           <Link
             to={`/events/${event.id}`}
-            className="text-sm font-semibold text-blue-600"
+            className={`text-sm font-bold ${
+              isFull ? "text-slate-400" : "text-blue-600"
+            }`}
           >
-            Join Now
+            {isFull ? "View" : "Join Now"}
           </Link>
         </div>
       </div>
