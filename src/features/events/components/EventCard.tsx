@@ -33,6 +33,10 @@ export function EventCard({ event }: Props) {
   }, [event.id]);
 
   return (
+    <Link
+            to={`/events/${event.id}`}
+    >
+      
     <article className="overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
       <div className="relative h-44 w-full overflow-hidden">
         <img
@@ -72,16 +76,17 @@ export function EventCard({ event }: Props) {
             </span>
           </div>
 
-          <Link
-            to={`/events/${event.id}`}
-            className={`text-sm font-bold ${
+          <div className={`text-sm font-bold ${
               isFull ? "text-slate-400" : "text-blue-600"
             }`}
           >
             {isFull ? "View" : "Join Now"}
-          </Link>
+          </div>
+
         </div>
       </div>
     </article>
+  
+    </Link>
   );
 }

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { createEvent } from "../services/events.service";
 import type { EventType } from "../types/event.types";
+import { LocationPickerMap } from "../components/LocationPickerMap";
+import { searchLocation } from "../services/geocoding.service";
 
 export function CreateEventPage() {
   const navigate = useNavigate();
@@ -19,12 +21,14 @@ export function CreateEventPage() {
   const [maxParticipants, setMaxParticipants] = useState(8);
   const [locationName, setLocationName] = useState("");
 
-  // Hidden/internal coords. Later these will come from the map picker.
-  const [latitude] = useState(41.3851);
-  const [longitude] = useState(2.1734);
+  const [latitude, setLatitude] = useState(41.3851);
+  const [longitude, setLongitude] = useState(2.1734);
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [locationSearch, setLocationSearch] = useState("");
+  const [searchingLocation, setSearchingLocation] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,6 +70,37 @@ export function CreateEventPage() {
       setError("Could not create event");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSearchLocation() {
+    if (!locationSearch.trim()) {
+      setError("Write a location to search");
+      return;
+    }
+
+    try {
+      setSearchingLocation(true);
+      setError("");
+
+      const result = await searchLocation(locationSearch);
+
+      if (!result) {
+        setError("Location not found");
+        return;
+      }
+
+      setLatitude(result.latitude);
+      setLongitude(result.longitude);
+
+      if (!locationName) {
+        setLocationName(result.displayName);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Could not search location");
+    } finally {
+      setSearchingLocation(false);
     }
   }
 
@@ -209,31 +244,56 @@ export function CreateEventPage() {
 
           <div>
             <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
+              Search location
+            </label>
+
+            <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+              <input
+                placeholder="Search beach, city or area..."
+                value={locationSearch}
+                onChange={(event) => setLocationSearch(event.target.value)}
+                className="w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent placeholder:text-slate-400 focus:ring-blue-500"
+              />
+
+              <button
+                type="button"
+                onClick={handleSearchLocation}
+                disabled={searchingLocation}
+                className="rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-60"
+              >
+                {searchingLocation ? "Searching..." : "Search"}
+              </button>
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500">
+              Search an approximate area first, then click on the map to adjust the exact
+              meeting point.
+            </p>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
               Pin location
             </label>
 
-            <button
-              type="button"
-              className="mt-2 relative h-48 w-full overflow-hidden rounded-2xl bg-slate-200 text-left"
-            >
-              <div className="absolute inset-0 bg-[linear-gradient(135deg,#dbeafe,#fef3c7,#bae6fd)]" />
+            <div className="mt-2 h-64 overflow-hidden rounded-2xl bg-slate-100">
+              <LocationPickerMap
+                latitude={latitude}
+                longitude={longitude}
+                onChange={(coords) => {
+                  setLatitude(coords.latitude);
+                  setLongitude(coords.longitude);
+                }}
+              />
+            </div>
 
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="flex flex-col items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg">
-                    <MapPin size={24} />
-                  </div>
-                  <span className="mt-2 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-bold uppercase text-white">
-                    Selected
-                  </span>
-                </div>
-              </div>
-            </button>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-slate-500">
+                Tap the map to adjust the precise meeting point. The exact
+                coordinates are stored internally.
+              </p>
 
-            <p className="mt-2 text-xs text-slate-500">
-              Tap the map to adjust the precise meeting point. The exact
-              coordinates are stored internally.
-            </p>
+            </div>
           </div>
 
           <div className="grid gap-3 pt-4 sm:grid-cols-2">

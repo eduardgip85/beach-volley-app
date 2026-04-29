@@ -10,6 +10,7 @@ import {
 } from "../../registrations/services/registrations.service";
 import { getEventById } from "../services/events.service";
 import type { Event } from "../types/event.types";
+import { EventLocationMap } from "../components/EventLocationMap";
 
 export function EventDetailPage() {
   const { eventId } = useParams();
@@ -215,14 +216,15 @@ export function EventDetailPage() {
       <aside className="rounded-3xl bg-white p-6 shadow-sm">
         <h2 className="font-bold text-slate-900">Location</h2>
 
-        <div className="mt-4 flex h-64 items-center justify-center rounded-2xl bg-slate-100 text-center text-slate-500">
-          Map preview coming soon
+        <div className="mt-4 h-64 overflow-hidden rounded-2xl bg-slate-100">
+          <EventLocationMap
+            latitude={event.latitude}
+            longitude={event.longitude}
+            title={event.title}
+            locationName={event.locationName}
+          />
         </div>
-
-        <p className="mt-4 text-sm text-slate-500">
-          The exact meeting point is stored internally and will be displayed on
-          the map.
-        </p>
+        
       </aside>
     </section>
   );
