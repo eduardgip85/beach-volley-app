@@ -12,9 +12,14 @@ export function useEventsPage() {
         try {
             setLoading(true);
             setError("");
-
+            
             const data = await getEvents();
-            setEvents(data);
+
+            const upcoming = data.filter(
+            (event) => new Date(event.startDate) >= new Date()
+            );
+
+            setEvents(upcoming);
         } catch (err) {
             console.error(err);
             setError("Could not load events");

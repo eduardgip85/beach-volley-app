@@ -33,6 +33,8 @@ export function EventDetailPage() {
     ? registrationsCount >= event.maxParticipants
     : false;
 
+  const isPast = event ? new Date(event.startDate) < new Date() : false;
+
   async function loadRegistrationState(currentEventId: string) {
     const count = await getEventRegistrationsCount(currentEventId);
     setRegistrationsCount(count);
@@ -183,14 +185,16 @@ export function EventDetailPage() {
           {!alreadyJoined ? (
             <button
               onClick={handleJoinEvent}
-              disabled={joining || isFull}
+              disabled={joining || isFull || isPast}
               className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isFull
-                ? "Event Full"
-                : joining
-                  ? "Joining..."
-                  : "Join Event"}
+              {isPast
+                ? "Event Finished"
+                : isFull
+                  ? "Event Full"
+                  : joining
+                    ? "Joining..."
+                    : "Join Event"}
             </button>
           ) : (
             <button

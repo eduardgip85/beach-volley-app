@@ -18,11 +18,11 @@ export function HomePage() {
   const { isAuthenticated } = useAuth();
 
   const {
+    totalPlayers,
     loading,
     error,
     totalEvents,
     activeMatches,
-    totalParticipants,
     upcomingEvents,
   } = useHomeData();
 
@@ -44,8 +44,8 @@ export function HomePage() {
 
         <HomeStatCard
           icon={<Users />}
-          label="Participants"
-          value={totalParticipants}
+          label="Total Players"
+          value={totalPlayers}
         />
       </div>
 
@@ -79,7 +79,7 @@ export function HomePage() {
           </div>
 
           <img
-            src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200"
+            src="/tournament-beach-2.png"
             className="rounded-2xl object-cover"
           />
         </div>

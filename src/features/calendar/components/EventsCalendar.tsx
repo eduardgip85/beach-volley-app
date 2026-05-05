@@ -20,6 +20,10 @@ function isSameMonth(dateA: Date, dateB: Date) {
   );
 }
 
+function isPastEvent(event: Event) {
+  return new Date(event.startDate) < new Date();
+}
+
 function getMonthDays(currentDate: Date) {
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -161,9 +165,11 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
                     <span
                       key={event.id}
                       className={`h-1.5 w-1.5 rounded-full ${
-                        event.type === "match"
-                          ? "bg-emerald-500"
-                          : "bg-blue-600"
+                        isPastEvent(event)
+                          ? "bg-red-500"
+                          : event.type === "match"
+                            ? "bg-emerald-500"
+                            : "bg-blue-600"
                       }`}
                     />
                   ))}
@@ -174,8 +180,14 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
                   {dayEvents.slice(0, 2).map((event) => (
                     <div
                       key={event.id}
-                      className={`truncate rounded-full px-2 py-1 text-[11px] font-bold text-white ${
-                        event.type === "match"
+                      className={`truncate rounded-full px-2 py-1 text-[11px] font-bold text-white 
+                      ${isPastEvent(event)
+                        ? "bg-red-500"
+                        : event.type === "match"
+                          ? "bg-emerald-500"
+                          : "bg-blue-600"
+                      }
+                      ${event.type === "match"
                           ? "bg-emerald-500"
                           : "bg-blue-600"
                       }`}
@@ -254,6 +266,8 @@ function CalendarEventCard({
   event: Event;
   compact?: boolean;
 }) {
+  const isPast = new Date(event.startDate) < new Date();
+  
   return (
     <Link
       to={`/events/${event.id}`}
@@ -292,9 +306,17 @@ function CalendarEventCard({
               {event.locationName}
             </span>
 
-            <span className="inline-flex items-center gap-2 capitalize">
+            <span
+              className={`inline-flex items-center gap-2 capitalize rounded-full px-3 py-1 text-xs font-bold uppercase ${
+                isPast
+                  ? "bg-red-100 text-red-700"
+                  : event.type === "match"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-blue-100 text-blue-700"
+              }`}
+            >
               <Trophy size={15} />
-              {event.type}
+              {isPast ? "Finished" : event.type}
             </span>
 
             <span className="inline-flex items-center gap-2 capitalize">

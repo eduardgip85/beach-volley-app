@@ -14,8 +14,8 @@ export function EventCard({ event }: Props) {
   const image =
     event.imageUrl ||
     (event.type === "match"
-      ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200"
-      : "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200");
+      ? "/beach-ball.png"
+      : "/tournament-beach-1.png");
 
   const isFull = registrationsCount >= event.maxParticipants;
 
