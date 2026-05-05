@@ -105,3 +105,17 @@ export async function deleteEvent(eventId: string): Promise<void> {
 
     if (error) throw error;
 }
+
+export async function getEventsByIds(eventIds: string[]): Promise<Event[]> {
+    if (eventIds.length === 0) return [];
+
+    const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .in("id", eventIds)
+        .order("start_date", { ascending: true });
+
+    if (error) throw error;
+
+    return data.map(mapEvent);
+}

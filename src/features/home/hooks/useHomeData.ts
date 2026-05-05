@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { getEvents } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
-import { getEventRegistrationsCount } from "../../registrations/services/registrations.service";
+import { getStatsData } from "../../stats/services/stats.service"
 
 export function useHomeData() {
     const [events, setEvents] = useState<Event[]>([]);
-    const [totalParticipants, setTotalParticipants] = useState(0);
+    const [totalPlayers, setTotalPlayers] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -18,11 +18,10 @@ export function useHomeData() {
             const data = await getEvents();
             setEvents(data);
 
-            const counts = await Promise.all(
-            data.map((event) => getEventRegistrationsCount(event.id))
-            );
+            const statsData = await getStatsData();
 
-            setTotalParticipants(counts.reduce((total, count) => total + count, 0));
+            setTotalPlayers(statsData.totalUsers ?? 0);
+
         } catch (err) {
             console.error(err);
             setError("Could not load home data");
@@ -35,7 +34,9 @@ export function useHomeData() {
     }, []);
 
     const activeMatches = events.filter(
-        (event) => event.status === "active" && event.type === "match"
+
+        (event) => new Date(event.startDate) >= new Date()        
+        
     ).length;
 
     const upcomingEvents = events
@@ -43,10 +44,10 @@ export function useHomeData() {
         .slice(0, 3);
 
     return {
+        totalPlayers,
         events,
         loading,
         error,
-        totalParticipants,
         totalEvents: events.length,
         activeMatches,
         upcomingEvents,
