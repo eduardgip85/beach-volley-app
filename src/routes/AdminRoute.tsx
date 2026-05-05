@@ -5,7 +5,7 @@ export function AdminRoute() {
   const { isAuthenticated, isAdmin, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (loading && !isAuthenticated) {
     return <p className="p-6 text-slate-500">Loading...</p>;
   }
 

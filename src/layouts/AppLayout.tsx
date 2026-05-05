@@ -137,30 +137,78 @@ export function AppLayout() {
             </div>
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 z-40 border-t bg-white px-2 py-2 md:hidden">
+        <nav className="fixed bottom-0 left-0 right-0 z-9999 border-t bg-white px-2 py-2 md:hidden">
             <div className="grid auto-cols-fr grid-flow-col gap-1 overflow-x-auto">
-            {navItems.map((item) => {
+                {publicNavItems.map((item) => {
                 const Icon = item.icon;
 
                 return (
-                <NavLink
+                    <NavLink
                     key={item.path}
                     to={item.path}
                     className={({ isActive }) =>
-                    `flex flex-col items-center rounded-xl px-2 py-2 text-xs ${
+                        `flex items-center justify-center rounded-xl px-3 py-3 transition ${
+                        isActive
+                            ? "bg-blue-600 text-white"
+                            : "text-slate-600 hover:bg-slate-100"
+                        }`
+                    }
+                    aria-label={item.label}
+                    >
+                    <Icon size={24} />
+                    </NavLink>
+                );
+                })}
+
+                {!isAuthenticated && (
+                <NavLink
+                    to="/login"
+                    className={({ isActive }) =>
+                    `flex flex-col items-center justify-center rounded-xl px-3 py-2 text-xs font-bold transition ${
                         isActive
                         ? "bg-blue-600 text-white"
                         : "text-slate-600 hover:bg-slate-100"
                     }`
                     }
                 >
-                    <Icon size={18} />
-                    {item.label}
+                    <User size={22} />
+                    Login
                 </NavLink>
-                );
-            })}
+                )}
+
+                {isAuthenticated && (
+                <NavLink
+                    to="/profile"
+                    className={({ isActive }) =>
+                    `flex items-center justify-center rounded-xl px-3 py-3 transition ${
+                        isActive
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`
+                    }
+                    aria-label="Profile"
+                >
+                    <User size={24} />
+                </NavLink>
+                )}
+
+                {isAdmin && (
+                <NavLink
+                    to="/stats"
+                    className={({ isActive }) =>
+                    `flex items-center justify-center rounded-xl px-3 py-3 transition ${
+                        isActive
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-600 hover:bg-slate-100"
+                    }`
+                    }
+                    aria-label="Stats"
+                >
+                    <LayoutDashboard size={24} />
+                </NavLink>
+                )}
             </div>
-        </nav>
+            </nav>
         </div>
     );
 }

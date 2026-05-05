@@ -6,23 +6,45 @@ import {
   Trophy,
   User,
   Users,
+  LogOut
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 
 export function ProfilePage() {
-  const { profile, isAdmin } = useAuth();
+  const { isAdmin, profile, logout } = useAuth();
 
   if (!profile) {
     return <p className="text-slate-500">Loading profile...</p>;
+  }
+  
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+      try {
+          await logout();
+          navigate("/login", { replace: true });
+      } catch (error) {
+          console.error("Logout error:", error);
+      }
   }
 
   return (
     <section className="space-y-8">
       <div className="rounded-[2rem] bg-white p-8 shadow-sm">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-2xl font-black text-white">
-            {profile.fullName.charAt(0).toUpperCase()}
+          <div className="flex flex-row justify-between">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-2xl font-black text-white">
+              {profile.fullName.charAt(0).toUpperCase()}
+            </div>
+
+            <button
+            onClick={handleLogout}
+            className="md:hidden flex items-center gap-3 rounded-xl px-4 text-sm font-medium text-slate-600 text-white bg-red-500"
+            >
+                <LogOut size={18} />
+                Logout
+            </button>
           </div>
 
           <div>

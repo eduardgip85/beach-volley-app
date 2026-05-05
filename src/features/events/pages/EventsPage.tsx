@@ -1,32 +1,20 @@
-import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getEvents } from "../services/events.service";
-import type { Event } from "../types/event.types";
+import { EventFilters } from "../../../shared/components/EventFilters";
 import { EventCard } from "../components/EventCard";
+import { useEventFilters } from "../hooks/useEventFilters";
+import { useEventsPage } from "../hooks/useEventsPage";
 
 export function EventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { events, loading, error } = useEventsPage();
 
-  useEffect(() => {
-    async function loadEvents() {
-      try {
-        setLoading(true);
-        setError("");
-
-        const data = await getEvents();
-        setEvents(data);
-      } catch (err) {
-        console.error(err);
-        setError("Could not load events");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadEvents();
-  }, []);
+  const {
+    filteredEvents,
+    filters,
+    locations,
+    updateFilter,
+    clearFilters,
+  } = useEventFilters(events);
 
   return (
     <section>
@@ -40,11 +28,25 @@ export function EventsPage() {
 
         <Link
           to="/events/create"
-          className="rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white"
+          className="hidden rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white hover:bg-blue-700 md:inline-flex"
         >
           Create Event
         </Link>
+
+        <Link
+          to="/events/create"
+          className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:scale-105 hover:bg-blue-700 active:scale-95 md:hidden"
+        >
+          <Plus size={24} />
+        </Link>
       </div>
+
+      <EventFilters
+        filters={filters}
+        locations={locations}
+        onFilterChange={updateFilter}
+        onClearFilters={clearFilters}
+      />
 
       {loading && (
         <p className="mt-8 text-sm text-slate-500">Loading events...</p>
@@ -56,21 +58,22 @@ export function EventsPage() {
         </p>
       )}
 
-      {!loading && !error && events.length === 0 && (
+      {!loading && !error && filteredEvents.length === 0 && (
         <div className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
-          <p className="font-medium text-slate-900">No events yet</p>
+          <p className="font-medium text-slate-900">No events found</p>
           <p className="mt-2 text-sm text-slate-500">
-            Create the first beach volley event.
+            Try changing your filters or create a new event.
           </p>
         </div>
       )}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} />
-        ))}
-      </div>
-      
+      {!loading && !error && filteredEvents.length > 0 && (
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {filteredEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

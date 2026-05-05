@@ -191,4 +191,3 @@ Aplicació desplegada amb:
 * Millora UI/UX
 
 ---
-

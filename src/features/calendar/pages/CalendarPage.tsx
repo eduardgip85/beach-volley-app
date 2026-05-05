@@ -29,13 +29,6 @@ export function CalendarPage() {
 
   return (
     <section>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Calendar</h1>
-        <p className="mt-2 text-slate-500">
-          Check upcoming beach volleyball matches and tournaments.
-        </p>
-      </div>
-
       {loading && <p className="text-slate-500">Loading calendar...</p>}
 
       {error && (
