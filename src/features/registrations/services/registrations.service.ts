@@ -48,3 +48,14 @@ export async function unregisterFromEvent(eventId: string, userId: string) {
 
   if (error) throw error;
 }
+
+export async function getUserRegisteredEventIds(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("registrations")
+    .select("event_id")
+    .eq("user_id", userId);
+
+  if (error) throw error;
+
+  return data.map((item) => item.event_id);
+}

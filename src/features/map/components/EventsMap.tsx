@@ -1,5 +1,4 @@
 import { CalendarDays, MapPin, X } from "lucide-react";
-import { Icon } from "leaflet";
 import { useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { Link } from "react-router-dom";
@@ -9,13 +8,6 @@ import { divIcon } from "leaflet";
 interface EventsMapProps {
   events: Event[];
 }
-
-const markerIcon = new Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
 
 function getMarkerIcon(type: "match" | "tournament") {
   const color =
