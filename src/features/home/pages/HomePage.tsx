@@ -1,12 +1,55 @@
-import { CalendarDays, MapPin, Trophy, Users } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronRight,
+  MapPin,
+  Trophy,
+  Users,
+  Volleyball,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import { useHomeData } from "../hooks/useHomeData";
+
+import { HomeStatCard } from "../components/HomeStatCard";
+import { HomeShortCut } from "../components/HomeShortCut";
+import { UpcomingEventItem } from "../components/UpcomingEventItem";
 
 export function HomePage() {
   const { isAuthenticated } = useAuth();
 
+  const {
+    loading,
+    error,
+    totalEvents,
+    activeMatches,
+    totalParticipants,
+    upcomingEvents,
+  } = useHomeData();
+
   return (
     <section className="space-y-8">
+      {/* STATS */}
+      <div className="grid gap-2 md:grid-cols-3">
+        <HomeStatCard
+          icon={<CalendarDays />}
+          label="Total events"
+          value={totalEvents}
+        />
+
+        <HomeStatCard
+          icon={<Volleyball />}
+          label="Active matches"
+          value={activeMatches}
+        />
+
+        <HomeStatCard
+          icon={<Users />}
+          label="Participants"
+          value={totalParticipants}
+        />
+      </div>
+
+      {/* HERO */}
       <div className="overflow-hidden rounded-[2rem] bg-white shadow-sm">
         <div className="grid grid-cols-1 gap-8 p-8 md:grid-cols-2">
           <div>
@@ -14,79 +57,88 @@ export function HomePage() {
               Beach volley community
             </p>
 
-            <h1 className="mt-4 max-w-3xl text-4xl font-black tracking-tight text-slate-950 md:text-6xl">
-              Find matches, join tournaments and play beach volleyball.
+            <h1 className="mt-4 text-4xl font-black md:text-6xl">
+              Find matches, join tournaments.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-lg text-slate-600">
-              Discover active beach volleyball events, check locations on the
-              map and organize your next match with other players.
+            <p className="mt-6 text-slate-600">
+              Discover beach volleyball events and play with others.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/events"
-                className="rounded-2xl bg-blue-600 px-6 py-4 text-center font-bold text-white shadow-sm hover:bg-blue-700"
-              >
-                Explore events
+            <div className="mt-6 flex gap-3">
+              <Link to="/events" className="btn-primary bg-blue-500 text-white hover:bg-blue-700 hover:text-white px-6 py-3 font-bold rounded-2xl">
+                Explore
               </Link>
 
               {isAuthenticated && (
-                <Link
-                  to="/events/create"
-                  className="rounded-2xl bg-blue-50 px-6 py-4 text-center font-bold text-blue-700 hover:bg-blue-700"
-                >
-                  Create event
+                <Link to="/events/create" className="btn-secondary bg-slate-300 text-slate-800 hover:bg-slate-500 hover:text-white px-6 py-3 font-bold rounded-2xl">
+                  Create
                 </Link>
               )}
             </div>
           </div>
 
-          <div className="relative min-h-72 overflow-hidden rounded-[2rem] bg-slate-100">
-            <img
-              src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200"
-              alt="Beach volleyball"
-              className="h-full w-full object-cover"
-            />
-          </div>
+          <img
+            src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200"
+            className="rounded-2xl object-cover"
+          />
         </div>
       </div>
 
-      <div className={`grid gap-4 ${isAuthenticated ? "md:grid-cols-4" : "md:grid-cols-3"}`}>
-        <Link to="/events" className="rounded-3xl bg-white p-6 shadow-sm hover:bg-gray-200">
-          <Trophy className="text-blue-600" />
-          <h2 className="mt-4 font-bold text-slate-900">Events</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Browse matches and tournaments.
-          </p>
-        </Link>
-
-        <Link to="/map" className="rounded-3xl bg-white p-6 shadow-sm hover:bg-gray-200">
-          <MapPin className="text-blue-600" />
-          <h2 className="mt-4 font-bold text-slate-900">Map</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Find events by location.
-          </p>
-        </Link>
-
-        <Link to="/calendar" className="rounded-3xl bg-white p-6 shadow-sm hover:bg-gray-200">
-          <CalendarDays className="text-blue-600" />
-          <h2 className="mt-4 font-bold text-slate-900">Calendar</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Check upcoming events.
-          </p>
-        </Link>
+      {/* SHORTCUTS */}
+      <div
+        className={`grid gap-4 ${
+          isAuthenticated ? "md:grid-cols-4" : "md:grid-cols-3"
+        }`}
+      >
+        <HomeShortCut
+          to="/events"
+          icon={<Trophy />}
+          title="Events"
+          description="Browse events"
+        />
+        <HomeShortCut
+          to="/map"
+          icon={<MapPin />}
+          title="Map"
+          description="Find locations"
+        />
+        <HomeShortCut
+          to="/calendar"
+          icon={<CalendarDays />}
+          title="Calendar"
+          description="View schedule"
+        />
 
         {isAuthenticated && (
-          <Link to="/profile" className="rounded-3xl bg-white p-6 shadow-sm hover:bg-gray-200">
-            <Users className="text-blue-600" />
-            <h2 className="mt-4 font-bold text-slate-900">Profile</h2>
-            <p className="mt-2 text-sm text-slate-500">
-              Manage your account.
-            </p>
-          </Link>
+          <HomeShortCut
+            to="/profile"
+            icon={<Users />}
+            title="Profile"
+            description="Your account"
+          />
         )}
       </div>
+
+      {/* UPCOMING */}
+      <section>
+        <div className="flex justify-between py-5">
+          <h2 className="text-2xl font-bold p-3">Upcoming Events</h2>
+
+          <Link to="/events" className="flex items-center text-blue-600 hover:bg-blue-100 p-3 rounded-2xl font-bold">
+            View all <ChevronRight size={16} />
+          </Link>
+        </div>
+
+        {loading && <p>Loading...</p>}
+        {error && <p>{error}</p>}
+
+        <div className="space-y-4">
+          {upcomingEvents.map((event) => (
+            <UpcomingEventItem key={event.id} event={event} />
+          ))}
+        </div>
+      </section>
     </section>
   );
 }

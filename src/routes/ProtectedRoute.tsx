@@ -5,7 +5,7 @@ export function ProtectedRoute() {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (loading && !isAuthenticated) {
     return <p className="p-6 text-slate-500">Loading...</p>;
   }
 

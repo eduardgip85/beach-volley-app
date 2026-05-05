@@ -94,8 +94,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             return;
         }
 
-        setLoading(true);
-
         setTimeout(async () => {
             await refreshProfile();
             setLoading(false);
