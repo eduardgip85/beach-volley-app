@@ -7,4 +7,8 @@ export interface UserProfile {
     role: UserRole;
     avatarUrl: string | null;
     createdAt: string;
+    hasBall: boolean;
+    hasNet: boolean;
+    equipmentVerified: boolean;
+    equipmentVerifiedAt: string | null;
 }

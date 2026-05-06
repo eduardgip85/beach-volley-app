@@ -15,6 +15,10 @@ function mapProfile(profile: any): UserProfile {
         role: profile.role,
         avatarUrl: profile.avatar_url,
         createdAt: profile.created_at,
+        hasBall: profile.has_ball,
+        hasNet: profile.has_net,
+        equipmentVerified: profile.equipment_verified,
+        equipmentVerifiedAt: profile.equipment_verified_at,
     };
 }
 
