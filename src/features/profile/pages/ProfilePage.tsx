@@ -12,6 +12,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useProfileEvents } from "../hooks/useProfileEvents";
+import { EquipmentVerificationCard } from "../components/EquipmentVerificationCard";
 
 export function ProfilePage() {
 
@@ -74,6 +75,8 @@ export function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <EquipmentVerificationCard />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Link to="/events" className="rounded-3xl bg-white p-6 shadow-sm hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md">
