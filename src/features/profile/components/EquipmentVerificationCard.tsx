@@ -1,156 +1,236 @@
-import { CheckCircle2, ImagePlus, ShieldCheck, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  ImagePlus,
+  ShieldCheck,
+  Volleyball,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../../auth/context/AuthContext";
 import {
   verifyEquipmentImage,
+  type EquipmentTarget,
   type EquipmentVerificationResult,
 } from "../services/equipment.service";
 
 export function EquipmentVerificationCard() {
-    const { profile, refreshProfile } = useAuth();
+  const { profile } = useAuth();
 
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [previewUrl, setPreviewUrl] = useState("");
-    const [result, setResult] = useState<EquipmentVerificationResult | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+  if (!profile) return null;
 
-    if (!profile) return null;
-
-    function handleImageChange(file?: File) {
-        if (!file) return;
-
-        setImageFile(file);
-        setResult(null);
-        setError("");
-        setPreviewUrl(URL.createObjectURL(file));
-    }
-
-    async function handleVerify() {
-
-        if (!profile) return;
-
-        if (!imageFile) {
-        setError("Please upload an image first");
-        return;
-        }
-
-        try {
-        setLoading(true);
-        setError("");
-
-        const verificationResult = await verifyEquipmentImage(imageFile);
-
-        await refreshProfile();
-
-        setResult(verificationResult);
-        } catch (err: any) {
-            console.log("verify equipment error", err)
-            if(err?.context){
-                const body = await err.context.json();
-                console.log("function error body", body);
-            }
-        setError("Could not verify equipment");
-        } finally {
-        setLoading(false);
-        }
-    }
-
-    return (
-        <section className="rounded-[2rem] bg-white p-8 shadow-sm">
-        <div className="flex items-start gap-4">
-            <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
-            <ShieldCheck />
-            </div>
-
-            <div>
-            <h2 className="text-2xl font-bold text-slate-900">
-                Equipment verification
-            </h2>
-            <p className="mt-2 text-sm text-slate-500">
-                Upload a photo showing your volleyball ball and net. AI will check
-                if the equipment is valid.
-            </p>
-            </div>
+  return (
+    <section className="rounded-[2rem] bg-white p-6 shadow-sm md:p-8">
+      <div className="flex items-start gap-4">
+        <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
+          <ShieldCheck />
         </div>
 
-        <div className="mt-6 grid gap-6 md:grid-cols-[1fr_1.2fr]">
-            <label className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 p-6 text-center hover:bg-slate-100">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">
+            Equipment verification
+          </h2>
+          <p className="mt-2 text-sm text-slate-500">
+            Verify your volleyball equipment separately. Once verified, it will
+            appear as a badge on your profile.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
+        <EquipmentVerifyItem
+          target="ball"
+          title="Verify ball"
+          description="Upload a clear photo where the volleyball ball is visible."
+          alreadyVerified={profile.hasBall}
+        />
+
+        <EquipmentVerifyItem
+          target="net"
+          title="Verify net"
+          description="Upload a clear photo where the volleyball net is visible."
+          alreadyVerified={profile.hasNet}
+        />
+      </div>
+    </section>
+  );
+}
+
+function EquipmentVerifyItem({
+  target,
+  title,
+  description,
+  alreadyVerified,
+}: {
+  target: EquipmentTarget;
+  title: string;
+  description: string;
+  alreadyVerified: boolean;
+}) {
+  const { refreshProfile } = useAuth();
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [result, setResult] = useState<EquipmentVerificationResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleImageChange(file?: File) {
+    if (!file) return;
+
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setResult(null);
+    setError("");
+  }
+
+  async function handleVerify() {
+    if (alreadyVerified) {
+      setError("This equipment is already verified.");
+      return;
+    }
+
+    if (!imageFile) {
+      setError("Please upload an image first.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const verificationResult = await verifyEquipmentImage(imageFile, target);
+
+      await refreshProfile();
+
+      setResult(verificationResult);
+    } catch (err: any) {
+      console.error("Verify equipment error:", err);
+
+      const status = err?.context?.status;
+
+      if (status === 429) {
+        setError("Too many attempts. Please wait a minute and try again.");
+        return;
+      }
+
+      if (status === 409) {
+        setError("This equipment is already verified.");
+        return;
+      }
+
+      setError("Could not verify equipment.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const icon =
+    target === "ball" ? (
+      <Volleyball size={22} />
+    ) : (
+      <span className="text-xl">🥅</span>
+    );
+
+  return (
+    <article className="rounded-3xl bg-slate-50 p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div
+            className={`rounded-2xl p-3 ${
+              alreadyVerified
+                ? "bg-emerald-100 text-emerald-600"
+                : "bg-blue-100 text-blue-600"
+            }`}
+          >
+            {icon}
+          </div>
+
+          <div>
+            <h3 className="font-bold text-slate-900">{title}</h3>
+            <p className="mt-1 text-sm text-slate-500">{description}</p>
+          </div>
+        </div>
+
+        {alreadyVerified ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+            <CheckCircle2 size={14} />
+            Verified
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-500">
+            <XCircle size={14} />
+            Pending
+          </span>
+        )}
+      </div>
+
+      {!alreadyVerified && (
+        <>
+          <label className="mt-5 flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white p-4 text-center hover:bg-slate-50">
             {previewUrl ? (
-                <img
+              <img
                 src={previewUrl}
-                alt="Equipment preview"
-                className="h-64 w-full rounded-2xl object-cover"
-                />
+                alt={`${target} preview`}
+                className="h-52 w-full rounded-2xl object-cover"
+              />
             ) : (
-                <>
-                <ImagePlus className="text-blue-600" size={36} />
-                <p className="mt-4 font-bold text-slate-900">Upload photo</p>
-                <p className="mt-2 text-sm text-slate-500">
-                    Ball and net should be clearly visible.
+              <>
+                <ImagePlus className="text-blue-600" size={32} />
+                <p className="mt-3 font-bold text-slate-900">Upload photo</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Select a clear image.
                 </p>
-                </>
+              </>
             )}
 
             <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(event) => handleImageChange(event.target.files?.[0])}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => handleImageChange(event.target.files?.[0])}
             />
-            </label>
+          </label>
 
-            <div className="rounded-3xl bg-slate-50 p-6">
-            <h3 className="font-bold text-slate-900">Current status</h3>
-
-            <div className="mt-4 space-y-3">
-                <StatusRow label="Ball" active={profile.hasBall} />
-                <StatusRow label="Net" active={profile.hasNet} />
-                <StatusRow label="Verified" active={profile.equipmentVerified} />
-            </div>
-
-            {result && (
-                <div className="mt-5 rounded-2xl bg-white p-4">
-                <p className="font-bold text-slate-900">AI result</p>
-                <p className="mt-2 text-sm text-slate-500">{result.reason}</p>
-                </div>
-            )}
-
-            {error && (
-                <p className="mt-5 rounded-2xl bg-red-50 p-4 text-sm text-red-600">
-                {error}
-                </p>
-            )}
-
-            <button
-                onClick={handleVerify}
-                disabled={loading}
-                className="mt-6 w-full rounded-2xl bg-blue-600 px-5 py-4 font-bold text-white disabled:opacity-60"
+          {result && (
+            <div
+              className={`mt-4 rounded-2xl p-4 ${
+                result.detected
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "bg-red-50 text-red-600"
+              }`}
             >
-                {loading ? "Verifying..." : "Verify equipment"}
-            </button>
+              <p className="font-bold">
+                {result.detected ? "Detected" : "Not detected"}
+              </p>
+              <p className="mt-1 text-sm">{result.reason}</p>
             </div>
-        </div>
-        </section>
-    );
-}
+          )}
 
-function StatusRow({ label, active }: { label: string; active: boolean }) {
-    return (
-        <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3">
-        <span className="font-semibold text-slate-700">{label}</span>
+          {error && (
+            <p className="mt-4 rounded-2xl bg-red-50 p-4 text-sm text-red-600">
+              {error}
+            </p>
+          )}
 
-        {active ? (
-            <span className="inline-flex items-center gap-2 text-sm font-bold text-emerald-600">
-            <CheckCircle2 size={17} />
-            Yes
-            </span>
-        ) : (
-            <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-400">
-            <XCircle size={17} />
-            No
-            </span>
-        )}
+          <button
+            type="button"
+            onClick={handleVerify}
+            disabled={loading}
+            className="mt-5 w-full rounded-2xl bg-blue-600 px-5 py-4 font-bold text-white disabled:opacity-60"
+          >
+            {loading ? "Verifying..." : title}
+          </button>
+        </>
+      )}
+
+      {alreadyVerified && (
+        <div className="mt-5 rounded-2xl bg-white p-4">
+          <p className="font-bold text-emerald-700">Already verified</p>
+          <p className="mt-1 text-sm text-slate-500">
+            You do not need to verify this equipment again.
+          </p>
         </div>
-    );
+      )}
+    </article>
+  );
 }

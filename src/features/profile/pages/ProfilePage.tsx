@@ -8,6 +8,8 @@ import {
   Users,
   LogOut,
   MapPin,
+  Volleyball,
+  Rows2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
@@ -71,12 +73,29 @@ export function ProfilePage() {
                 <Shield size={15} />
                 {profile.role}
               </span>
+
+              {profile.hasBall && (
+                <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold capitalize text-emerald-700">
+                  <Volleyball size={15} />
+                  Ball verified
+                </span>
+              )}
+
+              {profile.hasNet && (
+                <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold capitalize text-blue-700">
+                  <Rows2 size={15} />
+                  Net verified
+                </span>
+              )}
+
             </div>
           </div>
         </div>
       </div>
 
-      <EquipmentVerificationCard />
+      {(!profile.hasBall || !profile.hasNet) && (
+        <EquipmentVerificationCard />
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
         <Link to="/events" className="rounded-3xl bg-white p-6 shadow-sm hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md">
