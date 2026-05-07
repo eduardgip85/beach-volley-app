@@ -1,16 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getStatsData } from "../../features/stats/services/stats.service";
 import { getEvents } from "../../features/events/services/events.service";
-import { getEventRegistrationsCount } from "../../features/registrations/services/registrations.service";
 
 const mockSelect = vi.fn();
 
 vi.mock("../../features/events/services/events.service", () => ({
     getEvents: vi.fn(),
-}));
-
-vi.mock("../../features/registrations/services/registrations.service", () => ({
-    getEventRegistrationsCount: vi.fn(),
 }));
 
 vi.mock("../../config/supabase", () => ({
@@ -75,26 +70,32 @@ const events = [
     },
 ] as any[];
 
+const registrations = [
+    { event_id: "event-1" },
+    { event_id: "event-1" },
+    { event_id: "event-2" },
+    { event_id: "event-2" },
+    { event_id: "event-2" },
+    { event_id: "event-2" },
+    { event_id: "event-3" },
+];
+
 describe("stats.service", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it("should calculate global event statistics", async () => {
+    it("should calculate global event statistics with optimized database calls", async () => {
         vi.mocked(getEvents).mockResolvedValue(events);
 
-        vi.mocked(getEventRegistrationsCount).mockImplementation(
-        async (eventId: string) => {
-            if (eventId === "event-1") return 2;
-            if (eventId === "event-2") return 4;
-            if (eventId === "event-3") return 1;
-            return 0;
-        }
-        );
-
-        mockSelect.mockResolvedValue({
-        count: 5,
-        error: null,
+        mockSelect
+        .mockResolvedValueOnce({
+            data: registrations,
+            error: null,
+        })
+        .mockResolvedValueOnce({
+            count: 5,
+            error: null,
         });
 
         const result = await getStatsData();
@@ -121,19 +122,27 @@ describe("stats.service", () => {
         { location: "Bogatell", count: 1 },
         ]);
 
-        expect(getEventRegistrationsCount).toHaveBeenCalledTimes(3);
+        expect(getEvents).toHaveBeenCalledTimes(1);
+        expect(mockSelect).toHaveBeenCalledTimes(2);
+
+        expect(mockSelect).toHaveBeenCalledWith("event_id");
         expect(mockSelect).toHaveBeenCalledWith("*", {
         count: "exact",
         head: true,
         });
     });
 
-    it("should return empty statistics when there are no events", async () => {
+    it("should return empty statistics when there are no events or registrations", async () => {
         vi.mocked(getEvents).mockResolvedValue([]);
 
-        mockSelect.mockResolvedValue({
-        count: 0,
-        error: null,
+        mockSelect
+        .mockResolvedValueOnce({
+            data: [],
+            error: null,
+        })
+        .mockResolvedValueOnce({
+            count: 0,
+            error: null,
         });
 
         const result = await getStatsData();
@@ -144,10 +153,12 @@ describe("stats.service", () => {
         expect(result.totalMatches).toBe(0);
         expect(result.totalTournaments).toBe(0);
         expect(result.totalRegistrations).toBe(0);
+
         expect(result.eventsByType).toEqual([
         { name: "Matches", value: 0 },
         { name: "Tournaments", value: 0 },
         ]);
+
         expect(result.eventsByMonth).toEqual([]);
         expect(result.topLocations).toEqual([]);
     });
@@ -156,5 +167,32 @@ describe("stats.service", () => {
         vi.mocked(getEvents).mockRejectedValue(new Error("Events failed"));
 
         await expect(getStatsData()).rejects.toThrow("Events failed");
+    });
+
+    it("should throw when registrations query fails", async () => {
+        vi.mocked(getEvents).mockResolvedValue(events);
+
+        mockSelect.mockResolvedValueOnce({
+        data: null,
+        error: new Error("Registrations failed"),
+        });
+
+        await expect(getStatsData()).rejects.toThrow("Registrations failed");
+    });
+
+    it("should throw when users count query fails", async () => {
+        vi.mocked(getEvents).mockResolvedValue(events);
+
+        mockSelect
+        .mockResolvedValueOnce({
+            data: registrations,
+            error: null,
+        })
+        .mockResolvedValueOnce({
+            count: null,
+            error: new Error("Users failed"),
+        });
+
+        await expect(getStatsData()).rejects.toThrow("Users failed");
     });
 });
