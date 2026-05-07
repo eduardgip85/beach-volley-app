@@ -1,18 +1,21 @@
 {
   "scripts": {
     "start": "vite --host 0.0.0.0",
+    "dev": "vite",
     "build": "vite build"
   },
   "dependencies": {
-    "reveal.js": "^5.2.1",
-    "vite": "latest"
+    "reveal.js": "^5.2.1"
   },
   "name": "presentacio",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "description": "",
+  "devDependencies": {
+    "vite": "^8.0.11"
+  }
 }

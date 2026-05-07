@@ -30,7 +30,7 @@ export function EventFilters({
     filters.date !== "";
 
   return (
-    <div className="mt-8 rounded-3xl bg-white p-4 shadow-sm">
+    <div className="mt-4 rounded-3xl bg-white p-4 shadow-sm">
       {/* Mobile search + toggle */}
       <div className="flex gap-3 lg:hidden">
         <div className="flex flex-1 items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
