@@ -91,8 +91,8 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
   }
 
   return (
-    <section className="space-y-8">
-      <div className="flex items-center justify-between">
+    <section className=" space-y-4 md:space-y-3">
+      <div className="flex items-center gap-4 bg-white p-4 max-w-fit rounded-xl">
         <h1 className="text-2xl font-black text-slate-950 md:text-3xl">
           {currentMonth.toLocaleString("en", {
             month: "long",
@@ -100,7 +100,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
           })}
         </h1>
 
-        <div className="flex rounded-2xl bg-blue-50 p-1">
+        <div className="flex rounded-2xl bg-blue-100 p-1 gap-2">
           <button
             type="button"
             onClick={goToPreviousMonth}
@@ -120,7 +120,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
       </div>
 
       <div className="rounded-3xl bg-white p-4 shadow-sm md:p-6">
-        <div className="grid grid-cols-7 border py-3 text-center text-xs font-bold uppercase tracking-widest text-slate-400">
+        <div className="grid grid-cols-7 border py-3 text-center text-xs font-bold uppercase tracking-widest text-slate-950">
           {weekDays.map((day) => (
             <div key={day}>{day}</div>
           ))}
