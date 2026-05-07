@@ -49,7 +49,7 @@ export function AppLayout() {
     ];
 
     return (
-        <div className="min-h-screen bg-slate-50 md:flex">
+        <div className="min-h-screen bg-slate-200 md:flex">
         <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col border-r bg-white p-6 md:flex">
             <Link to="/" className="text-xl font-bold text-slate-900">
             Beach Volley
