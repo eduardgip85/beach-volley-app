@@ -1,193 +1,348 @@
 # 🏐 Beach Volley App
 
-## 🌐 Demo
+A modern beach volleyball community platform built with React, TypeScript and Supabase.
 
-Aplicació desplegada a Vercel:
-👉 https://beach-volley-app-blush.vercel.app/
+Users can:
 
----
-
-## 📌 Descripció
-
-Beach Volley App és una plataforma web per organitzar partits i tornejos de vòlei platja.
-
-Permet als usuaris:
-
-* Crear esdeveniments
-* Inscriure's a partits
-* Visualitzar esdeveniments en mapa i calendari
-* Gestionar informació de forma centralitzada
-
-També inclou un panell d’administració amb estadístiques i control de la plataforma.
+* Explore beach volleyball events
+* Join matches and tournaments
+* View events on an interactive map
+* Use a responsive monthly calendar
+* Manage their profile
+* Verify volleyball equipment using AI
+* Access admin dashboards and statistics
 
 ---
 
-## 🧱 Tecnologies
+# 🌍 Live Demo
 
-* ⚛️ React + Vite
-* 🎨 Tailwind CSS
-* 🧠 Supabase (Auth + Database)
-* 🗺️ Leaflet (mapa)
-* 📅 FullCalendar
-* 📊 Recharts (estadístiques)
-* 🧪 Vitest (testing + coverage)
+## Web App
+
+Beach Volley App Live Demo[https://beach-volley-app-blush.vercel.app/](https://beach-volley-app-blush.vercel.app/)
 
 ---
 
-## 🚀 Funcionalitats
+# 🚀 Features
 
-### 👤 Autenticació
+## 🏠 Home Page
 
-* Registre i login d’usuaris
-* Gestió de sessió
-* Rols:
+* Modern responsive hero section
+* Upcoming featured events
+* Mobile-first design
+* Quick navigation cards
 
-  * `player`
-  * `admin`
+## 🏆 Events System
+
+* Create events
+* Edit events
+* Delete events
+* Join events
+* Event details page
+* Upcoming events filtering
+* Match and tournament support
+
+## 🔎 Advanced Filters
+
+Reusable filtering system shared between:
+
+* Events page
+* Map page
+* Calendar page
+
+Filters include:
+
+* Search by title
+* Filter by event type
+* Filter by location
+
+Mobile version includes collapsible filters UI.
+
+## 🗺️ Interactive Map
+
+* Interactive event map using Leaflet
+* Custom markers depending on event type
+* Responsive mobile popup cards
+* Event detail popup information
+* Shared filtering system
+
+## 📅 Calendar System
+
+Custom responsive calendar implementation:
+
+* Monthly calendar view
+* Event indicators
+* Mobile selected-day events section
+* Desktop monthly events section
+* Past events visualization
+* Match / tournament color indicators
+
+## 👤 Profile System
+
+* User profile page
+* Registered events section
+* Admin dashboard access
+* Equipment badges
+* Logout system
+
+## 🤖 AI Equipment Verification
+
+Users can verify:
+
+* 🏐 Volleyball ball
+* 🥅 Volleyball net
+
+Features:
+
+* AI image recognition with Gemini Vision
+* Supabase Edge Functions
+* Secure API handling
+* Equipment badges on profile
+* Separate verification flow for each equipment type
+
+## 🛠️ Admin Dashboard
+
+### Admin Events
+
+* Responsive management view
+* Mobile cards UI
+* Desktop table view
+* View and edit actions
+
+### Admin Users
+
+* Responsive user management
+* User roles visualization
+* User statistics
+
+### Statistics Dashboard
+
+* Total events
+* Active events
+* Registrations count
+* Users count
+* Top locations
+* Events by month
+* Events by type
+
+Optimized to reduce unnecessary database calls.
 
 ---
 
-### 🏐 Esdeveniments
+# 🧱 Tech Stack
 
-* Crear, editar i eliminar esdeveniments
-* Tipus:
+## Frontend
 
-  * Match
-  * Tournament
-* Camps:
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* React Router DOM
+* Lucide React
 
-  * Títol
-  * Descripció
-  * Data i hora
-  * Ubicació (mapa)
-  * Participants màxims
+## Backend & Database
 
----
+* Supabase
+* Supabase Auth
+* Supabase Database
+* Supabase Edge Functions
+* Row Level Security (RLS)
 
-### 🗺️ Mapa
+## Maps & Calendar
 
-* Visualització d’esdeveniments en mapa
-* Selecció d’ubicació en crear event
-* Cerca de localització (geocoding)
+* React Leaflet
+* OpenStreetMap
 
----
+## AI
 
-### 📅 Calendari
+* Gemini Vision API
 
-* Visualització mensual / setmanal
-* Esdeveniments sincronitzats
-* Accés directe al detall
+## Testing
 
----
+* Vitest
+* React Testing Library
+* jsdom
 
-### 📊 Estadístiques (Admin)
+## Deployment
 
-* Total d’esdeveniments
-* Esdeveniments actius
-* Matches vs Tournaments
-* Total d’inscripcions
-* Total d’usuaris
-* Gràfiques:
-
-  * Events per tipus
-  * Events per mes
-  * Top localitzacions
+* Vercel
 
 ---
 
-### ⚙️ Admin Panel
+# 🧠 Architecture
 
-* Gestió d’usuaris
-* Gestió d’esdeveniments
-* Eliminació d’esdeveniments
-* Accés restringit per rol
+The project follows a feature-based architecture.
+
+```bash
+src/
+├── features/
+│   ├── auth/
+│   ├── events/
+│   ├── map/
+│   ├── calendar/
+│   ├── profile/
+│   ├── registrations/
+│   ├── stats/
+│   └── admin/
+│
+├── shared/
+│   ├── components/
+│   ├── hooks/
+│   └── utils/
+│
+├── config/
+└── tests/
+```
+
+The project separates:
+
+* UI components
+* Hooks / business logic
+* Services / API calls
+* Shared reusable components
 
 ---
 
-### 📱 Responsive
+# 🔒 Security
 
-* Mobile-first
-* Sidebar desktop + bottom navigation mobile
-* Cards optimitzades per mòbil
+## Row Level Security (RLS)
+
+Supabase RLS policies are used to:
+
+* Protect user data
+* Restrict event modifications
+* Restrict admin functionality
+* Secure registrations
+
+## Edge Functions
+
+AI verification is handled using Supabase Edge Functions.
+
+This allows:
+
+* Hidden API keys
+* User validation
+* Secure AI requests
+* Controlled database updates
 
 ---
 
-## 🧪 Testing
+# 🧪 Testing
 
-S'han implementat tests de lògica amb **Vitest**:
-
-Cobertura de:
+Implemented tests include:
 
 * events.service
 * registrations.service
 * stats.service
 * auth.service
-* adminUsers.service
 * geocoding.service
+* equipment.service
 
-👉 Objectiu: **≥ 80% coverage**
+## Run tests
 
----
-
-## 📂 Estructura
-
+```bash
+npm run test
 ```
-src/
-├── features/
-│   ├── auth/
-│   ├── events/
-│   ├── registrations/
-│   ├── stats/
-│   ├── admin/
-│   ├── map/
-│   └── calendar/
-│
-├── tests/
-│   ├── events/
-│   ├── registrations/
-│   ├── stats/
-│   ├── auth/
-│   ├── admin/
-│   └── geocoding/
+
+## Run coverage
+
+```bash
+npm run test:coverage
 ```
 
 ---
 
-## 🔐 Control d'accés
+# ⚙️ Installation
 
-* Usuari no autenticat:
+## 1. Clone repository
 
-  * Pot veure events, mapa i calendari
-  * ❌ No pot crear ni inscriure's
+```bash
+git clone https://github.com/eduardgip85/beach-volley-app.git
+```
 
-* Usuari autenticat:
+## 2. Install dependencies
 
-  * Pot crear events
-  * Pot inscriure's
+```bash
+npm install
+```
 
-* Admin:
+## 3. Configure environment variables
 
-  * Accés a `/stats`
-  * Accés a `/admin/users`
-  * Accés a `/admin/events`
+Create a `.env` file:
 
----
-
-## 🚀 Deploy
-
-Aplicació desplegada amb:
-
-* Vercel
-
-👉 https://beach-volley-app-blush.vercel.app/
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
 ---
 
-## 📈 Millores futures (Projecte 5)
+# ▶️ Run Project
 
-* IA per validar equipament (pilota + xarxa)
-* Sistema d’equips
-* Filtres avançats
-* Millora UI/UX
+## Development
+
+```bash
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+## Preview
+
+```bash
+npm run preview
+```
 
 ---
+
+# 🤖 AI Verification Flow
+
+1. User uploads image
+2. React service converts image to Base64
+3. Supabase Edge Function validates user
+4. Gemini Vision analyzes image
+5. Database updates user equipment status
+6. Profile badges update automatically
+
+---
+
+# 📱 Responsive Design
+
+The application is fully responsive:
+
+* Mobile-first UI
+* Floating action buttons
+* Responsive navbar
+* Mobile calendar layout
+* Responsive admin pages
+* Optimized map popups
+
+---
+
+# 🛣️ Future Improvements
+
+Planned future features:
+
+* Friends system
+* Public profiles
+* Teams system
+* Real-time chat
+* Weekly AI verification limits
+* Notifications
+* Advanced statistics
+* Event recommendations
+
+---
+
+# 👨‍💻 Author
+
+Eduard Goma
+
+---
+
+# 📄 License
+
+This project is for educational and portfolio purposes.
