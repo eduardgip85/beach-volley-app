@@ -20,7 +20,7 @@ export function CalendarEventCard({
     return (
         <Link
         to={`/events/${event.id}`}
-        className={`block rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md ${
+        className={`block rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md hover:bg-blue-100 ${
             compact ? "p-4" : "p-5"
         }`}
         >

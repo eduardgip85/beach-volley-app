@@ -18,9 +18,9 @@ export function EventsPage() {
 
   return (
     <section>
-      <div className="flex gap-4 sm:flex-row sm:items-center sm:justify-between bg-white px-4 py-2 rounded-xl">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2 px-4 bg-white rounded-xl">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Events</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Events</h1>
         </div>
 
         <Link

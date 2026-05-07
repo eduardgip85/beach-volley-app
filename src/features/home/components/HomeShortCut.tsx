@@ -14,7 +14,7 @@ export function HomeShortCut({
     return (
         <Link
         to={to}
-        className="rounded-3xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md"
+        className="rounded-3xl bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:bg-blue-100 hover:shadow-md"
         >
             <div className="text-blue-600">{icon}</div>
 
