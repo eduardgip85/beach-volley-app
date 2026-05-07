@@ -21,7 +21,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
   } = useEventsCalendar(events);
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-4">
       <CalendarHeader
         currentMonth={currentMonth}
         onPreviousMonth={goToPreviousMonth}

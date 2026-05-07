@@ -12,9 +12,9 @@ export function UpcomingEventItem({ event }: { event: Event }) {
     return (
         <Link
         to={`/events/${event.id}`}
-        className="block rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md"
+        className="block rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md "
         >
-            <article className="rounded-3xl bg-white shadow-sm md:p-4 p-4 hover:bg-slate-100 transition">
+            <article className="rounded-3xl bg-white shadow-sm md:p-4 p-4 hover:bg-blue-100 transition">
                 <div className="grid gap-4 md:grid-cols-[140px_1fr_auto] md:items-center">
                     <img
                     src={image}

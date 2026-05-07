@@ -18,12 +18,9 @@ export function EventsPage() {
 
   return (
     <section>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2 px-4 bg-white rounded-xl">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Events</h1>
-          <p className="mt-2 text-slate-500">
-            Explore beach volleyball matches and tournaments.
-          </p>
         </div>
 
         <Link
