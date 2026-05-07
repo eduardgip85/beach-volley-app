@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="es">
   <head>
     <meta charset="utf-8" />
     <title>Beach Volley App PRO</title>
@@ -16,7 +16,6 @@
     <div class="reveal">
       <div class="slides">
 
-        <!-- 1. COVER -->
         <section class="hero-slide">
           <div class="hero-badge">Proyecto 5 · Web App + IA</div>
           <h1>Beach Volley App PRO</h1>
@@ -33,13 +32,12 @@
           </div>
         </section>
 
-        <!-- 2. CONTEXTO -->
         <section>
           <p class="section-label">01 · Contexto</p>
           <h2>¿De dónde nace la idea?</h2>
 
           <div class="grid two">
-            <div class="glass-card">
+            <div class="card">
               <h3>Problema</h3>
               <p>
                 Organizar partidos de vóley playa suele depender de grupos de WhatsApp,
@@ -47,7 +45,7 @@
               </p>
             </div>
 
-            <div class="glass-card accent">
+            <div class="card accent">
               <h3>Solución</h3>
               <p>
                 Una plataforma donde los jugadores pueden crear eventos, unirse,
@@ -57,7 +55,6 @@
           </div>
         </section>
 
-        <!-- 3. OBJETIVOS -->
         <section>
           <p class="section-label">Objetivos</p>
           <h2>Qué aporta el Proyecto 5</h2>
@@ -72,7 +69,6 @@
           </div>
         </section>
 
-        <!-- 4. PLANIFICACIÓN -->
         <section>
           <p class="section-label">02 · Organización</p>
           <h2>Planificación con Kanban</h2>
@@ -101,7 +97,6 @@
           </p>
         </section>
 
-        <!-- 5. TECNOLOGÍAS -->
         <section>
           <p class="section-label">03 · Tecnologías</p>
           <h2>Stack utilizado</h2>
@@ -112,16 +107,15 @@
             <div class="tech-card"><i class="devicon-tailwindcss-original colored"></i><span>Tailwind</span></div>
             <div class="tech-card"><i class="devicon-supabase-plain colored"></i><span>Supabase</span></div>
             <div class="tech-card"><i class="devicon-google-plain colored"></i><span>Gemini AI</span></div>
-            <div class="tech-card"><i class="devicon-leaflet-plain colored"></i><span>Leaflet</span></div>
+            <div class="tech-card"><i class="devicon-leaflet-plain"></i><span>Leaflet</span></div>
             <div class="tech-card"><i class="devicon-vitest-plain colored"></i><span>Vitest</span></div>
             <div class="tech-card"><i class="devicon-vercel-original"></i><span>Vercel</span></div>
           </div>
         </section>
 
-        <!-- 6. ARQUITECTURA GENERAL -->
         <section>
           <p class="section-label">Arquitectura</p>
-          <h2>Arquitectura general del proyecto</h2>
+          <h2>Arquitectura general</h2>
 
           <div class="architecture">
             <div class="arch-column">
@@ -145,7 +139,7 @@
             <div class="arch-arrow">→</div>
 
             <div class="arch-column">
-              <h3>Servicios externos</h3>
+              <h3>Servicios</h3>
               <div class="arch-box">Gemini Vision</div>
               <div class="arch-box">OpenStreetMap</div>
               <div class="arch-box">Vercel Deploy</div>
@@ -153,31 +147,33 @@
           </div>
         </section>
 
-        <!-- 7. ESTRUCTURA DE CÓDIGO -->
         <section>
           <p class="section-label">Código</p>
-          <h2>Estructura por features</h2>
+          <h2>Estructura global por features</h2>
 
           <pre><code class="language-bash" data-trim>
 src/
+├── app/
+├── assets/
+├── config/
 ├── features/
 │   ├── auth/
-│   ├── events/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   └── services/
-│   ├── profile/
-│   ├── map/
+│   ├── admin/
 │   ├── calendar/
+│   ├── events/
+│   ├── home/
+│   ├── map/
+│   ├── profile/
+│   ├── registrations/
 │   └── stats/
+├── layout/
+├── routes/
 ├── shared/
 │   └── components/
 └── tests/
           </code></pre>
         </section>
 
-        <!-- 8. DEMO -->
         <section>
           <p class="section-label">04 · Demo</p>
           <h2>Recorrido de la aplicación</h2>
@@ -193,7 +189,6 @@ src/
           </div>
         </section>
 
-        <!-- 9. ROLES -->
         <section>
           <p class="section-label">Demo por roles</p>
           <h2>Experiencia según usuario</h2>
@@ -217,7 +212,6 @@ src/
           </div>
         </section>
 
-        <!-- 10. FILTROS -->
         <section>
           <p class="section-label">Código relevante</p>
           <h2>Filtros reutilizables</h2>
@@ -225,8 +219,8 @@ src/
           <div class="split">
             <div>
               <p>
-                Se separó la lógica en un hook reutilizable para usar los mismos filtros
-                en Events, Map y Calendar.
+                La lógica de filtros se separó en un hook reutilizable para Events,
+                Map y Calendar.
               </p>
             </div>
 
@@ -242,10 +236,9 @@ const {
           </div>
         </section>
 
-        <!-- 11. IA VISUAL -->
         <section>
           <p class="section-label">IA</p>
-          <h2>Flujo de verificación con IA</h2>
+          <h2>Flujo de verificación</h2>
 
           <div class="ai-flow">
             <div class="ai-step">📸<span>Upload image</span></div>
@@ -256,13 +249,12 @@ const {
             <div class="ai-line"></div>
             <div class="ai-step">🤖<span>Gemini Vision</span></div>
             <div class="ai-line"></div>
-            <div class="ai-step">🛢️<span>Supabase update</span></div>
+            <div class="ai-step">🛢️<span>Database</span></div>
             <div class="ai-line"></div>
             <div class="ai-step">🏅<span>Profile badge</span></div>
           </div>
         </section>
 
-        <!-- 12. EDGE FUNCTIONS -->
         <section>
           <p class="section-label">Edge Functions</p>
           <h2>¿Por qué no llamar a Gemini desde React?</h2>
@@ -273,7 +265,7 @@ const {
               <ul>
                 <li>Expone API keys</li>
                 <li>Difícil controlar abusos</li>
-                <li>El usuario podría manipular resultados</li>
+                <li>Resultado manipulable</li>
               </ul>
             </div>
 
@@ -283,13 +275,12 @@ const {
                 <li>API key privada</li>
                 <li>Validación de usuario</li>
                 <li>Rate limit semanal</li>
-                <li>Actualización segura en Supabase</li>
+                <li>Update seguro en Supabase</li>
               </ul>
             </div>
           </div>
         </section>
 
-        <!-- 13. SERVICE -->
         <section>
           <p class="section-label">Código relevante</p>
           <h2>Service de verificación</h2>
@@ -313,7 +304,6 @@ export async function verifyEquipmentImage(imageFile, target) {
           </code></pre>
         </section>
 
-        <!-- 14. EDGE CODE -->
         <section>
           <p class="section-label">Código relevante</p>
           <h2>Edge Function: seguridad + IA</h2>
@@ -324,10 +314,9 @@ const { image, target } = await req.json();
 const { data: { user } } =
   await supabaseClient.auth.getUser();
 
-if (!user) return Response.json(
-  { error: "Unauthorized" },
-  { status: 401 }
-);
+if (!user) {
+  return Response.json({ error: "Unauthorized" }, { status: 401 });
+}
 
 const response = await fetch(GEMINI_URL, {
   method: "POST",
@@ -338,13 +327,12 @@ const response = await fetch(GEMINI_URL, {
           </code></pre>
         </section>
 
-        <!-- 15. TESTING -->
         <section>
           <p class="section-label">Testing</p>
-          <h2>Validación de la lógica</h2>
+          <h2>Validación de lógica</h2>
 
           <div class="grid two">
-            <div class="glass-card">
+            <div class="card">
               <h3>Tests implementados</h3>
               <ul>
                 <li>events.service</li>
@@ -362,38 +350,36 @@ const response = await fetch(GEMINI_URL, {
           </div>
         </section>
 
-        <!-- 16. VIDEO FINAL -->
         <section class="video-slide">
-            <div class="video-layout">
-                <div class="video-copy">
-                <p class="section-label">Demo visual</p>
-                <h2>App en funcionamiento</h2>
-                <p>
-                    Recorrido móvil de la aplicación mostrando navegación, eventos,
-                    calendario, mapa y perfil.
-                </p>
+          <div class="video-layout">
+            <div class="video-copy">
+              <p class="section-label">Demo visual</p>
+              <h2>App en funcionamiento</h2>
+              <p>
+                Recorrido móvil de la aplicación mostrando navegación, eventos,
+                calendario, mapa y perfil.
+              </p>
 
-                <div class="video-points">
-                    <span>Mobile-first</span>
-                    <span>Responsive UI</span>
-                    <span>Real user flow</span>
-                </div>
-                </div>
-
-                <div class="phone-frame">
-                <video
-                    src="./assets/demo.mp4"
-                    autoplay
-                    muted
-                    loop
-                    playsinline
-                    class="demo-video"
-                ></video>
-                </div>
+              <div class="video-points">
+                <span>Mobile-first</span>
+                <span>Responsive UI</span>
+                <span>Real user flow</span>
+              </div>
             </div>
-            </section>
 
-        <!-- 17. CONCLUSIONES -->
+            <div class="phone-frame">
+              <video
+                src="./assets/demo.mp4"
+                autoplay
+                muted
+                loop
+                playsinline
+                class="demo-video"
+              ></video>
+            </div>
+          </div>
+        </section>
+
         <section>
           <p class="section-label">06 · Conclusión</p>
           <h2>Aprendizajes y retos</h2>
@@ -401,62 +387,50 @@ const response = await fetch(GEMINI_URL, {
           <div class="grid two">
             <div class="success-card">
               <h3>Aprendizajes</h3>
-              <p>Arquitectura modular, integración de IA, seguridad, testing, responsive design y deploy real.</p>
+              <p>
+                Arquitectura modular, integración de IA, seguridad, testing,
+                responsive design y deploy real.
+              </p>
             </div>
 
             <div class="danger-card">
               <h3>Retos</h3>
-              <p>Rate limits de Gemini, mapas responsive, separación de lógica/UI y gestión segura de API keys.</p>
+              <p>
+                Rate limits de Gemini, mapas responsive, separación de lógica/UI
+                y gestión segura de API keys.
+              </p>
             </div>
           </div>
         </section>
 
-        <!-- 18. FUTURO -->
         <section class="hero-slide">
-            <div class="video-layout">
-                <div class="video-copy">
-                <h2>El proyecto continúa</h2>
-                <p>
-                    Perfiles públicos, amigos, equipos para torneos, competitivo, etc...
-                    Empezé el 24/4 y llevaré unas 100 horas en este proyecto falcilmente
-                </p>
-
-                <div class="video-points">
-                    <span>Gracias</span>
-                    <span>Muchas Gracias</span>
-                    <span>No Questions</span>
-                </div>
-
-                </div>
-                
-
-                <div class="phone-frame">
-                <video
-                    src="./assets/demo.mp4"
-                    autoplay
-                    muted
-                    loop
-                    playsinline
-                    class="demo-video"
-                ></video>
-                </div>
-            </div>
+          <div class="hero-badge">Roadmap</div>
+          <h1>El proyecto continúa</h1>
+          <p class="subtitle">
+            Perfiles públicos, amigos, chat, equipos para torneos,
+            recomendaciones inteligentes y comunidad real de jugadores.
+          </p>
         </section>
 
       </div>
     </div>
 
     <script type="module">
-      import Reveal from './node_modules/reveal.js/dist/reveal.esm.js';
-      import Highlight from './node_modules/reveal.js/plugin/highlight/highlight.esm.js';
-      import Notes from './node_modules/reveal.js/plugin/notes/notes.esm.js';
+      import Reveal from "./node_modules/reveal.js/dist/reveal.esm.js";
+      import Highlight from "./node_modules/reveal.js/plugin/highlight/highlight.esm.js";
+      import Notes from "./node_modules/reveal.js/plugin/notes/notes.esm.js";
 
       Reveal.initialize({
         hash: true,
         slideNumber: true,
         transition: "slide",
         backgroundTransition: "fade",
-        plugins: [Highlight, Notes]
+        width: 1280,
+        height: 720,
+        margin: 0.06,
+        minScale: 0.2,
+        maxScale: 1.4,
+        plugins: [Highlight, Notes],
       });
     </script>
   </body>
