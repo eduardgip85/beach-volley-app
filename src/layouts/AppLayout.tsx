@@ -36,7 +36,7 @@ export function AppLayout() {
     async function handleLogout() {
         try {
             await logout();
-            navigate("/login", { replace: true });
+            navigate("/", { replace: true });
         } catch (error) {
             console.error("Logout error:", error);
         }

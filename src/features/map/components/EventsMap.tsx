@@ -75,8 +75,8 @@ function MapEventPreview({
   const image =
     event.imageUrl ||
     (event.type === "match"
-      ? "https://images.unsplash.com/photo-1544551763-46a013bb70d5?q=80&w=1200"
-      : "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1200");
+      ? "/beach-ball.png"
+      : "/tournament-beach-1.png");
 
   return (
     <article className="absolute bottom-4 left-3 right-3 z-[1000] overflow-hidden rounded-3xl bg-white shadow-2xl md:bottom-6 md:left-auto md:right-6 md:w-96">
