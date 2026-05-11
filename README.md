@@ -167,6 +167,9 @@ Optimized to reduce unnecessary database calls.
 * Vercel
 
 ---
+# User diagram
+<img width="5532" height="1979" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/d4d1c5cb-9242-4cfd-a247-7d1a949efc45" />
+
 
 # 🧠 Architecture
 
