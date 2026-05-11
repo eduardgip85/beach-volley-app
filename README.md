@@ -23,68 +23,68 @@ Beach Volley App Live Demo[https://beach-volley-app-blush.vercel.app/](https:
 ---
 # User Stories 
 * US-01 — Explorar esdeveniments
-Com a visitant
-vull veure els esdeveniments disponibles
+Com a visitant ➡️
+vull veure els esdeveniments disponibles ➡️
 per descobrir partits i tornejos de vòlei platja.
 
 * US-02 — Veure mapa
-Com a visitant
-vull veure els esdeveniments en un mapa
+Com a visitant➡️
+vull veure els esdeveniments en un mapa➡️
 per saber on es realitzen.
 
 * US-03 — Consultar calendari
-Com a visitant
-vull consultar els esdeveniments en un calendari
+Com a visitant➡️
+vull consultar els esdeveniments en un calendari➡️
 per veure les dates disponibles.
 
 * US-04 — Registrar-se
-Com a usuari
-vull crear un compte
+Com a usuari➡️
+vull crear un compte➡️
 per poder participar a la plataforma.
 
 * US-05 — Iniciar sessió
-Com a usuari
-vull iniciar sessió
+Com a usuari➡️
+vull iniciar sessió➡️
 per accedir a les funcionalitats privades.
 
 * US-06 — Crear esdeveniments
-Com a usuari registrat
-vull crear esdeveniments
+Com a usuari registrat➡️
+vull crear esdeveniments➡️
 per organitzar partits o tornejos.
 
 * US-07 — Editar els meus esdeveniments
-Com a usuari registrat
-vull editar els meus esdeveniments
+Com a usuari registrat➡️
+vull editar els meus esdeveniments➡️
 per actualitzar-ne la informació.
 
 * US-08 — Eliminar els meus esdeveniments
-Com a usuari registrat
-vull eliminar esdeveniments creats per mi
+Com a usuari registrat➡️
+vull eliminar esdeveniments creats per mi➡️
 si ja no es realitzaran.
 
 * US-09 — Apuntar-me a un esdeveniment
-Com a usuari registrat
-vull apuntar-me a un esdeveniment
+Com a usuari registrat➡️
+vull apuntar-me a un esdeveniment➡️
 per participar-hi.
 
 * US-10 — Veure els meus esdeveniments
-Com a usuari registrat
-vull veure els esdeveniments als quals estic apuntat
+Com a usuari registrat➡️
+vull veure els esdeveniments als quals estic apuntat➡️
 per gestionar la meva activitat.
 
 * US-11 — Verificar pilota
-Com a usuari registrat
-vull verificar que tinc una pilota
+Com a usuari registrat➡️
+vull verificar que tinc una pilota➡️
 per mostrar-ho al meu perfil.
 
 * US-12 — Verificar xarxa
-Com a usuari registrat
-vull verificar que tinc una xarxa
+Com a usuari registrat➡️
+vull verificar que tinc una xarxa➡️
 per mostrar-ho al meu perfil.
 
 * US-13 — Rebre badges
-Com a usuari registrat
-vull rebre badges d’equipament verificat
+Com a usuari registrat➡️
+vull rebre badges d’equipament verificat➡️
 perquè altres usuaris sàpiguen què tinc disponible.
 
 ---
