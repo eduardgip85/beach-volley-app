@@ -18,7 +18,7 @@ Users can:
 
 ## Web App
 
-Beach Volley App Live Demo[https://beach-volley-app-blush.vercel.app/](https://beach-volley-app-blush.vercel.app/)
+Beach Volley App Live Demo[https://beach-volley-app-blush.vercel.app/](https://beach-volley-app-blush.vercel.app/)
 
 ---
 # User Stories 
