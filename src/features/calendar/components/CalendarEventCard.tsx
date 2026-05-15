@@ -1,10 +1,17 @@
-import { CalendarDays, MapPin, Trophy } from "lucide-react";
+import { CalendarDays, MapPin, Trophy, Users, Volleyball } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
     getEventBadgeClasses,
     isPastEvent,
 } from "../utils/calendar.utils";
+import {
+    getEventDisplayStatus,
+    getEventModeLabel,
+    getEventTypeLabel,
+    getEventVisibilityBadgeClasses,
+    getEventVisibilityLabel,
+} from "../../events/utils/event-display.utils";
 
 interface CalendarEventCardProps {
     event: Event;
@@ -16,6 +23,8 @@ export function CalendarEventCard({
     compact = false,
 }: CalendarEventCardProps) {
     const isPast = isPastEvent(event);
+    const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+    const displayStatus = getEventDisplayStatus(event);
 
     return (
         <Link
@@ -26,13 +35,11 @@ export function CalendarEventCard({
         >
         <div className="flex gap-4">
             <div
-            className={`flex items-center justify-center rounded-2xl ${
-                event.type === "match"
-                ? "bg-emerald-50 text-emerald-600"
-                : "bg-blue-50 text-blue-600"
-            } ${compact ? "h-14 w-14" : "h-16 w-16"}`}
+            className={`flex items-center justify-center rounded-2xl ${getEventBadgeClasses(
+                event
+            )} ${compact ? "h-14 w-14" : "h-16 w-16"}`}
             >
-            <TrophyIcon type={event.type} />
+            <EventTypeIcon type={event.type} />
             </div>
 
             <div className="min-w-0 flex-1">
@@ -61,8 +68,28 @@ export function CalendarEventCard({
                 )}`}
                 >
                 <Trophy size={15} />
-                {isPast ? "Finished" : event.type}
+                {isPast ? "Finished" : getEventTypeLabel(event.type)}
                 </span>
+
+                {modeLabel && (
+                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                    {modeLabel}
+                </span>
+                )}
+
+                <span
+                className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+                    event.visibility
+                )}`}
+                >
+                {getEventVisibilityLabel(event.visibility)}
+                </span>
+
+                {!isPast && (
+                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                    {displayStatus}
+                </span>
+                )}
 
                 <span className="inline-flex items-center gap-2 capitalize">
                 <CalendarDays size={15} />
@@ -78,10 +105,14 @@ export function CalendarEventCard({
     );
 }
 
-function TrophyIcon({ type }: { type: Event["type"] }) {
-    return (
-        <span className="text-xl font-black">
-        {type === "match" ? "🏐" : "🏆"}
-        </span>
-    );
+function EventTypeIcon({ type }: { type: Event["type"] }) {
+    if (type === "match") {
+        return <Volleyball size={24} />;
+    }
+
+    if (type === "open_play") {
+        return <Users size={24} />;
+    }
+
+    return <Trophy size={24} />;
 }

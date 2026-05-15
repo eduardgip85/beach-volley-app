@@ -2,16 +2,25 @@ import { CalendarDays, MapPin, X } from "lucide-react";
 import { useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { Link } from "react-router-dom";
-import type { Event } from "../../events/types/event.types";
 import { divIcon } from "leaflet";
+import type { Event } from "../../events/types/event.types";
+import {
+  getEventBadgeClasses,
+  getEventColorClasses,
+  getEventDisplayStatus,
+  getEventFallbackImage,
+  getEventModeLabel,
+  getEventTypeLabel,
+  getEventVisibilityBadgeClasses,
+  getEventVisibilityLabel,
+} from "../../events/utils/event-display.utils";
 
 interface EventsMapProps {
   events: Event[];
 }
 
-function getMarkerIcon(type: "match" | "tournament") {
-  const color =
-    type === "match" ? "bg-emerald-500" : "bg-blue-600";
+function getMarkerIcon(event: Event) {
+  const color = getEventColorClasses(event);
 
   return divIcon({
     className: "",
@@ -47,7 +56,7 @@ export function EventsMap({ events }: EventsMapProps) {
           <Marker
             key={event.id}
             position={[event.latitude, event.longitude]}
-            icon={getMarkerIcon(event.type)}
+            icon={getMarkerIcon(event)}
             eventHandlers={{
               click: () => setSelectedEvent(event),
             }}
@@ -72,14 +81,12 @@ function MapEventPreview({
   event: Event;
   onClose: () => void;
 }) {
-  const image =
-    event.imageUrl ||
-    (event.type === "match"
-      ? "/beach-ball.png"
-      : "/tournament-beach-1.png");
+  const image = getEventFallbackImage(event);
+  const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+  const displayStatus = getEventDisplayStatus(event);
 
   return (
-    <article className="absolute bottom-4 left-3 right-3 z-[1000] overflow-hidden rounded-3xl bg-white shadow-2xl md:bottom-6 md:left-auto md:right-6 md:w-96">
+    <article className="absolute bottom-28 left-3 right-3 z-[1200] overflow-hidden rounded-3xl bg-white shadow-2xl md:bottom-6 md:left-auto md:right-6 md:w-96">
       <button
         type="button"
         onClick={onClose}
@@ -88,7 +95,6 @@ function MapEventPreview({
         <X size={16} />
       </button>
 
-      {/* Mobile compact */}
       <div className="flex gap-3 p-3 md:hidden">
         <img
           src={image}
@@ -97,13 +103,31 @@ function MapEventPreview({
         />
 
         <div className="min-w-0 flex-1 pr-8">
-          <div className="mb-1 inline-flex rounded-full bg-blue-100 px-2 py-1 text-[10px] font-bold uppercase text-blue-700">
-            {event.type}
+          <div className="mb-2 flex flex-wrap gap-2">
+            <div
+              className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase ${getEventBadgeClasses(
+                event
+              )}`}
+            >
+              {getEventTypeLabel(event.type)}
+            </div>
+
+            <div
+              className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase ${getEventVisibilityBadgeClasses(
+                event.visibility
+              )}`}
+            >
+              {getEventVisibilityLabel(event.visibility)}
+            </div>
           </div>
 
           <h2 className="truncate text-base font-black text-slate-950">
             {event.title}
           </h2>
+
+          <p className="mt-1 text-xs font-semibold text-slate-600">
+            {[modeLabel, displayStatus].filter(Boolean).join(" · ")}
+          </p>
 
           <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
             <MapPin size={13} />
@@ -127,7 +151,6 @@ function MapEventPreview({
         </Link>
       </div>
 
-      {/* Desktop full */}
       <div className="hidden md:block">
         <div className="relative h-40 overflow-hidden">
           <img
@@ -137,7 +160,7 @@ function MapEventPreview({
           />
 
           <span className="absolute right-4 top-4 rounded-full bg-slate-900/80 px-3 py-1 text-xs font-bold uppercase text-white">
-            Active now
+            {displayStatus}
           </span>
         </div>
 
@@ -171,21 +194,39 @@ function MapEventPreview({
               <p className="text-[10px] font-bold uppercase text-slate-400">
                 Type
               </p>
-              <p className="mt-1 text-sm font-bold capitalize text-slate-800">
-                {event.type}
+              <p className="mt-1 text-sm font-bold text-slate-800">
+                {getEventTypeLabel(event.type)}
               </p>
             </div>
 
             <div className="rounded-2xl bg-slate-50 p-3">
               <p className="text-[10px] font-bold uppercase text-slate-400">
-                Date
+                Status
               </p>
-              <p className="mt-1 flex items-center gap-1 text-sm font-bold text-slate-800">
-                <CalendarDays size={14} />
-                {new Date(event.startDate).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
+              <p className="mt-1 text-sm font-bold text-slate-800">
+                {displayStatus}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 p-3">
+              <p className="text-[10px] font-bold uppercase text-slate-400">
+                Visibility
+              </p>
+              <p className="mt-1 text-sm font-bold text-slate-800">
+                {getEventVisibilityLabel(event.visibility)}
+              </p>
+            </div>
+
+            <div className="rounded-2xl bg-slate-50 p-3">
+              <p className="text-[10px] font-bold uppercase text-slate-400">
+                {modeLabel ? "Mode" : "Date"}
+              </p>
+              <p className="mt-1 text-sm font-bold text-slate-800">
+                {modeLabel ??
+                  new Date(event.startDate).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
               </p>
             </div>
           </div>

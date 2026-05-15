@@ -1,0 +1,157 @@
+import { Plus } from "lucide-react";
+import { MatchSetEditor } from "./MatchSetEditor";
+import { MatchResultSummary } from "./MatchResultSummary";
+import type {
+    CreateMatchSetPayload,
+    MatchResult,
+} from "../types/matchResult.types";
+
+interface MatchResultSectionProps {
+    result: MatchResult | null;
+    sets: CreateMatchSetPayload[];
+    loading: boolean;
+    submitting: boolean;
+    validating: boolean;
+    error: string;
+    canManageResult: boolean;
+    canValidateResult: boolean;
+    onAddSet: () => void;
+    onRemoveSet: (index: number) => void;
+    onUpdateSet: (
+        index: number,
+        field: keyof Omit<CreateMatchSetPayload, "setNumber">,
+        value: number
+    ) => void;
+    onSubmit: () => void;
+    onValidate: () => void;
+    onReject: () => void;
+}
+
+export function MatchResultSection({
+    result,
+    sets,
+    loading,
+    submitting,
+    validating,
+    error,
+    canManageResult,
+    canValidateResult,
+    onAddSet,
+    onRemoveSet,
+    onUpdateSet,
+    onSubmit,
+    onValidate,
+    onReject,
+}: MatchResultSectionProps) {
+    if (loading) {
+        return (
+            <section className="rounded-3xl bg-white p-6 shadow-sm">
+                <h2 className="text-xl font-bold text-slate-900">Match Result</h2>
+                <p className="mt-3 text-sm text-slate-500">Loading result...</p>
+            </section>
+        );
+    }
+
+    return (
+        <section className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h2 className="text-xl font-bold text-slate-900">Match Result</h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                        {result
+                            ? "Track sets and validation status for this match."
+                            : "Add the set scores for this match."}
+                    </p>
+                </div>
+
+                {result && (
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase text-slate-700">
+                        {result.validationStatus}
+                    </span>
+                )}
+            </div>
+
+            {error && (
+                <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {error}
+                </p>
+            )}
+
+            {result && (
+                <div className="mt-6">
+                    <MatchResultSummary result={result} />
+                </div>
+            )}
+
+            {canManageResult && (
+                <div className="mt-6">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                        <h3 className="text-lg font-bold text-slate-900">
+                            {result ? "Edit sets" : "Add result"}
+                        </h3>
+
+                        <button
+                            type="button"
+                            onClick={onAddSet}
+                            disabled={submitting}
+                            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                        >
+                            <Plus size={16} />
+                            Add set
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {sets.map((set, index) => (
+                            <MatchSetEditor
+                                key={`${set.setNumber}-${index}`}
+                                set={set}
+                                canRemove={sets.length > 1}
+                                disabled={submitting}
+                                onChange={(field, value) =>
+                                    onUpdateSet(index, field, value)
+                                }
+                                onRemove={() => onRemoveSet(index)}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={onSubmit}
+                        disabled={submitting}
+                        className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:opacity-60"
+                    >
+                        {submitting
+                            ? "Saving result..."
+                            : result
+                              ? "Update Result"
+                              : "Submit Result"}
+                    </button>
+                </div>
+            )}
+
+            {result && canValidateResult && (
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <button
+                        type="button"
+                        onClick={onValidate}
+                        disabled={validating}
+                        className="rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white disabled:opacity-60"
+                    >
+                        {validating ? "Saving..." : "Accept Result"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={onReject}
+                        disabled={validating}
+                        className="rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
+                    >
+                        {validating ? "Saving..." : "Reject Result"}
+                    </button>
+                </div>
+            )}
+        </section>
+    );
+}

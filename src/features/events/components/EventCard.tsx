@@ -3,6 +3,16 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getEventRegistrationsCount } from "../../registrations/services/registrations.service";
 import type { Event } from "../types/event.types";
+import {
+  getEventBadgeClasses,
+  getEventDisplayStatus,
+  getEventFallbackImage,
+  getEventModeLabel,
+  getEventTypeLabel,
+  getEventVisibilityBadgeClasses,
+  getEventVisibilityLabel,
+  isPastEvent,
+} from "../utils/event-display.utils";
 
 interface Props {
   event: Event;
@@ -10,14 +20,11 @@ interface Props {
 
 export function EventCard({ event }: Props) {
   const [registrationsCount, setRegistrationsCount] = useState(0);
-
-  const image =
-    event.imageUrl ||
-    (event.type === "match"
-      ? "/beach-ball.png"
-      : "/tournament-beach-1.png");
-
+  const image = getEventFallbackImage(event);
   const isFull = registrationsCount >= event.maxParticipants;
+  const isPast = isPastEvent(event);
+  const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+  const statusLabel = getEventDisplayStatus(event);
 
   useEffect(() => {
     async function loadCount() {
@@ -46,16 +53,36 @@ export function EventCard({ event }: Props) {
         />
 
         <span
-          className={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold uppercase text-white ${
-            event.type === "match" ? "bg-emerald-500" : "bg-blue-600"
-          }`}
+          className={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
+            event
+          )}`}
         >
-          {event.type}
+          {getEventTypeLabel(event.type)}
+        </span>
+
+        <span
+          className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+            event.visibility
+          )}`}
+        >
+          {getEventVisibilityLabel(event.visibility)}
         </span>
       </div>
 
       <div className="p-6">
         <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          {modeLabel && (
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+              {modeLabel}
+            </span>
+          )}
+
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+            {statusLabel}
+          </span>
+        </div>
 
         <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
           <CalendarDays size={17} className="text-blue-600" />
@@ -77,10 +104,10 @@ export function EventCard({ event }: Props) {
           </div>
 
           <div className={`text-sm font-bold ${
-              isFull ? "text-slate-400" : "text-blue-600"
+              isFull || isPast ? "text-slate-400" : "text-blue-600"
             }`}
           >
-            {isFull ? "View" : "Join Now"}
+            {isPast || isFull ? "View" : "Join Now"}
           </div>
 
         </div>

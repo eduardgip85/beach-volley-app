@@ -4,7 +4,6 @@ import {
   Mail,
   Shield,
   Trophy,
-  User,
   Users,
   LogOut,
   MapPin,
@@ -14,12 +13,48 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useProfileEvents } from "../hooks/useProfileEvents";
+import { useProfileStats } from "../hooks/useProfileStats";
 import { EquipmentVerificationCard } from "../components/EquipmentVerificationCard";
+import { ProfileStatsCard } from "../components/ProfileStatsCard";
+import { RecentMatchesList } from "../components/RecentMatchesList";
+import { useMyEventInvitations } from "../../event-invitations/hooks/useMyEventInvitations";
+import { MyEventInvitationsSection } from "../../event-invitations/components/MyEventInvitationsSection";
+import { useCreatedEvents } from "../hooks/useCreatedEvents";
+import { CreatedEventsSection } from "../components/CreatedEventsSection";
+import { useMyEventJoinRequests } from "../../event-join-requests/hooks/useMyEventJoinRequests";
+import { MyEventJoinRequestsSection } from "../../event-join-requests/components/MyEventJoinRequestsSection";
+import type { Event } from "../../events/types/event.types";
+import {
+  getEventBadgeClasses,
+  getEventDisplayStatus,
+  getEventModeLabel,
+  getEventTypeLabel,
+  getEventVisibilityBadgeClasses,
+  getEventVisibilityLabel,
+} from "../../events/utils/event-display.utils";
 
 export function ProfilePage() {
 
   const navigate = useNavigate();
   const { isAdmin, profile, logout } = useAuth();
+  const { stats, loading: statsLoading, error: statsError } = useProfileStats(
+    profile?.id
+  );
+  const {
+    pendingInvitations,
+    loading: invitationsLoading,
+    error: invitationsError,
+  } = useMyEventInvitations(profile?.id);
+  const {
+    events: createdEvents,
+    loading: createdEventsLoading,
+    error: createdEventsError,
+  } = useCreatedEvents(profile?.id);
+  const {
+    activeRequests: myJoinRequests,
+    loading: joinRequestsLoading,
+    error: joinRequestsError,
+  } = useMyEventJoinRequests(profile?.id);
 
   const {
     upcomingEvents,
@@ -97,30 +132,43 @@ export function ProfilePage() {
         <EquipmentVerificationCard />
       )}
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Link to="/events" className="rounded-3xl bg-white p-6 shadow-sm hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md">
-          <Trophy className="text-blue-600" />
-          <h2 className="mt-4 font-bold text-slate-900">Explore events</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Find matches and tournaments.
-          </p>
-        </Link>
+      <ProfileStatsCard stats={stats} loading={statsLoading} />
 
-        <Link to="/events/create" className="rounded-3xl bg-white p-6 shadow-sm hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md">
-          <CalendarDays className="text-blue-600" />
-          <h2 className="mt-4 font-bold text-slate-900">Create event</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Organize a new beach volleyball event.
-          </p>
-        </Link>
+      {statsError && (
+        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          {statsError}
+        </p>
+      )}
 
-        <Link to="/calendar" className="rounded-3xl bg-white p-6 shadow-sm hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md">
-          <User className="text-blue-600" />
-          <h2 className="mt-4 font-bold text-slate-900">Calendar</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Review upcoming activities.
-          </p>
-        </Link>
+      <CreatedEventsSection
+        events={createdEvents}
+        loading={createdEventsLoading}
+        error={createdEventsError}
+      />
+
+      <RecentMatchesList matches={stats.recentMatches} loading={statsLoading} />
+
+      <MyEventJoinRequestsSection
+        requests={myJoinRequests}
+        loading={joinRequestsLoading}
+        error={joinRequestsError}
+      />
+
+      <MyEventInvitationsSection
+        invitations={pendingInvitations}
+        loading={invitationsLoading}
+        error={invitationsError}
+      />
+
+      <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm">
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
+          More stats coming soon
+        </p>
+        <h2 className="mt-3 text-2xl font-bold">This is just the start</h2>
+        <p className="mt-2 max-w-2xl text-slate-300">
+          Full match history, deeper performance breakdowns and richer competitive
+          insights will arrive in future phases.
+        </p>
       </div>
 
       <div className="rounded-[2rem] bg-white p-8 shadow-sm">
@@ -148,7 +196,7 @@ export function ProfilePage() {
           <div className="rounded-3xl bg-slate-50 p-6 text-center">
             <p className="font-bold text-slate-900">No joined events yet</p>
             <p className="mt-2 text-sm text-slate-500">
-              Join a match or tournament and it will appear here.
+              Join a match or open play session and it will appear here.
             </p>
           </div>
         )}
@@ -156,35 +204,7 @@ export function ProfilePage() {
         {!loading && !error && upcomingEvents.length > 0 && (
           <div className="grid gap-4 md:grid-cols-3">
             {upcomingEvents.map((event) => (
-              <Link
-                key={event.id}
-                to={`/events/${event.id}`}
-                className="rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:bg-blue-50"
-              >
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
-                    event.type === "match"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
-                >
-                  {event.type}
-                </span>
-
-                <h3 className="mt-4 font-bold text-slate-900">{event.title}</h3>
-
-                <div className="mt-3 space-y-2 text-sm text-slate-500">
-                  <p className="flex items-center gap-2">
-                    <CalendarDays size={16} />
-                    {new Date(event.startDate).toLocaleString()}
-                  </p>
-
-                  <p className="flex items-center gap-2">
-                    <MapPin size={16} />
-                    {event.locationName}
-                  </p>
-                </div>
-              </Link>
+              <ProfileEventCard key={event.id} event={event} />
             ))}
           </div>
         )}
@@ -242,5 +262,62 @@ export function ProfilePage() {
         </div>
       )}
     </section>
+  );
+}
+
+function ProfileEventCard({
+  event,
+}: {
+  event: Event;
+}) {
+  const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+
+  return (
+    <Link
+      to={`/events/${event.id}`}
+      className="rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:bg-blue-50"
+    >
+      <div className="flex flex-wrap gap-2">
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
+            event
+          )}`}
+        >
+          {getEventTypeLabel(event.type)}
+        </span>
+
+        <span
+          className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+            event.visibility
+          )}`}
+        >
+          {getEventVisibilityLabel(event.visibility)}
+        </span>
+
+        {modeLabel && (
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+            {modeLabel}
+          </span>
+        )}
+      </div>
+
+      <h3 className="mt-4 font-bold text-slate-900">{event.title}</h3>
+
+      <div className="mt-3 space-y-2 text-sm text-slate-500">
+        <p className="flex items-center gap-2">
+          <CalendarDays size={16} />
+          {new Date(event.startDate).toLocaleString()}
+        </p>
+
+        <p className="flex items-center gap-2">
+          <MapPin size={16} />
+          {event.locationName}
+        </p>
+      </div>
+
+      <p className="mt-3 text-sm font-semibold text-slate-700">
+        {getEventDisplayStatus(event)}
+      </p>
+    </Link>
   );
 }

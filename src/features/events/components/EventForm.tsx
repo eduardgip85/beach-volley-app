@@ -1,12 +1,18 @@
 import { MapPin } from "lucide-react";
 import type { Dispatch, FormEvent, SetStateAction } from "react";
 import { LocationPickerMap } from "./LocationPickerMap";
-import type { EventType } from "../types/event.types";
+import type {
+    EventMode,
+    EventType,
+    EventVisibility,
+} from "../types/event.types";
 
 interface EventFormProps {
     title: string;
     description: string;
     type: EventType;
+    visibility: EventVisibility;
+    mode: EventMode | null;
     date: string;
     time: string;
     maxParticipants: number;
@@ -30,6 +36,8 @@ interface EventFormProps {
     setTitle: Dispatch<SetStateAction<string>>;
     setDescription: Dispatch<SetStateAction<string>>;
     setType: Dispatch<SetStateAction<EventType>>;
+    setVisibility: Dispatch<SetStateAction<EventVisibility>>;
+    setMode: Dispatch<SetStateAction<EventMode | null>>;
     setDate: Dispatch<SetStateAction<string>>;
     setTime: Dispatch<SetStateAction<string>>;
     setMaxParticipants: Dispatch<SetStateAction<number>>;
@@ -43,6 +51,8 @@ export function EventForm({
     title,
     description,
     type,
+    visibility,
+    mode,
     date,
     time,
     maxParticipants,
@@ -62,6 +72,8 @@ export function EventForm({
     setTitle,
     setDescription,
     setType,
+    setVisibility,
+    setMode,
     setDate,
     setTime,
     setMaxParticipants,
@@ -70,6 +82,13 @@ export function EventForm({
     setLongitude,
     setLocationSearch,
 }: EventFormProps) {
+    const typeHelperText =
+        type === "match"
+            ? "Structured 4-player game"
+            : type === "open_play"
+              ? "Flexible meetup with configurable participants"
+              : "Coming soon";
+
     return (
         <form
         onSubmit={onSubmit}
@@ -100,7 +119,7 @@ export function EventForm({
                         Event type
                     </label>
 
-                    <div className="mt-2 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                    <div className="mt-2 grid grid-cols-3 rounded-2xl bg-slate-100 p-1">
                         <button
                         type="button"
                         onClick={() => setType("match")}
@@ -115,16 +134,73 @@ export function EventForm({
 
                         <button
                         type="button"
-                        onClick={() => setType("tournament")}
+                        onClick={() => setType("open_play")}
                         className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                            type === "tournament"
+                            type === "open_play"
                             ? "bg-blue-600 text-white shadow-sm"
                             : "text-slate-600"
                         }`}
                         >
+                        Open Play
+                        </button>
+
+                        <button
+                        type="button"
+                        disabled
+                        className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                            type === "tournament"
+                            ? "bg-slate-300 text-slate-700"
+                            : "text-slate-400"
+                        }`}
+                        >
                         Tournament
+                        <span className="block text-[11px] font-medium">
+                            Coming soon
+                        </span>
                         </button>
                     </div>
+
+                    <p className="mt-2 text-xs text-slate-500">{typeHelperText}</p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
+                            Visibility
+                        </label>
+
+                        <select
+                            value={visibility}
+                            onChange={(event) =>
+                                setVisibility(event.target.value as EventVisibility)
+                            }
+                            className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
+                            required
+                        >
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+
+                    {type === "match" && (
+                        <div>
+                            <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
+                                Mode
+                            </label>
+
+                            <select
+                                value={mode ?? ""}
+                                onChange={(event) =>
+                                    setMode(event.target.value as EventMode)
+                                }
+                                className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
+                                required
+                            >
+                                <option value="casual">Casual</option>
+                                <option value="competitive">Competitive</option>
+                            </select>
+                        </div>
+                    )}
                 </div>
 
                 <div>
@@ -178,7 +254,14 @@ export function EventForm({
                         className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
                         required
                         min={1}
+                        disabled={type === "match"}
                     />
+
+                    <p className="mt-2 text-xs text-slate-500">
+                        {type === "match"
+                            ? "Matches are locked to 4 participants."
+                            : "Choose how many players can join this session."}
+                    </p>
                 </div>
 
                 <div>

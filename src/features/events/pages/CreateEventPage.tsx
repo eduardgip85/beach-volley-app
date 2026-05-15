@@ -27,7 +27,7 @@ export function CreateEventPage() {
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold text-slate-950">Create Event</h1>
         <p className="mt-2 text-slate-500">
-          Set up your next beach volleyball match or tournament.
+          Set up your next beach volleyball match or open play session.
         </p>
       </div>
 

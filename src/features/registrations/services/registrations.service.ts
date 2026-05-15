@@ -59,3 +59,14 @@ export async function getUserRegisteredEventIds(userId: string): Promise<string[
 
   return data.map((item) => item.event_id);
 }
+
+export async function getEventRegisteredUserIds(eventId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from("registrations")
+    .select("user_id")
+    .eq("event_id", eventId);
+
+  if (error) throw error;
+
+  return data.map((item) => item.user_id);
+}

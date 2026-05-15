@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getEventsByIds } from "../../events/services/events.service";
+import { isPastEvent } from "../../events/utils/event-display.utils";
 import type { Event } from "../../events/types/event.types";
 import { getUserRegisteredEventIds } from "../../registrations/services/registrations.service";
 
@@ -20,17 +21,26 @@ export function useProfileEvents(userId?: string) {
             const eventIds = await getUserRegisteredEventIds(userId);
             const events = await getEventsByIds(eventIds);
 
-            const now = new Date();
-
             const upcoming = events.filter(
-            (event) => new Date(event.startDate) >= now
+                (event) =>
+                    event.status === "active" &&
+                    !isPastEvent(event)
             );
 
+            upcoming.sort(
+                (left, right) =>
+                    new Date(left.startDate).getTime() -
+                    new Date(right.startDate).getTime()
+            );
+
+            const limitedUpcoming = upcoming.slice(0, 3);
             const past = events.filter(
-            (event) => new Date(event.startDate) < now
+                (event) =>
+                    event.status !== "active" ||
+                    isPastEvent(event)
             );
 
-            setUpcomingEvents(upcoming);
+            setUpcomingEvents(limitedUpcoming);
             setPastEvents(past);
         } catch (err) {
             console.error(err);

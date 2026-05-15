@@ -1,4 +1,9 @@
 import type { Event } from "../../events/types/event.types";
+import {
+    getEventBadgeClasses as getSharedEventBadgeClasses,
+    getEventColorClasses as getSharedEventColorClasses,
+    isPastEvent as isSharedPastEvent,
+} from "../../events/utils/event-display.utils";
 
 export const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -14,7 +19,7 @@ export function isSameMonth(dateA: Date, dateB: Date) {
 }
 
 export function isPastEvent(event: Event) {
-    return new Date(event.startDate) < new Date();
+    return isSharedPastEvent(event);
 }
 
 export function getMonthDays(currentDate: Date) {
@@ -46,19 +51,9 @@ export function getMonthDays(currentDate: Date) {
 }
 
 export function getEventColorClasses(event: Event) {
-    if (isPastEvent(event)) {
-        return "bg-red-500";
-    }
-
-    return event.type === "match" ? "bg-emerald-500" : "bg-blue-600";
+    return getSharedEventColorClasses(event);
 }
 
 export function getEventBadgeClasses(event: Event) {
-    if (isPastEvent(event)) {
-        return "bg-red-100 text-red-700";
-    }
-
-    return event.type === "match"
-        ? "bg-emerald-100 text-emerald-700"
-        : "bg-blue-100 text-blue-700";
+    return getSharedEventBadgeClasses(event);
 }

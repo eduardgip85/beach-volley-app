@@ -1,418 +1,282 @@
-# 🏐 Beach Volley App
-
-A modern beach volleyball community platform built with React, TypeScript and Supabase.
+# Beach Volley App
 
-Users can:
-
-* Explore beach volleyball events
-* Join matches and tournaments
-* View events on an interactive map
-* Use a responsive monthly calendar
-* Manage their profile
-* Verify volleyball equipment using AI
-* Access admin dashboards and statistics
-
----
+Beach Volley App is a personal project built with React, TypeScript and Supabase to organize beach volleyball matches, open play sessions and player connections.
 
-# 🌍 Live Demo
-
-## Web App
+It currently includes:
 
-Beach Volley App Live Demo[https://beach-volley-app-blush.vercel.app/](https://beach-volley-app-blush.vercel.app/)
+- Public and private events
+- Match and open play flows
+- Match team assignment
+- Match results with validation
+- Competitive Elo rating
+- Friends and public player profiles
+- AI equipment verification
+- Admin and stats tooling
 
----
-# User Stories 
-* US-01 — Explorar esdeveniments
-Com a visitant ➡️
-vull veure els esdeveniments disponibles ➡️
-per descobrir partits i tornejos de vòlei platja.
+Live app:
 
-* US-02 — Veure mapa
-Com a visitant➡️
-vull veure els esdeveniments en un mapa➡️
-per saber on es realitzen.
+- https://beach-volley-app-blush.vercel.app/
 
-* US-03 — Consultar calendari
-Com a visitant➡️
-vull consultar els esdeveniments en un calendari➡️
-per veure les dates disponibles.
+## Product Overview
 
-* US-04 — Registrar-se
-Com a usuari➡️
-vull crear un compte➡️
-per poder participar a la plataforma.
+The app is designed around two active event types:
 
-* US-05 — Iniciar sessió
-Com a usuari➡️
-vull iniciar sessió➡️
-per accedir a les funcionalitats privades.
+- `match`: structured 4-player match with teams, result validation and optional competitive rating
+- `open_play`: flexible meetup with configurable participants
 
-* US-06 — Crear esdeveniments
-Com a usuari registrat➡️
-vull crear esdeveniments➡️
-per organitzar partits o tornejos.
+There is also future-facing support for:
 
-* US-07 — Editar els meus esdeveniments
-Com a usuari registrat➡️
-vull editar els meus esdeveniments➡️
-per actualitzar-ne la informació.
+- `tournament`: kept in the data model, not active in the product flow yet
 
-* US-08 — Eliminar els meus esdeveniments
-Com a usuari registrat➡️
-vull eliminar esdeveniments creats per mi➡️
-si ja no es realitzaran.
+## Current Features
 
-* US-09 — Apuntar-me a un esdeveniment
-Com a usuari registrat➡️
-vull apuntar-me a un esdeveniment➡️
-per participar-hi.
+### Events
 
-* US-10 — Veure els meus esdeveniments
-Com a usuari registrat➡️
-vull veure els esdeveniments als quals estic apuntat➡️
-per gestionar la meva activitat.
+- Create, edit and delete events
+- Public or private visibility
+- Match mode selection: `casual` or `competitive`
+- Open play sessions with flexible capacity
+- Direct private event links
+- Private event join requests
+- Private event invitations
 
-* US-11 — Verificar pilota
-Com a usuari registrat➡️
-vull verificar que tinc una pilota➡️
-per mostrar-ho al meu perfil.
+### Match Flow
 
-* US-12 — Verificar xarxa
-Com a usuari registrat➡️
-vull verificar que tinc una xarxa➡️
-per mostrar-ho al meu perfil.
+- Auto-assigned teams for matches
+- Team A / Team B roster management
+- Match result entry by creator
+- Result validation by opposing team
+- Locked match state after accepted result
+- Finished/completed event display
 
-* US-13 — Rebre badges
-Com a usuari registrat➡️
-vull rebre badges d’equipament verificat➡️
-perquè altres usuaris sàpiguen què tinc disponible.
+### Competitive Rating
 
----
+- Competitive Elo rating for accepted competitive matches
+- Team rating based on average player rating
+- Rating applied once per accepted result
+- Rating games tracked separately from general matches played
 
-# 🚀 Features
+### Profile
 
-## 🏠 Home Page
+- Personal profile with created events
+- Upcoming joined events
+- Equipment badges
+- Competitive/casual performance toggle
+- Last 5 matches
+- Pending private event requests and invitations
 
-* Modern responsive hero section
-* Upcoming featured events
-* Mobile-first design
-* Quick navigation cards
+### Friends and Players
 
-## 🏆 Events System
+- Player search
+- Friend requests
+- Friends list
+- Public player profiles at `/players/:userId`
+- Public/private-safe match summaries on player profiles
 
-* Create events
-* Edit events
-* Delete events
-* Join events
-* Event details page
-* Upcoming events filtering
-* Match and tournament support
+### Discovery
 
-## 🔎 Advanced Filters
+- Events page
+- Map page
+- Calendar page
+- Shared filtering system
 
-Reusable filtering system shared between:
+### AI Equipment Verification
 
-* Events page
-* Map page
-* Calendar page
+- Ball verification
+- Net verification
+- Supabase Edge Function based flow
 
-Filters include:
+### Admin
 
-* Search by title
-* Filter by event type
-* Filter by location
+- User management
+- Event management
+- Stats dashboard
 
-Mobile version includes collapsible filters UI.
+## Tech Stack
 
-## 🗺️ Interactive Map
+### Frontend
 
-* Interactive event map using Leaflet
-* Custom markers depending on event type
-* Responsive mobile popup cards
-* Event detail popup information
-* Shared filtering system
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router DOM
+- Lucide React
 
-## 📅 Calendar System
+### Backend
 
-Custom responsive calendar implementation:
+- Supabase Auth
+- Supabase Postgres
+- Supabase Edge Functions
+- Supabase RLS
 
-* Monthly calendar view
-* Event indicators
-* Mobile selected-day events section
-* Desktop monthly events section
-* Past events visualization
-* Match / tournament color indicators
+### Other
 
-## 👤 Profile System
+- Leaflet / React Leaflet
+- FullCalendar
+- Vitest
+- React Testing Library
 
-* User profile page
-* Registered events section
-* Admin dashboard access
-* Equipment badges
-* Logout system
+## Project Structure
 
-## 🤖 AI Equipment Verification
-
-Users can verify:
-
-* 🏐 Volleyball ball
-* 🥅 Volleyball net
-
-Features:
-
-* AI image recognition with Gemini Vision
-* Supabase Edge Functions
-* Secure API handling
-* Equipment badges on profile
-* Separate verification flow for each equipment type
-
-## 🛠️ Admin Dashboard
-
-### Admin Events
-
-* Responsive management view
-* Mobile cards UI
-* Desktop table view
-* View and edit actions
-
-### Admin Users
-
-* Responsive user management
-* User roles visualization
-* User statistics
-
-### Statistics Dashboard
-
-* Total events
-* Active events
-* Registrations count
-* Users count
-* Top locations
-* Events by month
-* Events by type
-
-Optimized to reduce unnecessary database calls.
-
----
-
-# 🧱 Tech Stack
-
-## Frontend
-
-* React
-* TypeScript
-* Vite
-* Tailwind CSS
-* React Router DOM
-* Lucide React
-
-## Backend & Database
-
-* Supabase
-* Supabase Auth
-* Supabase Database
-* Supabase Edge Functions
-* Row Level Security (RLS)
-
-## Maps & Calendar
-
-* React Leaflet
-* OpenStreetMap
-
-## AI
-
-* Gemini Vision API
-
-## Testing
-
-* Vitest
-* React Testing Library
-* jsdom
-
-## Deployment
-
-* Vercel
-
----
-# User diagram
-<img width="5532" height="1979" alt="mermaid-diagram" src="https://github.com/user-attachments/assets/d4d1c5cb-9242-4cfd-a247-7d1a949efc45" />
-
-
-# 🧠 Architecture
-
-The project follows a feature-based architecture.
+The codebase follows a feature-based structure.
 
 ```bash
 src/
+├── app/
 ├── features/
+│   ├── admin/
 │   ├── auth/
-│   ├── events/
-│   ├── map/
 │   ├── calendar/
+│   ├── event-invitations/
+│   ├── event-join-requests/
+│   ├── events/
+│   ├── friends/
+│   ├── home/
+│   ├── map/
+│   ├── match-players/
+│   ├── match-results/
+│   ├── players/
 │   ├── profile/
+│   ├── ratings/
 │   ├── registrations/
-│   ├── stats/
-│   └── admin/
-│
-├── shared/
-│   ├── components/
-│   ├── hooks/
-│   └── utils/
-│
+│   └── stats/
 ├── config/
+├── layouts/
+├── routes/
 └── tests/
 ```
 
-The project separates:
+Each feature keeps:
 
-* UI components
-* Hooks / business logic
-* Services / API calls
-* Shared reusable components
+- components
+- hooks
+- services
+- types
+- utilities when needed
 
----
+## Local Development
 
-# 🔒 Security
-
-## Row Level Security (RLS)
-
-Supabase RLS policies are used to:
-
-* Protect user data
-* Restrict event modifications
-* Restrict admin functionality
-* Secure registrations
-
-## Edge Functions
-
-AI verification is handled using Supabase Edge Functions.
-
-This allows:
-
-* Hidden API keys
-* User validation
-* Secure AI requests
-* Controlled database updates
-
----
-
-# 🧪 Testing
-
-Implemented tests include:
-
-* events.service
-* registrations.service
-* stats.service
-* auth.service
-* geocoding.service
-* equipment.service
-
-## Run tests
-
-```bash
-npm run test
-```
-
-## Run coverage
-
-```bash
-npm run test:coverage
-```
-
----
-
-# ⚙️ Installation
-
-## 1. Clone repository
-
-```bash
-git clone https://github.com/eduardgip85/beach-volley-app.git
-```
-
-## 2. Install dependencies
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-## 3. Configure environment variables
+### 2. Configure environment variables
 
-Create a `.env` file:
+Create a `.env` file in `beach-volley-app/`:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_SUPABASE_ANON_KEY=your_supabase_publishable_or_anon_key
 ```
 
----
-
-# ▶️ Run Project
-
-## Development
+### 3. Run the app
 
 ```bash
 npm run dev
 ```
 
-## Build
+### 4. Run tests
+
+```bash
+npm run test
+```
+
+### 5. Build
 
 ```bash
 npm run build
 ```
 
-## Preview
+## Supabase Notes
+
+This project relies on manual SQL migrations stored in:
 
 ```bash
-npm run preview
+supabase/migrations/
 ```
 
----
+Key migrations already added in the project include:
 
-# 🤖 AI Verification Flow
+- event visibility and mode support
+- friends MVP
+- private event invitations
+- private event join requests
+- match players
+- match results and validation
+- pending match result maintenance
+- public player match summaries
+- public profile mode stats and unfriend policy
+- competitive Elo rating
 
-1. User uploads image
-2. React service converts image to Base64
-3. Supabase Edge Function validates user
-4. Gemini Vision analyzes image
-5. Database updates user equipment status
-6. Profile badges update automatically
+If you are applying them manually in Supabase SQL Editor, use them in chronological order and make sure the later `create or replace function ...` migrations are also executed, because some functions were intentionally refined over time.
 
----
+## Supabase Auth Notes
 
-# 📱 Responsive Design
+The app supports:
 
-The application is fully responsive:
+- email/password auth
+- Google OAuth
 
-* Mobile-first UI
-* Floating action buttons
-* Responsive navbar
-* Mobile calendar layout
-* Responsive admin pages
-* Optimized map popups
+For Google OAuth you need to configure:
 
----
+- Google provider in Supabase Auth
+- Client ID / Client Secret in Supabase dashboard
+- redirect URLs for local and production environments
 
-# 🛣️ Future Improvements
+## Edge Functions
 
-Planned future features:
+Current Supabase function in the project:
 
-* Friends system
-* Public profiles
-* Teams system
-* Real-time chat
-* Weekly AI verification limits
-* Notifications
-* Advanced statistics
-* Event recommendations
+- `check-pending-match-results`
 
----
+Related docs live here:
 
-# 👨‍💻 Author
+- [supabase/functions/check-pending-match-results/README.md](./supabase/functions/check-pending-match-results/README.md)
+
+## Privacy Model
+
+The app intentionally separates:
+
+- full private event detail access
+- safe public player profile access
+- public browsing of events
+
+Current privacy behavior includes:
+
+- private events hidden from public listings
+- direct private event URLs still supported
+- public player profiles do not show email
+- public player profiles only show safe match summaries, not private event detail pages
+
+## Testing
+
+Current automated coverage includes service, hook and utility tests for:
+
+- auth
+- events
+- event invitations
+- event join requests
+- friends
+- match players
+- match results
+- player public profiles
+- profile stats
+- ratings
+
+## Roadmap Ideas
+
+Possible future directions:
+
+- tighter public/private privacy rules for player history
+- richer notifications
+- real-time chat
+- tournament activation
+- deeper match analytics
+- code-splitting and bundle optimization
+
+## Author
 
 Eduard Goma
-
----
-
-# 📄 License
-
-This project is for educational and portfolio purposes.

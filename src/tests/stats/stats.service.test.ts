@@ -22,12 +22,14 @@ const events = [
         title: "Morning Match",
         description: "Match description",
         type: "match",
+        visibility: "public",
+        mode: "casual",
         locationName: "Barceloneta",
         latitude: 41.3851,
         longitude: 2.1734,
         startDate: "2026-05-01T10:00:00.000Z",
         endDate: null,
-        maxParticipants: 8,
+        maxParticipants: 4,
         status: "active",
         imageUrl: null,
         createdBy: "user-1",
@@ -39,6 +41,8 @@ const events = [
         title: "Summer Tournament",
         description: "Tournament description",
         type: "tournament",
+        visibility: "public",
+        mode: null,
         locationName: "Bogatell",
         latitude: 41.39,
         longitude: 2.19,
@@ -56,12 +60,14 @@ const events = [
         title: "Old Match",
         description: "Old match description",
         type: "match",
+        visibility: "private",
+        mode: "competitive",
         locationName: "Barceloneta",
         latitude: 41.3851,
         longitude: 2.1734,
         startDate: "2026-06-01T10:00:00.000Z",
         endDate: null,
-        maxParticipants: 8,
+        maxParticipants: 4,
         status: "completed",
         imageUrl: null,
         createdBy: "user-3",
@@ -104,11 +110,13 @@ describe("stats.service", () => {
         expect(result.totalEvents).toBe(3);
         expect(result.activeEvents).toBe(2);
         expect(result.totalMatches).toBe(2);
+        expect(result.totalOpenPlays).toBe(0);
         expect(result.totalTournaments).toBe(1);
         expect(result.totalRegistrations).toBe(7);
 
         expect(result.eventsByType).toEqual([
         { name: "Matches", value: 2 },
+        { name: "Open Play", value: 0 },
         { name: "Tournaments", value: 1 },
         ]);
 
@@ -151,11 +159,13 @@ describe("stats.service", () => {
         expect(result.totalEvents).toBe(0);
         expect(result.activeEvents).toBe(0);
         expect(result.totalMatches).toBe(0);
+        expect(result.totalOpenPlays).toBe(0);
         expect(result.totalTournaments).toBe(0);
         expect(result.totalRegistrations).toBe(0);
 
         expect(result.eventsByType).toEqual([
         { name: "Matches", value: 0 },
+        { name: "Open Play", value: 0 },
         { name: "Tournaments", value: 0 },
         ]);
 

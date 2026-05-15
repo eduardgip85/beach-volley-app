@@ -1,6 +1,12 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { searchLocation } from "../services/geocoding.service";
-import type { CreateEventPayload, Event, EventType } from "../types/event.types";
+import type {
+    CreateEventPayload,
+    Event,
+    EventMode,
+    EventType,
+    EventVisibility,
+} from "../types/event.types";
 
 interface UseEventFormOptions {
     initialEvent?: Event;
@@ -15,10 +21,44 @@ function getTimeValue(date: string) {
     return new Date(date).toTimeString().slice(0, 5);
 }
 
+function getInitialType(initialEvent?: Event): EventType {
+    return initialEvent?.type ?? "match";
+}
+
+function getInitialVisibility(initialEvent?: Event): EventVisibility {
+    return initialEvent?.visibility ?? "public";
+}
+
+function getInitialMode(initialEvent?: Event): EventMode | null {
+    const type = getInitialType(initialEvent);
+
+    if (type === "match") {
+        return initialEvent?.mode ?? "casual";
+    }
+
+    return null;
+}
+
+function getInitialMaxParticipants(initialEvent?: Event) {
+    const type = getInitialType(initialEvent);
+
+    if (type === "match") {
+        return 4;
+    }
+
+    return initialEvent?.maxParticipants ?? 8;
+}
+
 export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     const [title, setTitle] = useState(initialEvent?.title ?? "");
     const [description, setDescription] = useState(initialEvent?.description ?? "");
-    const [type, setType] = useState<EventType>(initialEvent?.type ?? "match");
+    const [type, setTypeState] = useState<EventType>(getInitialType(initialEvent));
+    const [visibility, setVisibility] = useState<EventVisibility>(
+        getInitialVisibility(initialEvent)
+    );
+    const [mode, setModeState] = useState<EventMode | null>(
+        getInitialMode(initialEvent)
+    );
 
     const [date, setDate] = useState(
         initialEvent ? getDateValue(initialEvent.startDate) : ""
@@ -28,8 +68,8 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         initialEvent ? getTimeValue(initialEvent.startDate) : ""
     );
 
-    const [maxParticipants, setMaxParticipants] = useState(
-        initialEvent?.maxParticipants ?? 8
+    const [maxParticipants, setMaxParticipantsState] = useState(
+        getInitialMaxParticipants(initialEvent)
     );
 
     const [locationName, setLocationName] = useState(
@@ -44,6 +84,24 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
 
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (type === "match") {
+            if (maxParticipants !== 4) {
+                setMaxParticipantsState(4);
+            }
+
+            if (!mode) {
+                setModeState("casual");
+            }
+
+            return;
+        }
+
+        if (mode !== null) {
+            setModeState(null);
+        }
+    }, [type, mode, maxParticipants]);
 
     async function handleSearchLocation() {
         if (!locationSearch.trim()) {
@@ -79,8 +137,37 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        if (!date || !time) {
-        setError("Date and time are required");
+        const trimmedTitle = title.trim();
+        const trimmedLocationName = locationName.trim();
+        const resolvedMode = type === "match" ? mode : null;
+        const resolvedMaxParticipants =
+            type === "match" ? 4 : Number(maxParticipants);
+
+        if (!trimmedTitle || !date || !time || !trimmedLocationName) {
+        setError("Title, date, time, and location are required");
+        return;
+        }
+
+        if (type === "tournament") {
+        setError("Tournament events are coming soon");
+        return;
+        }
+
+        if (type === "match" && !resolvedMode) {
+        setError("Mode is required for match events");
+        return;
+        }
+
+        if (visibility !== "public" && visibility !== "private") {
+        setError("Visibility is required");
+        return;
+        }
+
+        if (
+            type === "open_play" &&
+            (!Number.isFinite(resolvedMaxParticipants) || resolvedMaxParticipants < 1)
+        ) {
+        setError("Max participants must be at least 1");
         return;
         }
 
@@ -91,14 +178,16 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         const startDate = new Date(`${date}T${time}`).toISOString();
 
         await onSubmit({
-            title,
+            title: trimmedTitle,
             description,
             type,
-            locationName,
+            visibility,
+            mode: resolvedMode,
+            locationName: trimmedLocationName,
             latitude,
             longitude,
             startDate,
-            maxParticipants: Number(maxParticipants),
+            maxParticipants: resolvedMaxParticipants,
             imageUrl: initialEvent?.imageUrl ?? null,
         });
         } catch (err) {
@@ -114,6 +203,8 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         title,
         description,
         type,
+        visibility,
+        mode,
         date,
         time,
         maxParticipants,
@@ -126,10 +217,12 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         setters: {
         setTitle,
         setDescription,
-        setType,
+        setType: setTypeState,
+        setVisibility,
+        setMode: setModeState,
         setDate,
         setTime,
-        setMaxParticipants,
+        setMaxParticipants: setMaxParticipantsState,
         setLocationName,
         setLatitude,
         setLongitude,

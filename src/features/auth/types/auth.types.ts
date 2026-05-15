@@ -11,4 +11,8 @@ export interface UserProfile {
     hasNet: boolean;
     equipmentVerified: boolean;
     equipmentVerifiedAt: string | null;
+    competitiveRating: number;
+    matchesPlayed: number;
+    wins: number;
+    losses: number;
 }

@@ -1,7 +1,17 @@
 import { useEffect, useState } from "react";
-import { getEvents } from "../../events/services/events.service";
+import { getPublicEvents } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
-import { getStatsData } from "../../stats/services/stats.service"
+import { supabase } from "../../../config/supabase";
+
+async function getTotalPlayers() {
+    const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true });
+
+    if (error) throw error;
+
+    return count ?? 0;
+}
 
 export function useHomeData() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -15,12 +25,12 @@ export function useHomeData() {
             setLoading(true);
             setError("");
 
-            const data = await getEvents();
+            const [data, players] = await Promise.all([
+                getPublicEvents(),
+                getTotalPlayers(),
+            ]);
             setEvents(data);
-
-            const statsData = await getStatsData();
-
-            setTotalPlayers(statsData.totalUsers ?? 0);
+            setTotalPlayers(players);
 
         } catch (err) {
             console.error(err);
@@ -34,14 +44,25 @@ export function useHomeData() {
     }, []);
 
     const activeMatches = events.filter(
-
-        (event) => new Date(event.startDate) >= new Date()        
-        
+        (event) =>
+            event.type === "match" &&
+            event.status === "active" &&
+            new Date(event.startDate) >= new Date()
     ).length;
 
     const upcomingEvents = events
-        .filter((event) => new Date(event.startDate) >= new Date())
+        .filter(
+            (event) =>
+                event.status === "active" && new Date(event.startDate) >= new Date()
+        )
+        .sort(
+            (left, right) =>
+                new Date(left.startDate).getTime() -
+                new Date(right.startDate).getTime()
+        )
         .slice(0, 3);
+
+    const openPlayCount = events.filter((event) => event.type === "open_play").length;
 
     return {
         totalPlayers,
@@ -51,5 +72,6 @@ export function useHomeData() {
         totalEvents: events.length,
         activeMatches,
         upcomingEvents,
+        openPlayCount,
     };
 }

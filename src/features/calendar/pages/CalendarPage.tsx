@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEvents } from "../../events/services/events.service";
+import { getPublicEvents } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
 import { EventsCalendar } from "../components/EventsCalendar";
 
@@ -14,7 +14,7 @@ export function CalendarPage() {
         setLoading(true);
         setError("");
 
-        const data = await getEvents();
+        const data = await getPublicEvents();
         setEvents(data);
       } catch (err) {
         console.error(err);

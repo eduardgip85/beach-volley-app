@@ -1,3 +1,4 @@
+import { Suspense, lazy, type ReactNode } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import { AuthLayout } from "../layouts/AuthLayout";
@@ -6,22 +7,98 @@ import { AppLayout } from "../layouts/AppLayout";
 import { ProtectedRoute } from "../routes/ProtectedRoute";
 import { AdminRoute } from "../routes/AdminRoute";
 
-import { LoginPage } from "../features/auth/pages/LoginPage";
-import { RegisterPage } from "../features/auth/pages/RegisterPage";
-import { HomePage } from "../features/home/pages/HomePage";
+const LoginPage = lazy(() =>
+  import("../features/auth/pages/LoginPage").then((module) => ({
+    default: module.LoginPage,
+  }))
+);
+const RegisterPage = lazy(() =>
+  import("../features/auth/pages/RegisterPage").then((module) => ({
+    default: module.RegisterPage,
+  }))
+);
+const AuthCallbackPage = lazy(() =>
+  import("../features/auth/pages/AuthCallbackPage").then((module) => ({
+    default: module.AuthCallbackPage,
+  }))
+);
+const HomePage = lazy(() =>
+  import("../features/home/pages/HomePage").then((module) => ({
+    default: module.HomePage,
+  }))
+);
+const EventsPage = lazy(() =>
+  import("../features/events/pages/EventsPage").then((module) => ({
+    default: module.EventsPage,
+  }))
+);
+const EventDetailPage = lazy(() =>
+  import("../features/events/pages/EventDetailPage").then((module) => ({
+    default: module.EventDetailPage,
+  }))
+);
+const CreateEventPage = lazy(() =>
+  import("../features/events/pages/CreateEventPage").then((module) => ({
+    default: module.CreateEventPage,
+  }))
+);
+const EditEventPage = lazy(() =>
+  import("../features/events/pages/EditEventPage").then((module) => ({
+    default: module.EditEventPage,
+  }))
+);
+const MapPage = lazy(() =>
+  import("../features/map/pages/MapPage").then((module) => ({
+    default: module.MapPage,
+  }))
+);
+const CalendarPage = lazy(() =>
+  import("../features/calendar/pages/CalendarPage").then((module) => ({
+    default: module.CalendarPage,
+  }))
+);
+const StatsPage = lazy(() =>
+  import("../features/stats/pages/StatsPage").then((module) => ({
+    default: module.StatsPage,
+  }))
+);
+const ProfilePage = lazy(() =>
+  import("../features/profile/pages/ProfilePage").then((module) => ({
+    default: module.ProfilePage,
+  }))
+);
+const FriendsPage = lazy(() =>
+  import("../features/friends/pages/FriendsPage").then((module) => ({
+    default: module.FriendsPage,
+  }))
+);
+const PublicProfilePage = lazy(() =>
+  import("../features/players/pages/PublicProfilePage").then((module) => ({
+    default: module.PublicProfilePage,
+  }))
+);
+const AdminUsersPage = lazy(() =>
+  import("../features/admin/pages/AdminUsersPage").then((module) => ({
+    default: module.AdminUsersPage,
+  }))
+);
+const AdminEventsPage = lazy(() =>
+  import("../features/admin/pages/AdminEventsPage").then((module) => ({
+    default: module.AdminEventsPage,
+  }))
+);
 
-import { EventsPage } from "../features/events/pages/EventsPage";
-import { EventDetailPage } from "../features/events/pages/EventDetailPage";
-import { CreateEventPage } from "../features/events/pages/CreateEventPage";
-import { EditEventPage } from "../features/events/pages/EditEventPage";
-
-import { MapPage } from "../features/map/pages/MapPage";
-import { CalendarPage } from "../features/calendar/pages/CalendarPage";
-import { StatsPage } from "../features/stats/pages/StatsPage";
-import { ProfilePage } from "../features/profile/pages/ProfilePage";
-
-import { AdminUsersPage } from "../features/admin/pages/AdminUsersPage";
-import { AdminEventsPage } from "../features/admin/pages/AdminEventsPage";
+function withSuspense(page: ReactNode) {
+  return (
+    <Suspense
+      fallback={
+        <div className="px-4 py-10 text-sm text-slate-500">Loading page...</div>
+      }
+    >
+      {page}
+    </Suspense>
+  );
+}
 
 export const router = createBrowserRouter([
   {
@@ -29,11 +106,15 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <LoginPage />,
+        element: withSuspense(<LoginPage />),
       },
       {
         path: "/register",
-        element: <RegisterPage />,
+        element: withSuspense(<RegisterPage />),
+      },
+      {
+        path: "/auth/callback",
+        element: withSuspense(<AuthCallbackPage />),
       },
     ],
   },
@@ -42,23 +123,27 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <HomePage />,
+        element: withSuspense(<HomePage />),
       },
       {
         path: "/events",
-        element: <EventsPage />,
+        element: withSuspense(<EventsPage />),
       },
       {
         path: "/events/:eventId",
-        element: <EventDetailPage />,
+        element: withSuspense(<EventDetailPage />),
       },
       {
         path: "/map",
-        element: <MapPage />,
+        element: withSuspense(<MapPage />),
       },
       {
         path: "/calendar",
-        element: <CalendarPage />,
+        element: withSuspense(<CalendarPage />),
+      },
+      {
+        path: "/players/:userId",
+        element: withSuspense(<PublicProfilePage />),
       },
 
       {
@@ -66,15 +151,19 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/events/create",
-            element: <CreateEventPage />,
+            element: withSuspense(<CreateEventPage />),
           },
           {
             path: "/events/:eventId/edit",
-            element: <EditEventPage />,
+            element: withSuspense(<EditEventPage />),
           },
           {
             path: "/profile",
-            element: <ProfilePage />,
+            element: withSuspense(<ProfilePage />),
+          },
+          {
+            path: "/friends",
+            element: withSuspense(<FriendsPage />),
           },
         ],
       },
@@ -84,15 +173,15 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/stats",
-            element: <StatsPage />,
+            element: withSuspense(<StatsPage />),
           },
           {
             path: "/admin/users",
-            element: <AdminUsersPage />,
+            element: withSuspense(<AdminUsersPage />),
           },
           {
             path: "/admin/events",
-            element: <AdminEventsPage />,
+            element: withSuspense(<AdminEventsPage />),
           },
         ],
       },

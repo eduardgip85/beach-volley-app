@@ -32,7 +32,7 @@ export function EventsPage() {
 
         <Link
           to="/events/create"
-          className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:scale-105 hover:bg-blue-700 active:scale-95 md:hidden"
+          className="fixed bottom-28 right-4 z-[1500] flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:scale-105 hover:bg-blue-700 active:scale-95 md:hidden"
         >
           <Plus size={24} />
         </Link>

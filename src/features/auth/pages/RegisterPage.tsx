@@ -1,12 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { registerUser } from "../services/auth.service";
+import { loginWithGoogle, registerUser } from "../services/auth.service";
+import { normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
 
 export function RegisterPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const redirectTo = searchParams.get("redirect") || "/events";
+    const redirectTo = normalizeAuthRedirectPath(searchParams.get("redirect"));
 
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
@@ -36,6 +37,18 @@ export function RegisterPage() {
         }
     }
 
+    async function handleGoogleSignup() {
+        try {
+            setLoading(true);
+            setError("");
+
+            await loginWithGoogle(redirectTo);
+        } catch {
+            setError("Could not continue with Google");
+            setLoading(false);
+        }
+    }
+
     return (
         <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
@@ -49,6 +62,21 @@ export function RegisterPage() {
             {error}
             </p>
         )}
+
+        <button
+            type="button"
+            onClick={handleGoogleSignup}
+            disabled={loading}
+            className="mt-6 flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+        >
+            Sign up with Google
+        </button>
+
+        <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-400">
+            <span className="h-px flex-1 bg-slate-200" />
+            Or
+            <span className="h-px flex-1 bg-slate-200" />
+        </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <input

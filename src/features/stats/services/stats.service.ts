@@ -31,6 +31,9 @@ export async function getStatsData() {
   const totalEvents = events.length;
   const activeEvents = events.filter((event) => event.status === "active").length;
   const totalMatches = events.filter((event) => event.type === "match").length;
+  const totalOpenPlays = events.filter(
+    (event) => event.type === "open_play"
+  ).length;
   const totalTournaments = events.filter(
     (event) => event.type === "tournament"
   ).length;
@@ -39,6 +42,7 @@ export async function getStatsData() {
 
   const eventsByType = [
     { name: "Matches", value: totalMatches },
+    { name: "Open Play", value: totalOpenPlays },
     { name: "Tournaments", value: totalTournaments },
   ];
 
@@ -82,6 +86,7 @@ export async function getStatsData() {
     totalEvents,
     activeEvents,
     totalMatches,
+    totalOpenPlays,
     totalTournaments,
     totalRegistrations,
     eventsByType,

@@ -1,5 +1,6 @@
 import {
   CheckCircle2,
+  ChevronDown,
   ImagePlus,
   ShieldCheck,
   Volleyball,
@@ -15,42 +16,57 @@ import {
 
 export function EquipmentVerificationCard() {
   const { profile } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
 
   if (!profile) return null;
 
   return (
     <section className="rounded-[2rem] bg-white p-6 shadow-sm md:p-8">
-      <div className="flex items-start gap-4">
-        <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
-          <ShieldCheck />
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className="flex w-full items-start justify-between gap-4 text-left"
+      >
+        <div className="flex items-start gap-4">
+          <div className="rounded-2xl bg-blue-50 p-3 text-blue-600">
+            <ShieldCheck />
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Equipment verification
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              Verify your volleyball equipment separately. Once verified, it will
+              appear as a badge on your profile.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">
-            Equipment verification
-          </h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Verify your volleyball equipment separately. Once verified, it will
-            appear as a badge on your profile.
-          </p>
+        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+          <ChevronDown
+            className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+          />
+        </span>
+      </button>
+
+      {isOpen ? (
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <EquipmentVerifyItem
+            target="ball"
+            title="Verify ball"
+            description="Upload a clear photo where the volleyball ball is visible."
+            alreadyVerified={profile.hasBall}
+          />
+
+          <EquipmentVerifyItem
+            target="net"
+            title="Verify net"
+            description="Upload a clear photo where the volleyball net is visible."
+            alreadyVerified={profile.hasNet}
+          />
         </div>
-      </div>
-
-      <div className="mt-6 grid gap-5 md:grid-cols-2">
-        <EquipmentVerifyItem
-          target="ball"
-          title="Verify ball"
-          description="Upload a clear photo where the volleyball ball is visible."
-          alreadyVerified={profile.hasBall}
-        />
-
-        <EquipmentVerifyItem
-          target="net"
-          title="Verify net"
-          description="Upload a clear photo where the volleyball net is visible."
-          alreadyVerified={profile.hasNet}
-        />
-      </div>
+      ) : null}
     </section>
   );
 }

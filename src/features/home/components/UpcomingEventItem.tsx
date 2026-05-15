@@ -1,29 +1,59 @@
 import { CalendarDays, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
+import {
+    getEventBadgeClasses,
+    getEventDisplayStatus,
+    getEventFallbackImage,
+    getEventModeLabel,
+    getEventTypeLabel,
+    getEventVisibilityBadgeClasses,
+    getEventVisibilityLabel,
+} from "../../events/utils/event-display.utils";
 
 export function UpcomingEventItem({ event }: { event: Event }) {
-    const image =
-         event.imageUrl ||
-        (event.type === "match"
-        ? "/beach-ball.png"
-        : "/tournament-beach-1.png");
+    const image = getEventFallbackImage(event);
+    const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
 
     return (
         <Link
         to={`/events/${event.id}`}
         className="block rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:bg-slate-200 hover:shadow-md "
         >
-            <article className="rounded-3xl bg-white shadow-sm md:p-4 p-4 hover:bg-blue-100 transition">
+            <article className="rounded-3xl bg-white p-3 shadow-sm transition hover:bg-blue-100 md:p-4">
                 <div className="grid gap-4 md:grid-cols-[140px_1fr_auto] md:items-center">
                     <img
                     src={image}
                     alt={event.title}
-                    className="h-44 w-full rounded-2xl object-cover md:h-28 md:w-36"
+                    className="h-36 w-full rounded-2xl object-cover md:h-28 md:w-36"
                     />
 
-                    <div>
-                        <h3 className="text-xl font-bold text-slate-950">
+                    <div className="min-w-0">
+                        <div className="flex flex-wrap gap-2">
+                            <span
+                            className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
+                                event
+                            )}`}
+                            >
+                                {getEventTypeLabel(event.type)}
+                            </span>
+
+                            <span
+                            className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+                                event.visibility
+                            )}`}
+                            >
+                                {getEventVisibilityLabel(event.visibility)}
+                            </span>
+
+                            {modeLabel && (
+                                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                                    {modeLabel}
+                                </span>
+                            )}
+                        </div>
+
+                        <h3 className="mt-1 text-lg font-bold text-slate-950 md:text-xl">
                             {event.title}
                         </h3>
 
@@ -38,10 +68,14 @@ export function UpcomingEventItem({ event }: { event: Event }) {
                             {event.locationName}
                             </span>
                         </div>
+
+                        <p className="mt-3 text-sm font-semibold text-slate-700">
+                            {getEventDisplayStatus(event)}
+                        </p>
                     </div>
 
                     <div 
-                    className="rounded-2xl bg-slate-50 px-6 py-3 font-bold text-slate-950 hover:bg-blue-600 hover:text-white"
+                    className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm font-bold text-slate-950 hover:bg-blue-600 hover:text-white md:px-6"
                     >
                         View Details
                     </div>

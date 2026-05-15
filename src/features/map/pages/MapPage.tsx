@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { EventFilters } from "../../../shared/components/EventFilters";
-import { getEvents } from "../../events/services/events.service";
+import { getPublicEvents } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
 import { EventsMap } from "../components/EventsMap";
@@ -24,7 +24,7 @@ export function MapPage() {
         setLoading(true);
         setError("");
 
-        const data = await getEvents();
+        const data = await getPublicEvents();
         setEvents(data);
       } catch (err) {
         console.error(err);

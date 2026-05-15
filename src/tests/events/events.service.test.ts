@@ -1,11 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     createEvent,
+    getEventDetailSummary,
     deleteEvent,
     getEventById,
+    getEventsCreatedByUser,
     getEvents,
+    getPublicEvents,
     updateEvent,
 } from "../../features/events/services/events.service";
+
+const { mockJoinMatch, mockRpc } = vi.hoisted(() => ({
+    mockJoinMatch: vi.fn(),
+    mockRpc: vi.fn(),
+}));
+
+vi.mock("../../features/match-players/services/matchPlayers.service", () => ({
+    joinMatch: mockJoinMatch,
+}));
 
 const mockOrder = vi.fn();
 const mockSelect = vi.fn();
@@ -17,6 +29,7 @@ const mockDelete = vi.fn();
 
 vi.mock("../../config/supabase", () => ({
     supabase: {
+        rpc: mockRpc,
         from: vi.fn(() => ({
         select: mockSelect,
         insert: mockInsert,
@@ -31,17 +44,30 @@ const eventRow = {
     title: "Beach Match",
     description: "Friendly match",
     type: "match",
+    visibility: null,
+    mode: null,
     location_name: "Barceloneta Beach",
     latitude: "41.3851",
     longitude: "2.1734",
     start_date: "2026-05-01T10:00:00.000Z",
     end_date: null,
-    max_participants: 8,
+    max_participants: 4,
     status: "active",
     image_url: null,
     created_by: "user-1",
     created_at: "2026-04-30T10:00:00.000Z",
     updated_at: "2026-04-30T10:00:00.000Z",
+};
+
+const privateEventRow = {
+    ...eventRow,
+    id: "event-2",
+    title: "Private Open Play",
+    type: "open_play",
+    visibility: "private",
+    mode: null,
+    location_name: "Nova Icaria",
+    max_participants: 12,
 };
 
 describe("events.service", () => {
@@ -69,6 +95,7 @@ describe("events.service", () => {
         mockEq.mockReturnValue({
             single: mockSingle,
             select: mockSelect,
+            order: mockOrder,
         });
     });
 
@@ -87,12 +114,14 @@ describe("events.service", () => {
                 title: "Beach Match",
                 description: "Friendly match",
                 type: "match",
+                visibility: "public",
+                mode: "casual",
                 locationName: "Barceloneta Beach",
                 latitude: 41.3851,
                 longitude: 2.1734,
                 startDate: "2026-05-01T10:00:00.000Z",
                 endDate: null,
-                maxParticipants: 8,
+                maxParticipants: 4,
                 status: "active",
                 imageUrl: null,
                 createdBy: "user-1",
@@ -114,6 +143,21 @@ describe("events.service", () => {
             });
 
             await expect(getEvents()).rejects.toThrow("Database error");
+        });
+    });
+
+    describe("getPublicEvents", () => {
+        it("should return only public events", async () => {
+            mockOrder.mockResolvedValue({
+                data: [eventRow, privateEventRow],
+                error: null,
+            });
+
+            const result = await getPublicEvents();
+
+            expect(result).toHaveLength(1);
+            expect(result[0].id).toBe("event-1");
+            expect(result[0].visibility).toBe("public");
         });
     });
 
@@ -146,6 +190,45 @@ describe("events.service", () => {
         });
     });
 
+    describe("getEventsCreatedByUser", () => {
+        it("returns public and private events created by the user", async () => {
+            mockOrder.mockResolvedValue({
+                data: [eventRow, privateEventRow],
+                error: null,
+            });
+
+            const result = await getEventsCreatedByUser("user-1");
+
+            expect(mockEq).toHaveBeenCalledWith("created_by", "user-1");
+            expect(result).toHaveLength(2);
+            expect(result[1].visibility).toBe("private");
+        });
+    });
+
+    describe("getEventDetailSummary", () => {
+        it("returns the mapped event summary in one rpc call", async () => {
+            mockRpc.mockResolvedValue({
+                data: {
+                    event: eventRow,
+                    creatorName: "Alex Player",
+                    registrationsCount: 3,
+                    isRegistered: true,
+                },
+                error: null,
+            });
+
+            const result = await getEventDetailSummary("event-1");
+
+            expect(mockRpc).toHaveBeenCalledWith("get_event_detail_summary", {
+                target_event_id: "event-1",
+            });
+            expect(result.event.id).toBe("event-1");
+            expect(result.creatorName).toBe("Alex Player");
+            expect(result.registrationsCount).toBe(3);
+            expect(result.isRegistered).toBe(true);
+        });
+    });
+
     describe("createEvent", () => {
         it("should create an event and return the mapped event", async () => {
             mockSingle.mockResolvedValue({
@@ -157,6 +240,8 @@ describe("events.service", () => {
                 title: "Beach Match",
                 description: "Friendly match",
                 type: "match" as const,
+                visibility: "private" as const,
+                mode: "competitive" as const,
                 locationName: "Barceloneta Beach",
                 latitude: 41.3851,
                 longitude: 2.1734,
@@ -174,16 +259,19 @@ describe("events.service", () => {
                 title: "Beach Match",
                 description: "Friendly match",
                 type: "match",
+                visibility: "private",
+                mode: "competitive",
                 location_name: "Barceloneta Beach",
                 latitude: 41.3851,
                 longitude: 2.1734,
                 image_url: null,
                 start_date: "2026-05-01T10:00:00.000Z",
                 end_date: null,
-                max_participants: 8,
+                max_participants: 4,
                 created_by: "user-1",
                 status: "active",
             });
+            expect(mockJoinMatch).toHaveBeenCalledWith("event-1", "user-1");
         });
 
         it("should throw when create fails", async () => {
@@ -198,6 +286,8 @@ describe("events.service", () => {
                     title: "Beach Match",
                     description: "Friendly match",
                     type: "match",
+                    visibility: "public",
+                    mode: null,
                     locationName: "Barceloneta Beach",
                     latitude: 41.3851,
                     longitude: 2.1734,
@@ -226,6 +316,8 @@ describe("events.service", () => {
                 title: "Updated Beach Match",
                 description: "Updated description",
                 type: "match",
+                visibility: "public",
+                mode: null,
                 locationName: "Barceloneta Beach",
                 latitude: 41.3851,
                 longitude: 2.1734,
@@ -242,10 +334,12 @@ describe("events.service", () => {
                 title: "Updated Beach Match",
                 description: "Updated description",
                 type: "match",
+                visibility: "public",
+                mode: "casual",
                 location_name: "Barceloneta Beach",
                 latitude: 41.3851,
                 longitude: 2.1734,
-                max_participants: 10,
+                max_participants: 4,
                 image_url: null,
                 })
             );
@@ -262,6 +356,8 @@ describe("events.service", () => {
                 title: "Updated Beach Match",
                 description: "Updated description",
                 type: "match",
+                visibility: "public",
+                mode: null,
                 locationName: "Barceloneta Beach",
                 latitude: 41.3851,
                 longitude: 2.1734,

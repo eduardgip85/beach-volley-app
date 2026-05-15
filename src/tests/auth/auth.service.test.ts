@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
     getCurrentProfile,
     loginUser,
+    loginWithGoogle,
     logoutUser,
     registerUser,
 } from "../../features/auth/services/auth.service";
@@ -9,12 +10,15 @@ import {
 const mocks = vi.hoisted(() => ({
     mockSignUp: vi.fn(),
     mockSignInWithPassword: vi.fn(),
+    mockSignInWithOAuth: vi.fn(),
     mockSignOut: vi.fn(),
-    mockGetUser: vi.fn(),
+    mockGetSession: vi.fn(),
     mockInsert: vi.fn(),
+    mockInsertSelect: vi.fn(),
     mockSelect: vi.fn(),
     mockEq: vi.fn(),
     mockSingle: vi.fn(),
+    mockMaybeSingle: vi.fn(),
 }));
 
 vi.mock("../../config/supabase", () => ({
@@ -22,8 +26,9 @@ vi.mock("../../config/supabase", () => ({
         auth: {
         signUp: mocks.mockSignUp,
         signInWithPassword: mocks.mockSignInWithPassword,
+        signInWithOAuth: mocks.mockSignInWithOAuth,
         signOut: mocks.mockSignOut,
-        getUser: mocks.mockGetUser,
+        getSession: mocks.mockGetSession,
         },
         from: vi.fn(() => ({
         insert: mocks.mockInsert,
@@ -39,6 +44,14 @@ const profileRow = {
     role: "admin",
     avatar_url: null,
     created_at: "2026-05-01T10:00:00.000Z",
+    has_ball: false,
+    has_net: false,
+    equipment_verified: false,
+    equipment_verified_at: null,
+    competitive_rating: 1000,
+    matches_played: 0,
+    wins: 0,
+    losses: 0,
 };
 
 describe("auth.service", () => {
@@ -51,6 +64,11 @@ describe("auth.service", () => {
 
         mocks.mockEq.mockReturnValue({
         single: mocks.mockSingle,
+        maybeSingle: mocks.mockMaybeSingle,
+        });
+
+        mocks.mockInsertSelect.mockReturnValue({
+            single: mocks.mockSingle,
         });
     });
 
@@ -163,6 +181,40 @@ describe("auth.service", () => {
         });
     });
 
+    describe("loginWithGoogle", () => {
+        it("should start Google OAuth with the callback redirect", async () => {
+            vi.stubGlobal("window", {
+                location: {
+                    origin: "http://localhost:5173",
+                },
+            });
+
+            mocks.mockSignInWithOAuth.mockResolvedValue({
+                data: {
+                    provider: "google",
+                    url: "https://accounts.google.com/o/oauth2/auth",
+                },
+                error: null,
+            });
+
+            const result = await loginWithGoogle("/profile");
+
+            expect(mocks.mockSignInWithOAuth).toHaveBeenCalledWith({
+                provider: "google",
+                options: {
+                    redirectTo:
+                        "http://localhost:5173/auth/callback?redirect=%2Fprofile",
+                },
+            });
+            expect(result).toEqual({
+                provider: "google",
+                url: "https://accounts.google.com/o/oauth2/auth",
+            });
+
+            vi.unstubAllGlobals();
+        });
+    });
+
     describe("logoutUser", () => {
         it("should logout a user", async () => {
             mocks.mockSignOut.mockResolvedValue({
@@ -185,10 +237,11 @@ describe("auth.service", () => {
 
     describe("getCurrentProfile", () => {
         it("should return null when there is no authenticated user", async () => {
-            mocks.mockGetUser.mockResolvedValue({
+            mocks.mockGetSession.mockResolvedValue({
                 data: {
-                user: null,
+                session: null,
                 },
+                error: null,
             });
 
             const result = await getCurrentProfile();
@@ -197,15 +250,18 @@ describe("auth.service", () => {
         });
 
         it("should return the mapped current profile", async () => {
-            mocks.mockGetUser.mockResolvedValue({
+            mocks.mockGetSession.mockResolvedValue({
                 data: {
-                user: {
-                    id: "user-1",
+                session: {
+                    user: {
+                        id: "user-1",
+                    },
                 },
                 },
+                error: null,
             });
 
-            mocks.mockSingle.mockResolvedValue({
+            mocks.mockMaybeSingle.mockResolvedValue({
                 data: profileRow,
                 error: null,
             });
@@ -219,10 +275,69 @@ describe("auth.service", () => {
                 role: "admin",
                 avatarUrl: null,
                 createdAt: "2026-05-01T10:00:00.000Z",
+                hasBall: false,
+                hasNet: false,
+                equipmentVerified: false,
+                equipmentVerifiedAt: null,
+                competitiveRating: 1000,
+                matchesPlayed: 0,
+                wins: 0,
+                losses: 0,
             });
 
             expect(mocks.mockSelect).toHaveBeenCalledWith("*");
             expect(mocks.mockEq).toHaveBeenCalledWith("id", "user-1");
+        });
+
+        it("should create a profile when an OAuth user is missing one", async () => {
+            mocks.mockGetSession.mockResolvedValue({
+                data: {
+                    session: {
+                        user: {
+                            id: "user-2",
+                            email: "google@test.com",
+                            user_metadata: {
+                                full_name: "Google User",
+                                avatar_url: "https://example.com/avatar.png",
+                            },
+                        },
+                    },
+                },
+                error: null,
+            });
+
+            mocks.mockMaybeSingle.mockResolvedValue({
+                data: null,
+                error: null,
+            });
+
+            mocks.mockInsert.mockReturnValue({
+                select: mocks.mockInsertSelect,
+            });
+
+            mocks.mockSingle.mockResolvedValue({
+                data: {
+                    ...profileRow,
+                    id: "user-2",
+                    email: "google@test.com",
+                    full_name: "Google User",
+                    avatar_url: "https://example.com/avatar.png",
+                    role: "player",
+                },
+                error: null,
+            });
+
+            const result = await getCurrentProfile();
+
+            expect(mocks.mockInsert).toHaveBeenCalledWith({
+                id: "user-2",
+                full_name: "Google User",
+                email: "google@test.com",
+                role: "player",
+                avatar_url: "https://example.com/avatar.png",
+            });
+            expect(result?.fullName).toBe("Google User");
+            expect(result?.role).toBe("player");
         });
 
     });

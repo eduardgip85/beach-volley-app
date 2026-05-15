@@ -61,10 +61,11 @@ export function StatsPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-7">
         <StatCard label="Total events" value={stats.totalEvents} />
         <StatCard label="Active events" value={stats.activeEvents} />
         <StatCard label="Matches" value={stats.totalMatches} />
+        <StatCard label="Open Play" value={stats.totalOpenPlays} />
         <StatCard label="Tournaments" value={stats.totalTournaments} />
         <StatCard label="Registrations" value={stats.totalRegistrations} />
         <StatCard label="Users" value={stats.totalUsers} />
@@ -88,7 +89,13 @@ export function StatsPage() {
                   {stats.eventsByType.map((_, index) => (
                     <Cell
                       key={index}
-                      fill={index === 0 ? "#10b981" : "#2563eb"}
+                      fill={
+                        index === 0
+                          ? "#10b981"
+                          : index === 1
+                            ? "#f59e0b"
+                            : "#2563eb"
+                      }
                     />
                   ))}
                 </Pie>
