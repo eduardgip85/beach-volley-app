@@ -8,6 +8,7 @@ import {
     registerToEvent,
 } from "../../registrations/services/registrations.service";
 import { supabase } from "../../../config/supabase";
+import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
 import type { EventMode, EventStatus, EventType, EventVisibility } from "../../events/types/event.types";
 import type {
     EventInvitation,
@@ -32,7 +33,7 @@ interface FriendProfileRow {
     id: string;
     full_name: string;
     avatar_url: string | null;
-    role: "player" | "admin";
+    country: string | null;
     competitive_rating: number | null;
 }
 
@@ -50,7 +51,7 @@ interface EventInvitationRow {
 }
 
 const friendProfileSelect =
-    "id, full_name, avatar_url, role, competitive_rating";
+    "id, full_name, avatar_url, country, competitive_rating";
 
 const invitationEventSelect =
     "id, title, type, mode, visibility, location_name, start_date, max_participants, status, created_by";
@@ -77,8 +78,8 @@ function mapFriendProfile(row: FriendProfileRow): FriendProfile {
         id: row.id,
         fullName: row.full_name,
         avatarUrl: row.avatar_url,
-        role: row.role,
-        competitiveRating: row.competitive_rating ?? 1000,
+        country: row.country ?? null,
+        competitiveRating: row.competitive_rating ?? DEFAULT_COMPETITIVE_RATING,
     };
 }
 
@@ -110,6 +111,14 @@ function mapEventInvitation(row: EventInvitationRow): EventInvitation {
         inviter: mapFriendProfile(normalizeRelation(row.inviter)),
         invitee: mapFriendProfile(normalizeRelation(row.invitee)),
     };
+}
+
+function isEventClosed(event: InvitationEventSummary) {
+    return (
+        event.status === "completed" ||
+        event.status === "cancelled" ||
+        new Date(event.startDate) < new Date()
+    );
 }
 
 async function getCurrentUserContext() {
@@ -237,6 +246,10 @@ export async function inviteFriendToEvent(
         throw new Error("Only the event creator or an admin can invite friends");
     }
 
+    if (isEventClosed(event)) {
+        throw new Error("This event is already finished");
+    }
+
     const friends = await getFriends(currentUser.id);
     const isFriend = friends.some((friend) => friend.id === friendId);
 
@@ -290,6 +303,10 @@ export async function acceptEventInvitation(
 
     if (invitation.status !== "pending") {
         throw new Error("Only pending invitations can be accepted");
+    }
+
+    if (isEventClosed(invitation.event)) {
+        throw new Error("This event is already finished");
     }
 
     const alreadyRegistered = await isUserRegistered(

@@ -2,6 +2,7 @@ import type { Event } from "../../events/types/event.types";
 import {
     getEventBadgeClasses as getSharedEventBadgeClasses,
     getEventColorClasses as getSharedEventColorClasses,
+    isFinishedEvent as isSharedFinishedEvent,
     isPastEvent as isSharedPastEvent,
 } from "../../events/utils/event-display.utils";
 
@@ -20,6 +21,10 @@ export function isSameMonth(dateA: Date, dateB: Date) {
 
 export function isPastEvent(event: Event) {
     return isSharedPastEvent(event);
+}
+
+export function isFinishedEvent(event: Event) {
+    return isSharedFinishedEvent(event);
 }
 
 export function getMonthDays(currentDate: Date) {

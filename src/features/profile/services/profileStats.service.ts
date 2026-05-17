@@ -1,9 +1,10 @@
 import { supabase } from "../../../config/supabase";
+import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
 import type { ProfileStatsData, ProfileStatsSnapshot } from "../types/profileStats.types";
 
 function mapProfileStats(row: any): ProfileStatsSnapshot {
     return {
-        competitiveRating: row.competitive_rating ?? 1000,
+        competitiveRating: row.competitive_rating ?? DEFAULT_COMPETITIVE_RATING,
         matchesPlayed: row.matches_played ?? 0,
         wins: row.wins ?? 0,
         losses: row.losses ?? 0,
@@ -26,7 +27,7 @@ export async function getProfileStatsSnapshot(
 
 function mapProfileDashboardStats(data: any): ProfileStatsData {
     return {
-        competitiveRating: data?.competitiveRating ?? 1000,
+        competitiveRating: data?.competitiveRating ?? DEFAULT_COMPETITIVE_RATING,
         matchesPlayed: data?.matchesPlayed ?? 0,
         wins: data?.wins ?? 0,
         losses: data?.losses ?? 0,

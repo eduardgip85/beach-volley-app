@@ -31,4 +31,29 @@ describe("matchResults.utils", () => {
             ])
         ).toThrow("Match results cannot end in a tie");
     });
+
+    it("enforces competitive best of 3 rules", () => {
+        expect(() =>
+            validateMatchSets(
+                [
+                    { setNumber: 1, teamAScore: 21, teamBScore: 19 },
+                    { setNumber: 2, teamAScore: 18, teamBScore: 21 },
+                ],
+                "competitive"
+            )
+        ).toThrow("Competitive matches need a third set to 15 when the first two are split");
+    });
+
+    it("accepts valid competitive best of 3 sets", () => {
+        expect(
+            calculateWinningTeam(
+                [
+                    { setNumber: 1, teamAScore: 21, teamBScore: 19 },
+                    { setNumber: 2, teamAScore: 18, teamBScore: 21 },
+                    { setNumber: 3, teamAScore: 15, teamBScore: 12 },
+                ],
+                "competitive"
+            )
+        ).toBe("team_a");
+    });
 });

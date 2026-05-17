@@ -41,6 +41,7 @@ const profileRow = {
     id: "user-1",
     email: "test@test.com",
     full_name: "Test User",
+    username: "test-user",
     role: "admin",
     avatar_url: null,
     created_at: "2026-05-01T10:00:00.000Z",
@@ -48,10 +49,21 @@ const profileRow = {
     has_net: false,
     equipment_verified: false,
     equipment_verified_at: null,
-    competitive_rating: 1000,
+    competitive_rating: 2,
+    rating_games_played: 0,
     matches_played: 0,
     wins: 0,
     losses: 0,
+    country: "Spain",
+    city: "Barcelona",
+    current_streak: 2,
+    best_streak: 4,
+    availability_status: "available",
+    profile_visibility: "public",
+    show_rating: true,
+    show_stats: true,
+    preferred_language: "en",
+    preferred_match_mode: "competitive",
 };
 
 describe("auth.service", () => {
@@ -107,6 +119,7 @@ describe("auth.service", () => {
                 full_name: "Test User",
                 email: "test@test.com",
                 role: "player",
+                competitive_rating: 2,
             });
         });
 
@@ -272,6 +285,7 @@ describe("auth.service", () => {
                 id: "user-1",
                 email: "test@test.com",
                 fullName: "Test User",
+                username: "test-user",
                 role: "admin",
                 avatarUrl: null,
                 createdAt: "2026-05-01T10:00:00.000Z",
@@ -279,10 +293,21 @@ describe("auth.service", () => {
                 hasNet: false,
                 equipmentVerified: false,
                 equipmentVerifiedAt: null,
-                competitiveRating: 1000,
+                competitiveRating: 2,
+                ratingGamesPlayed: 0,
                 matchesPlayed: 0,
                 wins: 0,
                 losses: 0,
+                country: "Spain",
+                city: "Barcelona",
+                currentStreak: 2,
+                bestStreak: 4,
+                availabilityStatus: "available",
+                profileVisibility: "public",
+                showRating: true,
+                showStats: true,
+                preferredLanguage: "en",
+                preferredMatchMode: "competitive",
             });
 
             expect(mocks.mockSelect).toHaveBeenCalledWith("*");
@@ -335,6 +360,7 @@ describe("auth.service", () => {
                 email: "google@test.com",
                 role: "player",
                 avatar_url: "https://example.com/avatar.png",
+                competitive_rating: 2,
             });
             expect(result?.fullName).toBe("Google User");
             expect(result?.role).toBe("player");

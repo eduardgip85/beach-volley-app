@@ -90,9 +90,10 @@ export function HomePage() {
     const previousDescription = document
       .querySelector('meta[name="description"]')
       ?.getAttribute("content");
+    const existingJsonLd = document.getElementById("home-jsonld");
 
     document.title =
-      "Beach Volley App | Find beach volleyball matches, open play and player stats";
+      "Beach Volley App | Beach volleyball matches, open play, private games and player stats";
 
     let descriptionTag = document.querySelector('meta[name="description"]');
 
@@ -104,8 +105,35 @@ export function HomePage() {
 
     descriptionTag.setAttribute(
       "content",
-      "Beach Volley App helps players discover beach volleyball matches, open play sessions, private events, competitive ratings and public player profiles."
+      "Beach Volley App helps players discover beach volleyball matches, open play sessions, private games, competitive ratings and public player profiles in one place."
     );
+
+    const jsonLdScript = document.createElement("script");
+    jsonLdScript.id = "home-jsonld";
+    jsonLdScript.type = "application/ld+json";
+    jsonLdScript.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      name: "Beach Volley App",
+      applicationCategory: "SportsApplication",
+      operatingSystem: "Web",
+      description:
+        "Beach Volley App helps players discover beach volleyball matches, open play sessions, private games, competitive ratings and public player profiles.",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "EUR",
+      },
+      featureList: [
+        "Beach volleyball event discovery",
+        "Open play and match organization",
+        "Private event join requests",
+        "Validated match results",
+        "Competitive player rating",
+        "Public player profiles",
+      ],
+    });
+    document.head.appendChild(jsonLdScript);
 
     return () => {
       document.title = previousTitle;
@@ -117,32 +145,39 @@ export function HomePage() {
           descriptionTag.remove();
         }
       }
+
+      jsonLdScript.remove();
+
+      if (existingJsonLd) {
+        document.head.appendChild(existingJsonLd);
+      }
     };
   }, []);
 
   return (
     <section className="space-y-5 md:space-y-8">
-      <div className="overflow-hidden rounded-[1.75rem] bg-slate-950 shadow-sm md:rounded-[2rem]">
+      <div className="landing-fade-up overflow-hidden rounded-[1.75rem] bg-slate-950 shadow-sm md:rounded-[2rem]">
         <div className="grid gap-6 px-4 py-5 sm:px-5 sm:py-6 md:grid-cols-[1.2fr_0.8fr] md:gap-10 md:px-10 md:py-12">
           <div className="relative">
-            <div className="absolute left-0 top-0 h-40 w-40 rounded-full bg-blue-500/20 blur-3xl" />
+            <div className="landing-glow-pulse absolute left-0 top-0 h-40 w-40 rounded-full bg-blue-500/20 blur-3xl" />
+            <div className="landing-float-fast absolute bottom-3 right-2 hidden h-20 w-20 rounded-full bg-cyan-400/10 blur-2xl sm:block" />
 
-            <div className="relative">
+            <div className="relative landing-fade-up-delay-1">
               <p className="inline-flex max-w-full items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200 sm:text-xs sm:tracking-[0.25em]">
                 <Globe size={14} />
                 Beach volleyball platform
               </p>
 
               <h1 className="mt-4 max-w-4xl text-[2rem] font-black leading-tight text-white sm:text-[2.4rem] md:mt-6 md:text-6xl">
-                The beach volleyball web app for finding games, joining players
-                and tracking competitive progress.
+                Find beach volleyball matches, join open play sessions and track
+                competitive progress in one place.
               </h1>
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base md:mt-6 md:text-lg md:leading-8">
-                Beach Volley App is built to help players discover upcoming
-                matches, organize private sessions, join open play events and
-                follow validated competitive results without relying on messy
-                group chats.
+                Beach Volley App is a web app for local beach volleyball
+                communities that want a cleaner way to discover events, manage
+                private sessions, validate match results and keep player profiles
+                organized beyond chat groups.
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row md:mt-8">
@@ -187,23 +222,23 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="grid gap-3 md:gap-4">
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 backdrop-blur md:rounded-[1.75rem] md:p-6">
+          <div className="landing-fade-up-delay-2 grid gap-3 md:gap-4">
+            <div className="landing-float-slow rounded-[1.5rem] border border-white/10 bg-white/5 p-5 backdrop-blur md:rounded-[1.75rem] md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-200 md:text-sm md:tracking-[0.2em]">
                 Why this app exists
               </p>
               <h2 className="mt-3 text-xl font-black text-white md:text-2xl">
-                Make beach volleyball easier to organize
+                Built to make local beach volleyball easier to organize
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                The app is designed to reduce friction around finding players,
+                The goal is simple: reduce friction around finding players,
                 filling matches, handling private access, validating results and
-                keeping a clean overview of your recent games.
+                revisiting recent games without scattered tools.
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
-              <div className="rounded-[1.5rem] bg-emerald-400 p-5 text-slate-950 md:rounded-[1.75rem] md:p-6">
+              <div className="landing-float-fast rounded-[1.5rem] bg-emerald-400 p-5 text-slate-950 md:rounded-[1.75rem] md:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] md:text-xs md:tracking-[0.2em]">
                   Public discovery
                 </p>
@@ -212,7 +247,7 @@ export function HomePage() {
                 </p>
               </div>
 
-              <div className="rounded-[1.5rem] bg-amber-300 p-5 text-slate-950 md:rounded-[1.75rem] md:p-6">
+              <div className="landing-float-slow rounded-[1.5rem] bg-amber-300 p-5 text-slate-950 md:rounded-[1.75rem] md:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] md:text-xs md:tracking-[0.2em]">
                   Private flow
                 </p>
@@ -225,7 +260,7 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
+      <div className="landing-fade-up-delay-1 grid gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
         <HomeStatCard
           icon={<CalendarDays />}
           label="Public events"
@@ -249,7 +284,7 @@ export function HomePage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] md:gap-6">
-        <div className="rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
+        <div className="landing-fade-up rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
             What you can do
           </p>
@@ -267,7 +302,7 @@ export function HomePage() {
             {featureCards.map((feature) => (
               <div
                 key={feature.title}
-                className="rounded-3xl border border-slate-100 bg-slate-50 p-4 md:p-5"
+                className="rounded-3xl border border-slate-100 bg-slate-50 p-4 transition duration-300 hover:-translate-y-1 hover:shadow-md md:p-5"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
                   {feature.icon}
@@ -283,7 +318,7 @@ export function HomePage() {
           </div>
         </div>
 
-          <div className="space-y-5 md:space-y-6">
+          <div className="landing-fade-up-delay-1 space-y-5 md:space-y-6">
           <div className="rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
               How it works
@@ -323,7 +358,7 @@ export function HomePage() {
         </div>
       </div>
 
-      <section className="rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
+      <section className="landing-fade-up-delay-2 rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
@@ -378,7 +413,7 @@ export function HomePage() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr] md:gap-6">
-        <div className="rounded-[1.75rem] bg-blue-600 p-5 text-white shadow-sm md:rounded-[2rem] md:p-8">
+        <div className="landing-fade-up rounded-[1.75rem] bg-blue-600 p-5 text-white shadow-sm md:rounded-[2rem] md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-100 md:text-sm md:tracking-[0.2em]">
             Competitive layer
           </p>
@@ -403,7 +438,7 @@ export function HomePage() {
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
+        <div className="landing-fade-up-delay-1 rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
             Frequently asked
           </p>

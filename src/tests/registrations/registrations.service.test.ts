@@ -11,14 +11,25 @@ const mockMaybeSingle = vi.fn();
 const mockInsert = vi.fn();
 const mockSingle = vi.fn();
 const mockDelete = vi.fn();
+const mockEventsSelect = vi.fn();
+const mockEventsEq = vi.fn();
+const mockEventsSingle = vi.fn();
 
 vi.mock("../../config/supabase", () => ({
   supabase: {
-    from: vi.fn(() => ({
-      select: mockSelect,
-      insert: mockInsert,
-      delete: mockDelete,
-    })),
+    from: vi.fn((table: string) => {
+      if (table === "events") {
+        return {
+          select: mockEventsSelect,
+        };
+      }
+
+      return {
+        select: mockSelect,
+        insert: mockInsert,
+        delete: mockDelete,
+      };
+    }),
   },
 }));
 
@@ -41,6 +52,23 @@ describe("registrations.service", () => {
 
         mockDelete.mockReturnValue({
         eq: mockEq,
+        });
+
+        mockEventsSelect.mockReturnValue({
+          eq: mockEventsEq,
+        });
+
+        mockEventsEq.mockReturnValue({
+          single: mockEventsSingle,
+        });
+
+        mockEventsSingle.mockResolvedValue({
+          data: {
+            id: "event-1",
+            start_date: "2099-05-20T18:00:00.000Z",
+            status: "active",
+          },
+          error: null,
         });
     }); 
 
@@ -149,6 +177,21 @@ describe("registrations.service", () => {
 
             await expect(registerToEvent("event-1", "user-1")).rejects.toThrow(
                 "Register failed"
+            );
+        });
+
+        it("should reject joining a finished event", async () => {
+            mockEventsSingle.mockResolvedValue({
+                data: {
+                    id: "event-1",
+                    start_date: "2026-05-01T18:00:00.000Z",
+                    status: "completed",
+                },
+                error: null,
+            });
+
+            await expect(registerToEvent("event-1", "user-1")).rejects.toThrow(
+                "This event is already finished"
             );
         });
     });

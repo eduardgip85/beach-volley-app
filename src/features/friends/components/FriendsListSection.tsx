@@ -1,5 +1,6 @@
 import { Trophy, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { FriendProfile } from "../types/friends.types";
 
 interface FriendsListSectionProps {
@@ -63,12 +64,14 @@ export function FriendsListSection({
                             </div>
 
                             <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase">
-                                <span className="rounded-full bg-slate-200 px-3 py-1 text-slate-700">
-                                    {friend.role}
-                                </span>
+                                {friend.country ? (
+                                    <span className="rounded-full bg-slate-200 px-3 py-1 text-slate-700">
+                                        {friend.country}
+                                    </span>
+                                ) : null}
                                 <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-blue-700">
                                     <Trophy size={14} />
-                                    {friend.competitiveRating}
+                                    {formatCompetitiveRating(friend.competitiveRating)}
                                 </span>
                             </div>
                         </Link>

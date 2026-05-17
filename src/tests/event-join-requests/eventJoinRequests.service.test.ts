@@ -242,6 +242,21 @@ describe("eventJoinRequests.service", () => {
         expect(result.status).toBe("pending");
     });
 
+    it("rejects requesting access to a finished event", async () => {
+        mocks.mockEventsSingle.mockResolvedValue({
+            data: {
+                ...eventRow,
+                status: "completed",
+            },
+            error: null,
+        });
+        mocks.mockIsUserRegistered.mockResolvedValue(false);
+
+        await expect(requestToJoinPrivateEvent("event-1")).rejects.toThrow(
+            "This event is already finished"
+        );
+    });
+
     it("accepts a pending join request and adds the player to the match", async () => {
         mocks.mockGetCurrentProfile.mockResolvedValue({
             id: "creator-1",

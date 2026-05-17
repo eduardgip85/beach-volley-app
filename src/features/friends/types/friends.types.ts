@@ -9,7 +9,7 @@ export interface FriendProfile {
     id: string;
     fullName: string;
     avatarUrl: string | null;
-    role: "player" | "admin";
+    country: string | null;
     competitiveRating: number;
 }
 

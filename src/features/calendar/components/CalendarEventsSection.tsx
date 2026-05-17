@@ -31,7 +31,7 @@ export function CalendarEventsSection({
 
             <div className="space-y-4">
             {selectedDayEvents.length === 0 ? (
-                <EmptyCalendarMessage message="No events this day" />
+                <EmptyCalendarMessage message="No active events this day" />
             ) : (
                 selectedDayEvents.map((event) => (
                 <CalendarEventCard key={event.id} event={event} compact />
@@ -53,7 +53,7 @@ export function CalendarEventsSection({
 
             <div className="grid gap-4">
             {monthEvents.length === 0 ? (
-                <EmptyCalendarMessage message="No events this month" />
+                <EmptyCalendarMessage message="No active events this month" />
             ) : (
                 monthEvents.map((event) => (
                 <CalendarEventCard key={event.id} event={event} />

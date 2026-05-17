@@ -4,6 +4,8 @@ import type { CreateMatchSetPayload } from "../types/matchResult.types";
 interface MatchSetEditorProps {
     set: CreateMatchSetPayload;
     canRemove: boolean;
+    targetScore?: number;
+    helperText?: string;
     disabled?: boolean;
     onChange: (
         field: keyof Omit<CreateMatchSetPayload, "setNumber">,
@@ -15,6 +17,8 @@ interface MatchSetEditorProps {
 export function MatchSetEditor({
     set,
     canRemove,
+    targetScore,
+    helperText,
     disabled = false,
     onChange,
     onRemove,
@@ -38,6 +42,12 @@ export function MatchSetEditor({
                     </button>
                 )}
             </div>
+
+            {(targetScore || helperText) && (
+                <p className="mt-2 text-xs font-semibold text-slate-500">
+                    {helperText ?? `Target score: ${targetScore}`}
+                </p>
+            )}
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <label className="block">

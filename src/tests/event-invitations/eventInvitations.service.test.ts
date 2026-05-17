@@ -245,6 +245,20 @@ describe("eventInvitations.service", () => {
         );
     });
 
+    it("rejects inviting players to a finished event", async () => {
+        mocks.mockEventsSingle.mockResolvedValue({
+            data: {
+                ...invitationRow.event,
+                status: "completed",
+            },
+            error: null,
+        });
+
+        await expect(inviteFriendToEvent("event-1", "user-2")).rejects.toThrow(
+            "This event is already finished"
+        );
+    });
+
     it("accepts an invitation and auto-registers the invitee", async () => {
         mocks.mockGetCurrentProfile.mockResolvedValue({
             id: "user-2",

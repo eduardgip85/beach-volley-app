@@ -1,11 +1,13 @@
 import { useMemo, useState } from "react";
-import type { Event, EventType } from "../types/event.types";
+import type { Event, EventMode, EventType } from "../types/event.types";
 
 export type EventTypeFilter = "all" | EventType;
+export type EventModeFilter = "all" | EventMode;
 
 export interface EventFiltersState {
     search: string;
     type: EventTypeFilter;
+    mode: EventModeFilter;
     location: string;
     date: string;
 }
@@ -13,6 +15,7 @@ export interface EventFiltersState {
 const initialFilters: EventFiltersState = {
     search: "",
     type: "all",
+    mode: "all",
     location: "all",
     date: "",
 };
@@ -52,13 +55,22 @@ export function useEventFilters(events: Event[]) {
         const matchesType =
             filters.type === "all" || event.type === filters.type;
 
+        const matchesMode =
+            filters.mode === "all" || event.mode === filters.mode;
+
         const matchesLocation =
             filters.location === "all" || event.locationName === filters.location;
 
         const matchesDate =
             !filters.date || event.startDate.slice(0, 10) === filters.date;
 
-        return matchesSearch && matchesType && matchesLocation && matchesDate;
+        return (
+            matchesSearch &&
+            matchesType &&
+            matchesMode &&
+            matchesLocation &&
+            matchesDate
+        );
         });
     }, [events, filters]);
 

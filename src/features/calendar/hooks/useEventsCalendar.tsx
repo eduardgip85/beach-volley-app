@@ -1,6 +1,11 @@
 import { useMemo, useState } from "react";
 import type { Event } from "../../events/types/event.types";
-import { getMonthDays, isSameDay, isSameMonth } from "../utils/calendar.utils";
+import {
+    getMonthDays,
+    isFinishedEvent,
+    isSameDay,
+    isSameMonth,
+} from "../utils/calendar.utils";
 
 export function useEventsCalendar(events: Event[]) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -11,14 +16,18 @@ export function useEventsCalendar(events: Event[]) {
     }, [currentMonth]);
 
     const monthEvents = useMemo(() => {
-        return events.filter((event) =>
-        isSameMonth(new Date(event.startDate), currentMonth)
+        return events.filter(
+            (event) =>
+                isSameMonth(new Date(event.startDate), currentMonth) &&
+                !isFinishedEvent(event)
         );
     }, [events, currentMonth]);
 
     const selectedDayEvents = useMemo(() => {
-        return events.filter((event) =>
-        isSameDay(new Date(event.startDate), selectedDate)
+        return events.filter(
+            (event) =>
+                isSameDay(new Date(event.startDate), selectedDate) &&
+                !isFinishedEvent(event)
         );
     }, [events, selectedDate]);
 

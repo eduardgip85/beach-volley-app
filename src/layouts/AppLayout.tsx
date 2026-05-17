@@ -5,7 +5,9 @@ import {
   LogIn,
   LogOut,
   Map,
+  Medal,
   Menu,
+  Settings,
   Trophy,
   User,
   Users,
@@ -26,6 +28,7 @@ interface NavItem {
 const publicNavItems: NavItem[] = [
   { label: "Home", path: "/", icon: Home, end: true },
   { label: "Events", path: "/events", icon: Trophy },
+  { label: "Ranking", path: "/ranking", icon: Medal },
   { label: "Map", path: "/map", icon: Map },
   { label: "Calendar", path: "/calendar", icon: CalendarDays },
 ];
@@ -33,6 +36,7 @@ const publicNavItems: NavItem[] = [
 const authenticatedNavItems: NavItem[] = [
   { label: "Friends", path: "/friends", icon: Users },
   { label: "Profile", path: "/profile", icon: User },
+  { label: "Settings", path: "/settings", icon: Settings },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -119,10 +123,10 @@ export function AppLayout() {
         </div>
       </header>
 
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 overflow-hidden bg-slate-950 md:flex md:flex-col">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 overflow-y-auto overflow-x-hidden bg-slate-950 md:flex md:flex-col">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.3),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,1)_0%,_rgba(2,6,23,1)_100%)]" />
 
-        <div className="relative flex h-full flex-col p-6">
+        <div className="relative flex min-h-full flex-col p-6">
           <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
             <Link to="/" className="block">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-300">
@@ -131,9 +135,6 @@ export function AppLayout() {
               <h1 className="mt-3 text-2xl font-black text-white">
                 Play. Meet. Repeat.
               </h1>
-              <p className="mt-2 text-sm text-slate-300">
-                Discover matches, open play sessions, and your next court.
-              </p>
             </Link>
           </div>
 

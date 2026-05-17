@@ -26,13 +26,18 @@ export interface PublicProfileRecentMatch {
 export interface PublicPlayerProfile {
     id: string;
     fullName: string;
+    username: string | null;
     avatarUrl: string | null;
+    country: string | null;
     hasBall: boolean;
     hasNet: boolean;
     competitiveRating: number;
     matchesPlayed: number;
     wins: number;
     losses: number;
+    profileVisibility: "public" | "private";
+    showRating: boolean;
+    showStats: boolean;
     competitive: PublicProfileModeStats;
     casual: PublicProfileModeStats;
     recentMatches: PublicProfileRecentMatch[];

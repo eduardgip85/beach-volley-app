@@ -5,16 +5,18 @@ import {
   Shield,
   Trophy,
   Users,
-  LogOut,
   MapPin,
+  Settings,
   Volleyball,
   Rows2,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import { useProfileEvents } from "../hooks/useProfileEvents";
+import { useProfileCompetitiveInsights } from "../hooks/useProfileCompetitiveInsights";
 import { useProfileStats } from "../hooks/useProfileStats";
-import { EquipmentVerificationCard } from "../components/EquipmentVerificationCard";
+import { CompetitiveInsightsSection } from "../components/CompetitiveInsightsSection";
 import { ProfileStatsCard } from "../components/ProfileStatsCard";
 import { RecentMatchesList } from "../components/RecentMatchesList";
 import { useMyEventInvitations } from "../../event-invitations/hooks/useMyEventInvitations";
@@ -34,12 +36,17 @@ import {
 } from "../../events/utils/event-display.utils";
 
 export function ProfilePage() {
-
-  const navigate = useNavigate();
-  const { isAdmin, profile, logout } = useAuth();
+  const { isAdmin, profile } = useAuth();
   const { stats, loading: statsLoading, error: statsError } = useProfileStats(
     profile?.id
   );
+  const {
+    insights,
+    loading: insightsLoading,
+    error: insightsError,
+    selectedFilter,
+    setSelectedFilter,
+  } = useProfileCompetitiveInsights(profile?.id);
   const {
     pendingInvitations,
     loading: invitationsLoading,
@@ -66,34 +73,25 @@ export function ProfilePage() {
     return <p className="text-slate-500">Loading profile...</p>;
   }
 
-  async function handleLogout() {
-      try {
-          await logout();
-          navigate("/login", { replace: true });
-      } catch (error) {
-          console.error("Logout error:", error);
-      }
-  }
-
   return (
     <section className="space-y-8">
       <div className="rounded-[2rem] bg-white p-8 shadow-sm">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
           <div className="flex flex-row justify-between">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-2xl font-black text-white">
-              {profile.fullName.charAt(0).toUpperCase()}
-            </div>
-
-            <button
-            onClick={handleLogout}
-            className="md:hidden flex items-center gap-3 rounded-xl px-4 text-sm font-medium text-slate-600 text-white bg-red-500"
-            >
-                <LogOut size={18} />
-                Logout
-            </button>
+            {profile.avatarUrl ? (
+              <img
+                src={profile.avatarUrl}
+                alt={profile.fullName}
+                className="h-20 w-20 rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-2xl font-black text-white">
+                {profile.fullName.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
 
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold text-slate-900">
               {profile.fullName}
             </h1>
@@ -107,6 +105,18 @@ export function ProfilePage() {
               <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold capitalize text-blue-700">
                 <Shield size={15} />
                 {profile.role}
+              </span>
+
+              {profile.country && (
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1">
+                  <MapPin size={15} />
+                  {profile.city ? `${profile.city}, ${profile.country}` : profile.country}
+                </span>
+              )}
+
+                <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                  <Trophy size={15} />
+                {formatCompetitiveRating(insights.currentRating)} rating
               </span>
 
               {profile.hasBall && (
@@ -125,12 +135,16 @@ export function ProfilePage() {
 
             </div>
           </div>
+
+          <Link
+            to="/settings"
+            className="hidden shrink-0 items-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white md:inline-flex"
+          >
+            <Settings size={18} />
+            Settings
+          </Link>
         </div>
       </div>
-
-      {(!profile.hasBall || !profile.hasNet) && (
-        <EquipmentVerificationCard />
-      )}
 
       <ProfileStatsCard stats={stats} loading={statsLoading} />
 
@@ -139,6 +153,14 @@ export function ProfilePage() {
           {statsError}
         </p>
       )}
+
+      <CompetitiveInsightsSection
+        insights={insights}
+        loading={insightsLoading}
+        error={insightsError}
+        selectedFilter={selectedFilter}
+        onFilterChange={setSelectedFilter}
+      />
 
       <CreatedEventsSection
         events={createdEvents}
@@ -159,17 +181,6 @@ export function ProfilePage() {
         loading={invitationsLoading}
         error={invitationsError}
       />
-
-      <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
-          More stats coming soon
-        </p>
-        <h2 className="mt-3 text-2xl font-bold">This is just the start</h2>
-        <p className="mt-2 max-w-2xl text-slate-300">
-          Full match history, deeper performance breakdowns and richer competitive
-          insights will arrive in future phases.
-        </p>
-      </div>
 
       <div className="rounded-[2rem] bg-white p-8 shadow-sm">
         <div className="mb-6 flex items-center justify-between">

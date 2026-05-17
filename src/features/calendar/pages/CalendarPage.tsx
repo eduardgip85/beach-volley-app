@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { EventFilters } from "../../../shared/components/EventFilters";
 import { getPublicEvents } from "../../events/services/events.service";
+import { useEventFilters } from "../../events/hooks/useEventFilters";
 import type { Event } from "../../events/types/event.types";
 import { EventsCalendar } from "../components/EventsCalendar";
 
@@ -7,6 +9,8 @@ export function CalendarPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { filteredEvents, filters, locations, updateFilter, clearFilters } =
+    useEventFilters(events);
 
   useEffect(() => {
     async function loadEvents() {
@@ -28,7 +32,14 @@ export function CalendarPage() {
   }, []);
 
   return (
-    <section>
+    <section className="space-y-4">
+      <EventFilters
+        filters={filters}
+        locations={locations}
+        onFilterChange={updateFilter}
+        onClearFilters={clearFilters}
+      />
+
       {loading && <p className="text-slate-500">Loading calendar...</p>}
 
       {error && (
@@ -37,7 +48,7 @@ export function CalendarPage() {
         </p>
       )}
 
-      {!loading && !error && <EventsCalendar events={events} />}
+      {!loading && !error && <EventsCalendar events={filteredEvents} />}
     </section>
   );
 }

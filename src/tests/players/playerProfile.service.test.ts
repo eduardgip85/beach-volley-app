@@ -45,13 +45,18 @@ describe("playerProfile.service", () => {
             data: {
                 id: "user-2",
                 full_name: "Maria Costa",
+                username: "maria",
                 avatar_url: null,
+                country: "Spain",
                 has_ball: true,
                 has_net: false,
                 competitive_rating: 1030,
                 matches_played: 12,
                 wins: 7,
                 losses: 5,
+                profile_visibility: "public",
+                show_rating: true,
+                show_stats: true,
             },
             error: null,
         });
@@ -104,13 +109,18 @@ describe("playerProfile.service", () => {
         expect(result).toMatchObject({
             id: "user-2",
             fullName: "Maria Costa",
+            username: "maria",
             avatarUrl: null,
+            country: "Spain",
             hasBall: true,
             hasNet: false,
             competitiveRating: 1030,
             matchesPlayed: 12,
             wins: 7,
             losses: 5,
+            profileVisibility: "public",
+            showRating: true,
+            showStats: true,
         });
         expect(mockRpc).toHaveBeenCalledWith("get_public_player_match_summaries", {
             target_user_id: "user-2",
@@ -135,5 +145,34 @@ describe("playerProfile.service", () => {
             outcome: "win",
             mode: "competitive",
         });
+    });
+
+    it("skips public stats queries when the player hides statistics", async () => {
+        mockProfilesSingle.mockResolvedValue({
+            data: {
+                id: "user-3",
+                full_name: "Private Player",
+                username: null,
+                avatar_url: null,
+                country: null,
+                has_ball: false,
+                has_net: false,
+                competitive_rating: 1000,
+                matches_played: 0,
+                wins: 0,
+                losses: 0,
+                profile_visibility: "public",
+                show_rating: false,
+                show_stats: false,
+            },
+            error: null,
+        });
+
+        const result = await getPublicProfile("user-3");
+
+        expect(result.showStats).toBe(false);
+        expect(result.showRating).toBe(false);
+        expect(result.recentMatches).toEqual([]);
+        expect(mockRpc).not.toHaveBeenCalled();
     });
 });

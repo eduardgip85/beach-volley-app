@@ -1,6 +1,7 @@
 import { supabase } from "../../../config/supabase";
 import type { UserProfile } from "../types/auth.types";
 import { buildOAuthRedirectUrl, normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
+import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
 
 interface RegisterData {
     email: string;
@@ -13,6 +14,7 @@ function mapProfile(profile: any): UserProfile {
         id: profile.id,
         email: profile.email,
         fullName: profile.full_name,
+        username: profile.username ?? null,
         role: profile.role,
         avatarUrl: profile.avatar_url,
         createdAt: profile.created_at,
@@ -20,10 +22,21 @@ function mapProfile(profile: any): UserProfile {
         hasNet: profile.has_net,
         equipmentVerified: profile.equipment_verified,
         equipmentVerifiedAt: profile.equipment_verified_at,
-        competitiveRating: profile.competitive_rating ?? 1000,
+        competitiveRating: profile.competitive_rating ?? DEFAULT_COMPETITIVE_RATING,
+        ratingGamesPlayed: profile.rating_games_played ?? 0,
         matchesPlayed: profile.matches_played ?? 0,
         wins: profile.wins ?? 0,
         losses: profile.losses ?? 0,
+        country: profile.country ?? null,
+        city: profile.city ?? null,
+        currentStreak: profile.current_streak ?? 0,
+        bestStreak: profile.best_streak ?? 0,
+        availabilityStatus: profile.availability_status ?? null,
+        profileVisibility: profile.profile_visibility ?? "public",
+        showRating: profile.show_rating ?? true,
+        showStats: profile.show_stats ?? true,
+        preferredLanguage: profile.preferred_language ?? "en",
+        preferredMatchMode: profile.preferred_match_mode ?? null,
     };
 }
 
@@ -66,6 +79,7 @@ async function ensureProfileForUser(user: any) {
             email: user.email ?? "",
             role: "player",
             avatar_url: getProfileAvatarFromUser(user),
+            competitive_rating: DEFAULT_COMPETITIVE_RATING,
         })
         .select("*")
         .single();
@@ -98,6 +112,7 @@ export async function registerUser({
         full_name: fullName,
         email,
         role: "player",
+        competitive_rating: DEFAULT_COMPETITIVE_RATING,
     });
 
     if (profileError) throw profileError;

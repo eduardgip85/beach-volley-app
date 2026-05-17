@@ -1,4 +1,5 @@
 import { supabase } from "../../../config/supabase";
+import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
 import type {
     FriendProfile,
     FriendRequest,
@@ -9,7 +10,7 @@ interface FriendProfileRow {
     id: string;
     full_name: string;
     avatar_url: string | null;
-    role: "player" | "admin";
+    country: string | null;
     competitive_rating: number | null;
 }
 
@@ -25,7 +26,7 @@ interface FriendRequestRow {
 }
 
 const friendProfileSelect =
-    "id, full_name, avatar_url, role, competitive_rating";
+    "id, full_name, avatar_url, country, competitive_rating";
 
 const friendRequestSelect = `
     id,
@@ -43,8 +44,8 @@ function mapFriendProfile(row: FriendProfileRow): FriendProfile {
         id: row.id,
         fullName: row.full_name,
         avatarUrl: row.avatar_url,
-        role: row.role,
-        competitiveRating: row.competitive_rating ?? 1000,
+        country: row.country ?? null,
+        competitiveRating: row.competitive_rating ?? DEFAULT_COMPETITIVE_RATING,
     };
 }
 

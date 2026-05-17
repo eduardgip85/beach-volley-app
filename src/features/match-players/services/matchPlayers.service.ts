@@ -39,6 +39,8 @@ interface MatchEventRow {
     id: string;
     type: string;
     max_participants: number;
+    start_date?: string;
+    status?: string;
 }
 
 interface MatchResultLockRow {
@@ -87,7 +89,7 @@ function mapMatchPlayer(row: MatchPlayerRow): MatchPlayer {
 async function getEventRow(eventId: string): Promise<MatchEventRow> {
     const { data, error } = await supabase
         .from("events")
-        .select("id, type, max_participants")
+        .select("id, type, max_participants, start_date, status")
         .eq("id", eventId)
         .single();
 
@@ -106,7 +108,21 @@ async function ensureMatchEvent(eventId: string) {
     return event;
 }
 
+function isMatchClosedByEventState(event: MatchEventRow) {
+    return (
+        event.status === "completed" ||
+        event.status === "cancelled" ||
+        (event.start_date ? new Date(event.start_date) < new Date() : false)
+    );
+}
+
 async function ensureMatchRosterIsOpen(eventId: string) {
+    const event = await ensureMatchEvent(eventId);
+
+    if (isMatchClosedByEventState(event)) {
+        throw new Error("This match is already finished");
+    }
+
     const { data, error } = await supabase
         .from("match_results")
         .select("validation_status")

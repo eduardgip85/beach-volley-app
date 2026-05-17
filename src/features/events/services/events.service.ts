@@ -4,6 +4,7 @@ import type {
     CreateEventPayload,
     Event,
     EventMode,
+    EventStatus,
     EventType,
     EventVisibility,
 } from "../types/event.types";
@@ -44,6 +45,25 @@ function normalizeMaxParticipants(type: EventType, maxParticipants: number) {
     return maxParticipants;
 }
 
+function normalizeEventStatus(
+    status: unknown,
+    startDate: string
+): EventStatus {
+    if (status === "cancelled") {
+        return "cancelled";
+    }
+
+    if (status === "completed") {
+        return "completed";
+    }
+
+    if (new Date(startDate) < new Date()) {
+        return "completed";
+    }
+
+    return "active";
+}
+
 function buildEventWritePayload(payload: CreateEventPayload) {
     const type = normalizeEventType(payload.type);
 
@@ -79,7 +99,7 @@ function mapEvent(row: any): Event {
         startDate: row.start_date,
         endDate: row.end_date,
         maxParticipants: row.max_participants,
-        status: row.status,
+        status: normalizeEventStatus(row.status, row.start_date),
         imageUrl: row.image_url,
         createdBy: row.created_by,
         createdAt: row.created_at,

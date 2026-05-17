@@ -83,6 +83,16 @@ export function usePublicProfile(userId?: string) {
                     return;
                 }
 
+                if (
+                    loadedProfile.profileVisibility === "private" &&
+                    profile?.id !== userId
+                ) {
+                    setPublicProfile(null);
+                    setError("This player profile is private");
+                    setRelationshipStatus("none");
+                    return;
+                }
+
                 setPublicProfile(loadedProfile);
                 setRelationshipStatus(
                     profile?.id

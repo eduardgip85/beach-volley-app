@@ -21,7 +21,7 @@ describe("useProfileStats", () => {
         expect(result.current.loading).toBe(false);
         expect(result.current.error).toBe("");
         expect(result.current.stats).toEqual({
-            competitiveRating: 1000,
+            competitiveRating: 2,
             matchesPlayed: 0,
             wins: 0,
             losses: 0,
@@ -42,7 +42,7 @@ describe("useProfileStats", () => {
 
     it("loads profile dashboard stats in a single request", async () => {
         mockGetProfileDashboardStats.mockResolvedValue({
-            competitiveRating: 1045,
+            competitiveRating: 5.45,
             matchesPlayed: 12,
             wins: 7,
             losses: 5,
@@ -72,7 +72,7 @@ describe("useProfileStats", () => {
         });
 
         expect(result.current.error).toBe("");
-        expect(result.current.stats.competitiveRating).toBe(1045);
+        expect(result.current.stats.competitiveRating).toBe(5.45);
         expect(result.current.stats.matchesPlayed).toBe(12);
         expect(result.current.stats.wins).toBe(7);
         expect(result.current.stats.losses).toBe(5);
@@ -88,7 +88,7 @@ describe("useProfileStats", () => {
 
     it("keeps the recent matches ordering returned by the dashboard rpc", async () => {
         mockGetProfileDashboardStats.mockResolvedValue({
-            competitiveRating: 1015,
+            competitiveRating: 5.15,
             matchesPlayed: 3,
             wins: 2,
             losses: 1,

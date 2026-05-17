@@ -72,6 +72,16 @@ const FriendsPage = lazy(() =>
     default: module.FriendsPage,
   }))
 );
+const RankingPage = lazy(() =>
+  import("../features/ranking/pages/RankingPage").then((module) => ({
+    default: module.RankingPage,
+  }))
+);
+const SettingsPage = lazy(() =>
+  import("../features/settings/pages/SettingsPage").then((module) => ({
+    default: module.SettingsPage,
+  }))
+);
 const PublicProfilePage = lazy(() =>
   import("../features/players/pages/PublicProfilePage").then((module) => ({
     default: module.PublicProfilePage,
@@ -145,6 +155,10 @@ export const router = createBrowserRouter([
         path: "/players/:userId",
         element: withSuspense(<PublicProfilePage />),
       },
+      {
+        path: "/ranking",
+        element: withSuspense(<RankingPage />),
+      },
 
       {
         element: <ProtectedRoute />,
@@ -164,6 +178,10 @@ export const router = createBrowserRouter([
           {
             path: "/friends",
             element: withSuspense(<FriendsPage />),
+          },
+          {
+            path: "/settings",
+            element: withSuspense(<SettingsPage />),
           },
         ],
       },

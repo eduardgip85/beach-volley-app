@@ -1,5 +1,6 @@
 import { BarChart3, Swords, Target, Trophy } from "lucide-react";
 import { useState } from "react";
+import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { ProfileStatsData } from "../types/profileStats.types";
 
 interface ProfileStatsCardProps {
@@ -24,7 +25,7 @@ export function ProfileStatsCard({
                       label: "Competitive rating",
                       icon: Trophy,
                       accent: "bg-blue-100 text-blue-700",
-                      value: stats.competitiveRating,
+                      value: formatCompetitiveRating(stats.competitiveRating),
                   },
                   {
                       key: "matchesPlayed",
@@ -71,11 +72,16 @@ export function ProfileStatsCard({
                       value: selectedStats.losses,
                   },
                   {
-                      key: "eloImpact",
-                      label: "Elo impact",
+                      key: "winRate",
+                      label: "Win rate",
                       icon: Trophy,
-                      accent: "bg-slate-100 text-slate-700",
-                      value: "No Elo",
+                      accent: "bg-blue-100 text-blue-700",
+                      value:
+                          selectedStats.matchesPlayed > 0
+                              ? `${Math.round(
+                                    (selectedStats.wins / selectedStats.matchesPlayed) * 100
+                                )}%`
+                              : "0%",
                   },
               ];
 

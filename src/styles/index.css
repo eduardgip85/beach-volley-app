@@ -1,5 +1,88 @@
 @import "tailwindcss";
 
+@keyframes landingFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingFloatSlow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes landingFloatFast {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes landingGlowPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(1.04);
+  }
+}
+
+.landing-fade-up {
+  animation: landingFadeUp 0.7s ease-out both;
+}
+
+.landing-fade-up-delay-1 {
+  animation: landingFadeUp 0.7s ease-out 0.08s both;
+}
+
+.landing-fade-up-delay-2 {
+  animation: landingFadeUp 0.7s ease-out 0.16s both;
+}
+
+.landing-fade-up-delay-3 {
+  animation: landingFadeUp 0.7s ease-out 0.24s both;
+}
+
+.landing-float-slow {
+  animation: landingFloatSlow 6s ease-in-out infinite;
+}
+
+.landing-float-fast {
+  animation: landingFloatFast 4.6s ease-in-out infinite;
+}
+
+.landing-glow-pulse {
+  animation: landingGlowPulse 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-fade-up,
+  .landing-fade-up-delay-1,
+  .landing-fade-up-delay-2,
+  .landing-fade-up-delay-3,
+  .landing-float-slow,
+  .landing-float-fast,
+  .landing-glow-pulse {
+    animation: none !important;
+  }
+}
+
 .fc {
   font-family: inherit;
 }

@@ -7,6 +7,7 @@ import {
     rejectMatchResult,
     updateMatchResult,
 } from "../services/matchResults.service";
+import type { EventMode } from "../../events/types/event.types";
 import type {
     CreateMatchSetPayload,
     MatchResult,
@@ -15,6 +16,7 @@ import type {
 
 interface UseMatchResultOptions {
     eventType?: string;
+    eventMode?: EventMode | null;
     currentUserId?: string;
     isEventManager?: boolean;
     validationContextKey?: string;
@@ -29,9 +31,20 @@ function createEmptySet(setNumber: number): CreateMatchSetPayload {
     };
 }
 
-function mapSetsForEditor(sets: MatchSet[]): CreateMatchSetPayload[] {
+function createInitialSets(eventMode: EventMode | null = null): CreateMatchSetPayload[] {
+    if (eventMode === "competitive") {
+        return [createEmptySet(1), createEmptySet(2)];
+    }
+
+    return [createEmptySet(1)];
+}
+
+function mapSetsForEditor(
+    sets: MatchSet[],
+    eventMode: EventMode | null = null
+): CreateMatchSetPayload[] {
     if (sets.length === 0) {
-        return [createEmptySet(1)];
+        return createInitialSets(eventMode);
     }
 
     return sets.map((set) => ({
@@ -39,6 +52,39 @@ function mapSetsForEditor(sets: MatchSet[]): CreateMatchSetPayload[] {
         teamAScore: set.teamAScore,
         teamBScore: set.teamBScore,
     }));
+}
+
+function getWinningTeamForSet(set: CreateMatchSetPayload) {
+    if (set.teamAScore === set.teamBScore) {
+        return null;
+    }
+
+    return set.teamAScore > set.teamBScore ? "team_a" : "team_b";
+}
+
+function syncCompetitiveSets(
+    currentSets: CreateMatchSetPayload[]
+): CreateMatchSetPayload[] {
+    const orderedSets = [...currentSets]
+        .sort((left, right) => left.setNumber - right.setNumber)
+        .slice(0, 3)
+        .map((set, index) => ({
+            ...set,
+            setNumber: index + 1,
+        }));
+
+    const firstSet = orderedSets[0] ?? createEmptySet(1);
+    const secondSet = orderedSets[1] ?? createEmptySet(2);
+    const firstWinner = getWinningTeamForSet(firstSet);
+    const secondWinner = getWinningTeamForSet(secondSet);
+    const requiresThirdSet =
+        firstWinner !== null && secondWinner !== null && firstWinner !== secondWinner;
+
+    if (requiresThirdSet) {
+        return [firstSet, secondSet, orderedSets[2] ?? createEmptySet(3)];
+    }
+
+    return [firstSet, secondSet];
 }
 
 function getErrorMessage(err: unknown, fallback: string) {
@@ -64,6 +110,7 @@ export function useMatchResult(
 ) {
     const {
         eventType,
+        eventMode = null,
         currentUserId,
         isEventManager = false,
         validationContextKey,
@@ -71,7 +118,7 @@ export function useMatchResult(
     } = options;
 
     const [matchResult, setMatchResult] = useState<MatchResult | null>(null);
-    const [sets, setSets] = useState<CreateMatchSetPayload[]>([createEmptySet(1)]);
+    const [sets, setSets] = useState<CreateMatchSetPayload[]>(createInitialSets(eventMode));
     const [loading, setLoading] = useState(eventType === "match");
     const [submitting, setSubmitting] = useState(false);
     const [validating, setValidating] = useState(false);
@@ -82,7 +129,7 @@ export function useMatchResult(
         async function loadMatchResult() {
             if (!eventId || eventType !== "match") {
                 setMatchResult(null);
-                setSets([createEmptySet(1)]);
+                setSets(createInitialSets(eventMode));
                 setCanValidateResult(false);
                 setLoading(false);
                 return;
@@ -94,7 +141,11 @@ export function useMatchResult(
 
                 const result = await getMatchResultByEventId(eventId);
                 setMatchResult(result);
-                setSets(result ? mapSetsForEditor(result.sets) : [createEmptySet(1)]);
+                setSets(
+                    result
+                        ? mapSetsForEditor(result.sets, eventMode)
+                        : createInitialSets(eventMode)
+                );
 
                 if (currentUserId && result && canCheckValidationEligibility) {
                     const eligibility = await getResultValidationEligibility(
@@ -114,9 +165,20 @@ export function useMatchResult(
         }
 
         loadMatchResult();
-    }, [eventId, eventType, currentUserId, validationContextKey, canCheckValidationEligibility]);
+    }, [
+        eventId,
+        eventType,
+        eventMode,
+        currentUserId,
+        validationContextKey,
+        canCheckValidationEligibility,
+    ]);
 
     function addSet() {
+        if (eventMode === "competitive") {
+            return;
+        }
+
         setSets((currentSets) => [
             ...currentSets,
             createEmptySet(currentSets.length + 1),
@@ -124,6 +186,10 @@ export function useMatchResult(
     }
 
     function removeSet(index: number) {
+        if (eventMode === "competitive") {
+            return;
+        }
+
         setSets((currentSets) => {
             if (currentSets.length === 1) {
                 return currentSets;
@@ -143,16 +209,20 @@ export function useMatchResult(
         field: keyof Omit<CreateMatchSetPayload, "setNumber">,
         value: number
     ) {
-        setSets((currentSets) =>
-            currentSets.map((set, setIndex) =>
+        setSets((currentSets) => {
+            const nextSets = currentSets.map((set, setIndex) =>
                 setIndex === index
                     ? {
                           ...set,
                           [field]: value,
                       }
                     : set
-            )
-        );
+            );
+
+            return eventMode === "competitive"
+                ? syncCompetitiveSets(nextSets)
+                : nextSets;
+        });
     }
 
     async function submitResult() {
@@ -169,7 +239,7 @@ export function useMatchResult(
                 : await createMatchResult(eventId, currentUserId, sets);
 
             setMatchResult(result);
-            setSets(mapSetsForEditor(result.sets));
+            setSets(mapSetsForEditor(result.sets, eventMode));
         } catch (err) {
             console.error(err);
             setError(getErrorMessage(err, "Could not save match result"));
@@ -232,6 +302,7 @@ export function useMatchResult(
         error,
         canManageResult,
         canValidateResult,
+        isCompetitiveFixedSets: eventMode === "competitive",
         addSet,
         removeSet,
         updateSet,

@@ -1,6 +1,7 @@
 import { supabase } from "../../../config/supabase";
 import { getMatchPlayers } from "../../match-players/services/matchPlayers.service";
 import type { UserRole } from "../../auth/types/auth.types";
+import type { EventMode } from "../../events/types/event.types";
 import type {
     CreateMatchSetPayload,
     MatchResult,
@@ -36,12 +37,14 @@ interface EventValidationRow {
     id: string;
     type: string;
     created_by: string;
+    mode?: EventMode | null;
     start_date?: string;
 }
 
 interface MatchEventWindowRow {
     id: string;
     type: string;
+    mode: EventMode | null;
     start_date: string;
 }
 
@@ -69,18 +72,24 @@ function mapMatchResult(row: MatchResultRow, sets: MatchSet[]): MatchResult {
     };
 }
 
-async function ensureMatchEvent(eventId: string) {
+async function getMatchEventWindow(eventId: string): Promise<MatchEventWindowRow> {
     const { data, error } = await supabase
         .from("events")
-        .select("type")
+        .select("id, type, mode, start_date")
         .eq("id", eventId)
-        .single();
+        .single<MatchEventWindowRow>();
 
     if (error) throw error;
 
     if (data.type !== "match") {
         throw new Error("Only match events can have results");
     }
+
+    return data;
+}
+
+async function ensureMatchEvent(eventId: string) {
+    await getMatchEventWindow(eventId);
 }
 
 function isSameLocalCalendarDay(left: Date, right: Date) {
@@ -92,18 +101,7 @@ function isSameLocalCalendarDay(left: Date, right: Date) {
 }
 
 async function ensureResultSubmissionDay(eventId: string) {
-    const { data, error } = await supabase
-        .from("events")
-        .select("id, type, start_date")
-        .eq("id", eventId)
-        .single<MatchEventWindowRow>();
-
-    if (error) throw error;
-
-    if (data.type !== "match") {
-        throw new Error("Only match events can have results");
-    }
-
+    const data = await getMatchEventWindow(eventId);
     const eventDate = new Date(data.start_date);
     const now = new Date();
 
@@ -284,11 +282,11 @@ export async function createMatchResult(
     submittedBy: string,
     sets: CreateMatchSetPayload[]
 ): Promise<MatchResult> {
-    validateMatchSets(sets);
-    await ensureMatchEvent(eventId);
+    const eventRow = await getMatchEventWindow(eventId);
+    validateMatchSets(sets, eventRow.mode);
     await ensureResultSubmissionDay(eventId);
     await ensureEnoughPlayersForResult(eventId);
-    const winningTeam = calculateWinningTeam(sets);
+    const winningTeam = calculateWinningTeam(sets, eventRow.mode);
 
     const { data, error } = await supabase
         .from("match_results")
@@ -320,18 +318,17 @@ export async function updateMatchResult(
     resultId: string,
     sets: CreateMatchSetPayload[]
 ): Promise<MatchResult> {
-    validateMatchSets(sets);
-
     const result = await getMatchResultRowById(resultId);
+    const eventRow = await getMatchEventWindow(result.event_id);
+    validateMatchSets(sets, eventRow.mode);
 
     if (result.validation_status === "accepted") {
         throw new Error("This match result is already validated and can no longer be edited");
     }
 
-    await ensureMatchEvent(result.event_id);
     await ensureResultSubmissionDay(result.event_id);
     await ensureEnoughPlayersForResult(result.event_id);
-    const winningTeam = calculateWinningTeam(sets);
+    const winningTeam = calculateWinningTeam(sets, eventRow.mode);
 
     const { error: deleteError } = await supabase
         .from("match_sets")
@@ -411,8 +408,6 @@ export async function acceptMatchResult(
         throw statsError;
     }
 
-    await applyRatingForMatchResult(resultId);
-
     const { error: eventUpdateError } = await supabase
         .from("events")
         .update({
@@ -432,6 +427,12 @@ export async function acceptMatchResult(
             .eq("id", resultId);
 
         throw eventUpdateError;
+    }
+
+    try {
+        await applyRatingForMatchResult(resultId);
+    } catch (error) {
+        console.error("Competitive rating could not be applied after result acceptance", error);
     }
 
     return getMatchResultById(resultId);

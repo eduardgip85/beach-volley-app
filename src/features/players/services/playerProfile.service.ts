@@ -1,4 +1,5 @@
 import { supabase } from "../../../config/supabase";
+import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
 import type {
     PublicPlayerProfile,
     PublicProfileModeStats,
@@ -9,13 +10,18 @@ import type {
 interface PublicProfileRow {
     id: string;
     full_name: string;
+    username: string | null;
     avatar_url: string | null;
+    country: string | null;
     has_ball: boolean | null;
     has_net: boolean | null;
     competitive_rating: number | null;
     matches_played: number | null;
     wins: number | null;
     losses: number | null;
+    profile_visibility: "public" | "private" | null;
+    show_rating: boolean | null;
+    show_stats: boolean | null;
 }
 
 interface PublicMatchSummaryRow {
@@ -47,13 +53,18 @@ function mapPublicProfile(
     return {
         id: row.id,
         fullName: row.full_name,
+        username: row.username ?? null,
         avatarUrl: row.avatar_url,
+        country: row.country ?? null,
         hasBall: row.has_ball ?? false,
         hasNet: row.has_net ?? false,
-        competitiveRating: row.competitive_rating ?? 1000,
+        competitiveRating: row.competitive_rating ?? DEFAULT_COMPETITIVE_RATING,
         matchesPlayed: row.matches_played ?? 0,
         wins: row.wins ?? 0,
         losses: row.losses ?? 0,
+        profileVisibility: row.profile_visibility ?? "public",
+        showRating: row.show_rating ?? true,
+        showStats: row.show_stats ?? true,
     };
 }
 
@@ -90,12 +101,25 @@ export async function getPublicProfile(
     const { data: profileRow, error: profileError } = await supabase
         .from("profiles")
         .select(
-            "id, full_name, avatar_url, has_ball, has_net, competitive_rating, matches_played, wins, losses"
+            "id, full_name, username, avatar_url, country, has_ball, has_net, competitive_rating, matches_played, wins, losses, profile_visibility, show_rating, show_stats"
         )
         .eq("id", userId)
         .single<PublicProfileRow>();
 
     if (profileError) throw profileError;
+
+    const competitive = getEmptyModeStats();
+    const casual = getEmptyModeStats();
+    const baseProfile = mapPublicProfile(profileRow);
+
+    if (!baseProfile.showStats) {
+        return {
+            ...baseProfile,
+            competitive,
+            casual,
+            recentMatches: [],
+        };
+    }
 
     const [
         { data: matchSummaryRows, error: recentMatchesError },
@@ -112,9 +136,6 @@ export async function getPublicProfile(
     if (recentMatchesError) throw recentMatchesError;
     if (modeStatsError) throw modeStatsError;
 
-    const competitive = getEmptyModeStats();
-    const casual = getEmptyModeStats();
-
     for (const row of (modeStatsRows ?? []) as PublicModeStatsRow[]) {
         const target = row.mode === "competitive" ? competitive : casual;
         target.matchesPlayed = Number(row.matches_played ?? 0);
@@ -123,7 +144,7 @@ export async function getPublicProfile(
     }
 
     return {
-        ...mapPublicProfile(profileRow),
+        ...baseProfile,
         competitive,
         casual,
         recentMatches: ((matchSummaryRows ?? []) as PublicMatchSummaryRow[]).map(

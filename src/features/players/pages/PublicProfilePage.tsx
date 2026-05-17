@@ -2,6 +2,7 @@ import {
     ArrowRight,
     CalendarDays,
     Link as LinkIcon,
+    MapPin,
     Rows2,
     Trophy,
     UserMinus,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import { PublicRecentMatchesSection } from "../components/PublicRecentMatchesSection";
 import { usePublicProfile } from "../hooks/usePublicProfile";
 
@@ -92,12 +94,26 @@ export function PublicProfilePage() {
                             <h1 className="mt-2 text-3xl font-black text-slate-900">
                                 {publicProfile.fullName}
                             </h1>
+                            {publicProfile.username ? (
+                                <p className="mt-2 text-sm font-semibold text-slate-500">
+                                    @{publicProfile.username}
+                                </p>
+                            ) : null}
 
                             <div className="mt-4 flex flex-wrap gap-3">
-                                <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
-                                    <Trophy size={14} />
-                                    Rating {publicProfile.competitiveRating}
-                                </span>
+                                {publicProfile.showRating ? (
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+                                        <Trophy size={14} />
+                                        Rating {formatCompetitiveRating(publicProfile.competitiveRating)}
+                                    </span>
+                                ) : null}
+
+                                {publicProfile.country ? (
+                                    <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                                        <MapPin size={14} />
+                                        {publicProfile.country}
+                                    </span>
+                                ) : null}
 
                                 {publicProfile.hasBall ? (
                                     <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
@@ -174,7 +190,22 @@ export function PublicProfilePage() {
                 </div>
             </div>
 
-            <PublicRecentMatchesSection matches={publicProfile.recentMatches} />
+            {publicProfile.showStats ? (
+                <PublicRecentMatchesSection matches={publicProfile.recentMatches} />
+            ) : (
+                <div className="rounded-[2rem] bg-white p-8 shadow-sm">
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
+                        Statistics hidden
+                    </p>
+                    <h2 className="mt-3 text-2xl font-bold text-slate-900">
+                        This player keeps match stats private
+                    </h2>
+                    <p className="mt-2 text-sm text-slate-500">
+                        Public rating and recent match summaries are hidden in their
+                        privacy settings.
+                    </p>
+                </div>
+            )}
 
             <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm">
                 <div className="flex items-start gap-4">

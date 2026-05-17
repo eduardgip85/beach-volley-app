@@ -9,6 +9,8 @@ import type {
 interface MatchResultSectionProps {
     result: MatchResult | null;
     sets: CreateMatchSetPayload[];
+    eventMode?: "casual" | "competitive" | null;
+    isCompetitiveFixedSets?: boolean;
     loading: boolean;
     submitting: boolean;
     validating: boolean;
@@ -30,6 +32,8 @@ interface MatchResultSectionProps {
 export function MatchResultSection({
     result,
     sets,
+    eventMode = null,
+    isCompetitiveFixedSets = false,
     loading,
     submitting,
     validating,
@@ -90,23 +94,46 @@ export function MatchResultSection({
                             {result ? "Edit sets" : "Add result"}
                         </h3>
 
-                        <button
-                            type="button"
-                            onClick={onAddSet}
-                            disabled={submitting}
-                            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
-                        >
-                            <Plus size={16} />
-                            Add set
-                        </button>
+                        {!isCompetitiveFixedSets && (
+                            <button
+                                type="button"
+                                onClick={onAddSet}
+                                disabled={submitting}
+                                className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+                            >
+                                <Plus size={16} />
+                                Add set
+                            </button>
+                        )}
                     </div>
+
+                    {eventMode === "competitive" && (
+                        <div className="mb-4 rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
+                            Competitive matches are fixed to best of 3:
+                            sets 1 and 2 to 21, deciding set 3 to 15, always win by 2.
+                        </div>
+                    )}
 
                     <div className="space-y-4">
                         {sets.map((set, index) => (
                             <MatchSetEditor
                                 key={`${set.setNumber}-${index}`}
                                 set={set}
-                                canRemove={sets.length > 1}
+                                canRemove={!isCompetitiveFixedSets && sets.length > 1}
+                                targetScore={
+                                    eventMode === "competitive"
+                                        ? set.setNumber === 3
+                                            ? 15
+                                            : 21
+                                        : undefined
+                                }
+                                helperText={
+                                    eventMode === "competitive"
+                                        ? set.setNumber === 3
+                                            ? "Deciding set to 15, win by 2"
+                                            : "Set to 21, win by 2"
+                                        : undefined
+                                }
                                 disabled={submitting}
                                 onChange={(field, value) =>
                                     onUpdateSet(index, field, value)

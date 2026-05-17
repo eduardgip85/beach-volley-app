@@ -12,6 +12,7 @@ import {
   getEventBadgeClasses,
   getEventDisplayStatus,
   getEventModeLabel,
+  getEventModeBadgeClasses,
   getEventTypeLabel,
   getEventVisibilityBadgeClasses,
   getEventVisibilityLabel,
@@ -90,6 +91,12 @@ export function EventDetailPage() {
     : false;
 
   const isPast = event ? isPastEvent(event) : false;
+  const isClosedEvent = Boolean(
+    event &&
+      (event.status === "completed" ||
+        event.status === "cancelled" ||
+        isPast)
+  );
   const canViewMatchPlayers = Boolean(
     event &&
       event.type === "match" &&
@@ -118,10 +125,12 @@ export function EventDetailPage() {
   );
   const matchResult = useMatchResult(eventId, {
     eventType: event?.type,
+    eventMode: event?.mode ?? null,
     currentUserId: profile?.id,
-    isEventManager: canEdit,
+    isEventManager: canEdit && !isClosedEvent,
     canCheckValidationEligibility:
-      event?.visibility !== "private" || canEdit || alreadyJoined,
+      !isClosedEvent &&
+      (event?.visibility !== "private" || canEdit || alreadyJoined),
     validationContextKey: matchPlayers.state.activePlayers
       .map((player) => `${player.userId}:${player.team}:${player.status}`)
       .join("|"),
@@ -264,6 +273,10 @@ export function EventDetailPage() {
 
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
   const displayStatus = getEventDisplayStatus(event);
+  const shouldShowJoinButton =
+    !isAcceptedMatch &&
+    !displayAlreadyJoined &&
+    (!(event.visibility === "private" && !canEdit) || isClosedEvent);
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
@@ -279,7 +292,11 @@ export function EventDetailPage() {
             </span>
 
             {modeLabel && (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase text-slate-700">
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventModeBadgeClasses(
+                  event.mode
+                )}`}
+              >
                 {modeLabel}
               </span>
             )}
@@ -292,9 +309,11 @@ export function EventDetailPage() {
               {getEventVisibilityLabel(event.visibility)}
             </span>
 
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase text-slate-700">
-              {displayStatus}
-            </span>
+            {displayStatus !== "Active" ? (
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase text-slate-700">
+                {displayStatus}
+              </span>
+            ) : null}
           </div>
 
           <h1 className="mt-4 text-3xl font-bold text-slate-900">
@@ -352,12 +371,11 @@ export function EventDetailPage() {
           </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            {!isAcceptedMatch &&
-            !displayAlreadyJoined &&
-            !(event.visibility === "private" && !canEdit) ? (
+            {shouldShowJoinButton ? (
               <button
-                onClick={handleJoinEvent}
+                onClick={isClosedEvent ? undefined : handleJoinEvent}
                 disabled={
+                  isClosedEvent ||
                   joining ||
                   isMatchMembershipUpdating ||
                   displayIsFull ||
@@ -366,7 +384,7 @@ export function EventDetailPage() {
                 }
                 className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {isPast
+                {isClosedEvent
                   ? "Event Finished"
                   : displayIsFull
                     ? "Event Full"
@@ -374,7 +392,7 @@ export function EventDetailPage() {
                       ? "Joining..."
                       : "Join Event"}
               </button>
-            ) : !isAcceptedMatch && displayAlreadyJoined ? (
+            ) : !isAcceptedMatch && !isClosedEvent && displayAlreadyJoined ? (
               <button
                 onClick={handleLeaveEvent}
                 disabled={joining || isMatchMembershipUpdating || matchPlayers.state.loading}
@@ -387,6 +405,7 @@ export function EventDetailPage() {
             {event.visibility === "private" &&
             !canEdit &&
             !displayAlreadyJoined &&
+            !isClosedEvent &&
             !isAcceptedMatch ? (
               <div className="sm:max-w-sm">
                 <Suspense fallback={<SectionLoadingMessage message="Loading access..." />}>
@@ -399,7 +418,7 @@ export function EventDetailPage() {
               </div>
             ) : null}
 
-            {canEdit && !isAcceptedMatch && (
+            {canEdit && !isAcceptedMatch && !isClosedEvent && (
               <Link
                 to={`/events/${event.id}/edit`}
                 className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-700"
@@ -435,7 +454,7 @@ export function EventDetailPage() {
               loading={matchPlayers.state.loading}
               actionLoadingId={matchPlayers.state.actionLoadingId}
               error={matchPlayers.state.error}
-              isManager={matchPlayers.state.isManager && !isAcceptedMatch}
+              isManager={matchPlayers.state.isManager && !isAcceptedMatch && !isClosedEvent}
               currentUserId={profile?.id}
               onAssignTeam={matchPlayers.actions.assignTeam}
               onRemove={matchPlayers.actions.remove}
@@ -448,6 +467,8 @@ export function EventDetailPage() {
             <MatchResultSection
               result={matchResult.matchResult}
               sets={matchResult.sets}
+              eventMode={event?.mode ?? null}
+              isCompetitiveFixedSets={matchResult.isCompetitiveFixedSets}
               loading={matchResult.loading}
               submitting={matchResult.submitting}
               validating={matchResult.validating}
@@ -465,6 +486,7 @@ export function EventDetailPage() {
         )}
 
         {event.visibility === "private" &&
+          !isClosedEvent &&
           eventInvitations.state.pendingInvitationForCurrentUser && (
             <Suspense fallback={<SectionLoadingMessage message="Loading invitation..." />}>
               <EventInvitationResponseCard
@@ -476,7 +498,7 @@ export function EventDetailPage() {
             </Suspense>
           )}
 
-        {event.visibility === "private" && canEdit && !displayIsFull && !isAcceptedMatch && (
+        {event.visibility === "private" && canEdit && !displayIsFull && !isAcceptedMatch && !isClosedEvent && (
           <Suspense fallback={<SectionLoadingMessage message="Loading requests..." />}>
             <EventJoinRequestSection
               requests={eventJoinRequests.state.pendingRequests}

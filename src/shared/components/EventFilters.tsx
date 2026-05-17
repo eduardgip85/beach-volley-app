@@ -2,6 +2,7 @@ import { CalendarDays, ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
 import type {
   EventFiltersState,
+  EventModeFilter,
   EventTypeFilter,
 } from "../../features/events/hooks/useEventFilters";
 
@@ -26,11 +27,12 @@ export function EventFilters({
   const hasFilters =
     filters.search.trim() !== "" ||
     filters.type !== "all" ||
+    filters.mode !== "all" ||
     filters.location !== "all" ||
     filters.date !== "";
 
   return (
-    <div className="mt-4 rounded-3xl bg-white p-4 shadow-sm">
+    <div className="mt-4 rounded-3xl bg-white p-4 shadow-sm sm:p-5">
       {/* Mobile search + toggle */}
       <div className="flex gap-3 lg:hidden">
         <div className="flex flex-1 items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
@@ -57,7 +59,7 @@ export function EventFilters({
 
       {/* Mobile hidden filters */}
       {isOpen && (
-        <div className="mt-3 grid gap-3 lg:hidden">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:hidden">
           <FiltersContent
             filters={filters}
             locations={locations}
@@ -69,7 +71,7 @@ export function EventFilters({
       )}
 
       {/* Desktop filters */}
-      <div className="hidden gap-3 lg:grid lg:grid-cols-[1fr_160px_180px_180px_auto]">
+      <div className="hidden gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_150px_150px_180px_180px_auto]">
         <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
           <Search size={18} className="text-slate-400" />
           <input
@@ -106,17 +108,29 @@ function FiltersContent({
         onChange={(event) =>
           onFilterChange("type", event.target.value as EventTypeFilter)
         }
-        className="rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
+        className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
       >
         <option value="all">All Types</option>
         <option value="match">Match</option>
-        <option value="tournament">Tournament</option>
+        <option value="open_play">Open Play</option>
+      </select>
+
+      <select
+        value={filters.mode}
+        onChange={(event) =>
+          onFilterChange("mode", event.target.value as EventModeFilter)
+        }
+        className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
+      >
+        <option value="all">All Formats</option>
+        <option value="casual">Casual</option>
+        <option value="competitive">Competitive</option>
       </select>
 
       <select
         value={filters.location}
         onChange={(event) => onFilterChange("location", event.target.value)}
-        className="rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
+        className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
       >
         <option value="all">All Locations</option>
 
@@ -141,7 +155,7 @@ function FiltersContent({
         type="button"
         onClick={onClearFilters}
         disabled={!hasFilters}
-        className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+        className="w-full rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >
         Clear
       </button>

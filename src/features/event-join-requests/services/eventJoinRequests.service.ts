@@ -100,6 +100,14 @@ function mapEventSummary(row: EventSummaryRow): EventJoinRequestEventSummary {
     };
 }
 
+function isEventClosed(event: EventJoinRequestEventSummary) {
+    return (
+        event.status === "completed" ||
+        event.status === "cancelled" ||
+        new Date(event.startDate) < new Date()
+    );
+}
+
 function mapRequesterProfile(row: RequesterProfileRow): EventJoinRequestProfile {
     return {
         id: row.id,
@@ -266,6 +274,10 @@ export async function requestToJoinPrivateEvent(
         throw new Error("You are already registered for this event");
     }
 
+    if (isEventClosed(event)) {
+        throw new Error("This event is already finished");
+    }
+
     if (event.type === "match" && (await isMatchClosed(eventId))) {
         throw new Error("This match is already closed because the result was validated");
     }
@@ -322,6 +334,10 @@ export async function acceptEventJoinRequest(
 
     if (request.status !== "pending") {
         throw new Error("Only pending requests can be accepted");
+    }
+
+    if (isEventClosed(request.event)) {
+        throw new Error("This event is already finished");
     }
 
     if (request.event.type === "match" && (await isMatchClosed(request.eventId))) {

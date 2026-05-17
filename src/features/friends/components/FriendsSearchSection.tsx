@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { Search, UserPlus, Users } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { FriendProfile } from "../types/friends.types";
 
 interface FriendsSearchSectionProps {
@@ -129,11 +130,13 @@ export function FriendsSearchSection({
                                         </Link>
 
                                         <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase">
-                                            <span className="rounded-full bg-slate-200 px-3 py-1 text-slate-700">
-                                                {profile.role}
-                                            </span>
+                                            {profile.country ? (
+                                                <span className="rounded-full bg-slate-200 px-3 py-1 text-slate-700">
+                                                    {profile.country}
+                                                </span>
+                                            ) : null}
                                             <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">
-                                                Rating {profile.competitiveRating}
+                                                Rating {formatCompetitiveRating(profile.competitiveRating)}
                                             </span>
                                         </div>
                                     </div>

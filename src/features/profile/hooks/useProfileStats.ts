@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
 import { getProfileDashboardStats } from "../services/profileStats.service";
 import type { ProfileStatsData } from "../types/profileStats.types";
 
 const emptyStats: ProfileStatsData = {
-    competitiveRating: 1000,
+    competitiveRating: DEFAULT_COMPETITIVE_RATING,
     matchesPlayed: 0,
     wins: 0,
     losses: 0,

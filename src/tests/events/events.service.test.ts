@@ -122,7 +122,7 @@ describe("events.service", () => {
                 startDate: "2026-05-01T10:00:00.000Z",
                 endDate: null,
                 maxParticipants: 4,
-                status: "active",
+                status: "completed",
                 imageUrl: null,
                 createdBy: "user-1",
                 createdAt: "2026-04-30T10:00:00.000Z",

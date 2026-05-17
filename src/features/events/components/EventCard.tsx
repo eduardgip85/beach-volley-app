@@ -5,12 +5,11 @@ import { getEventRegistrationsCount } from "../../registrations/services/registr
 import type { Event } from "../types/event.types";
 import {
   getEventBadgeClasses,
-  getEventDisplayStatus,
   getEventFallbackImage,
   getEventModeLabel,
+  getEventModeBadgeClasses,
+  getEventModeSurfaceClasses,
   getEventTypeLabel,
-  getEventVisibilityBadgeClasses,
-  getEventVisibilityLabel,
   isPastEvent,
 } from "../utils/event-display.utils";
 
@@ -24,7 +23,6 @@ export function EventCard({ event }: Props) {
   const isFull = registrationsCount >= event.maxParticipants;
   const isPast = isPastEvent(event);
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
-  const statusLabel = getEventDisplayStatus(event);
 
   useEffect(() => {
     async function loadCount() {
@@ -44,7 +42,11 @@ export function EventCard({ event }: Props) {
             to={`/events/${event.id}`}
     >
       
-    <article className="overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <article
+      className={`overflow-hidden rounded-3xl shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${getEventModeSurfaceClasses(
+        event
+      )}`}
+    >
       <div className="relative h-44 w-full overflow-hidden">
         <img
           src={image}
@@ -60,29 +62,19 @@ export function EventCard({ event }: Props) {
           {getEventTypeLabel(event.type)}
         </span>
 
-        <span
-          className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
-            event.visibility
-          )}`}
-        >
-          {getEventVisibilityLabel(event.visibility)}
-        </span>
+        {modeLabel && (
+          <span
+            className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventModeBadgeClasses(
+              event.mode
+            )}`}
+          >
+            {modeLabel}
+          </span>
+        )}
       </div>
 
       <div className="p-6">
         <h2 className="text-xl font-bold text-slate-900">{event.title}</h2>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {modeLabel && (
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-              {modeLabel}
-            </span>
-          )}
-
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-            {statusLabel}
-          </span>
-        </div>
 
         <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
           <CalendarDays size={17} className="text-blue-600" />

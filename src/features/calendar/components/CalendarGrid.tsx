@@ -18,8 +18,8 @@ export function CalendarGrid({
     onSelectDay,
 }: CalendarGridProps) {
     return (
-        <div className="rounded-3xl bg-white p-4 shadow-sm md:p-6">
-            <div className="grid grid-cols-7 border py-3 text-center text-xs font-bold uppercase tracking-widest text-slate-400">
+        <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-sm md:p-6">
+            <div className="grid grid-cols-7 border py-3 text-center text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:text-xs">
                 {weekDays.map((day) => (
                 <div key={day}>{day}</div>
                 ))}

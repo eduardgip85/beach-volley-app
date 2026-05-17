@@ -3,12 +3,16 @@ import { EventFilters } from "../../../shared/components/EventFilters";
 import { getPublicEvents } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
+import { isPastEvent } from "../../events/utils/event-display.utils";
 import { EventsMap } from "../components/EventsMap";
 
 export function MapPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const visibleEvents = events.filter(
+    (event) => event.status === "active" && !isPastEvent(event)
+  );
 
   const {
     filteredEvents,
@@ -16,7 +20,7 @@ export function MapPage() {
     locations,
     updateFilter,
     clearFilters,
-  } = useEventFilters(events);
+  } = useEventFilters(visibleEvents);
 
   useEffect(() => {
     async function loadEvents() {

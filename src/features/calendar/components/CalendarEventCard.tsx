@@ -3,14 +3,13 @@ import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
     getEventBadgeClasses,
-    isPastEvent,
+    isFinishedEvent,
 } from "../utils/calendar.utils";
 import {
-    getEventDisplayStatus,
     getEventModeLabel,
+    getEventModeBadgeClasses,
+    getEventModeSurfaceClasses,
     getEventTypeLabel,
-    getEventVisibilityBadgeClasses,
-    getEventVisibilityLabel,
 } from "../../events/utils/event-display.utils";
 
 interface CalendarEventCardProps {
@@ -22,17 +21,14 @@ export function CalendarEventCard({
     event,
     compact = false,
 }: CalendarEventCardProps) {
-    const isPast = isPastEvent(event);
+    const isFinished = isFinishedEvent(event);
     const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
-    const displayStatus = getEventDisplayStatus(event);
-
-    return (
-        <Link
-        to={`/events/${event.id}`}
-        className={`block rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md hover:bg-blue-100 ${
-            compact ? "p-4" : "p-5"
-        }`}
-        >
+    const cardClasses = `block rounded-3xl shadow-sm transition ${
+        isFinished
+            ? "cursor-not-allowed ring-1 ring-red-200"
+            : "hover:-translate-y-1 hover:shadow-md hover:bg-blue-100"
+    } ${compact ? "p-4" : "p-5"} ${isFinished ? "bg-white" : getEventModeSurfaceClasses(event)}`;
+    const content = (
         <div className="flex gap-4">
             <div
             className={`flex items-center justify-center rounded-2xl ${getEventBadgeClasses(
@@ -68,26 +64,22 @@ export function CalendarEventCard({
                 )}`}
                 >
                 <Trophy size={15} />
-                {isPast ? "Finished" : getEventTypeLabel(event.type)}
+                {isFinished ? "Finished" : getEventTypeLabel(event.type)}
                 </span>
 
                 {modeLabel && (
-                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                <span
+                    className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${getEventModeBadgeClasses(
+                        event.mode
+                    )}`}
+                >
                     {modeLabel}
                 </span>
                 )}
 
-                <span
-                className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
-                    event.visibility
-                )}`}
-                >
-                {getEventVisibilityLabel(event.visibility)}
-                </span>
-
-                {!isPast && (
-                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                    {displayStatus}
+                {isFinished && (
+                <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
+                    Not available in details
                 </span>
                 )}
 
@@ -101,6 +93,15 @@ export function CalendarEventCard({
             </div>
             </div>
         </div>
+    );
+
+    if (isFinished) {
+        return <div className={cardClasses}>{content}</div>;
+    }
+
+    return (
+        <Link to={`/events/${event.id}`} className={cardClasses}>
+            {content}
         </Link>
     );
 }

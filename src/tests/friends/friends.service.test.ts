@@ -62,8 +62,8 @@ const friendProfileRow = {
     id: "user-2",
     full_name: "Maria Costa",
     avatar_url: null,
-    role: "player",
-    competitive_rating: 1020,
+    country: "Spain",
+    competitive_rating: 2.2,
 };
 
 const friendRequestRow = {
@@ -77,8 +77,8 @@ const friendRequestRow = {
         id: "user-1",
         full_name: "Alex Player",
         avatar_url: null,
-        role: "player",
-        competitive_rating: 1000,
+        country: "Spain",
+        competitive_rating: 2,
     },
     receiver: friendProfileRow,
 };
@@ -166,7 +166,7 @@ describe("friends.service", () => {
         const result = await searchUsers("maria");
 
         expect(mocks.mockProfilesSelect).toHaveBeenCalledWith(
-            "id, full_name, avatar_url, role, competitive_rating"
+            "id, full_name, avatar_url, country, competitive_rating"
         );
         expect(mocks.mockProfilesIlike).toHaveBeenCalledWith(
             "full_name",
@@ -208,8 +208,8 @@ describe("friends.service", () => {
                 id: "user-2",
                 fullName: "Maria Costa",
                 avatarUrl: null,
-                role: "player",
-                competitiveRating: 1020,
+                country: "Spain",
+                competitiveRating: 2.2,
             },
         ]);
     });
