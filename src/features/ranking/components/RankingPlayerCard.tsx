@@ -5,6 +5,7 @@ import type { RankingPlayer } from "../types/ranking.types";
 
 interface RankingPlayerCardProps {
     player: RankingPlayer;
+    canOpenProfile?: boolean;
 }
 
 function getPositionClasses(position: number) {
@@ -23,12 +24,12 @@ function getPositionClasses(position: number) {
     return "bg-slate-100 text-slate-700 ring-1 ring-slate-200";
 }
 
-export function RankingPlayerCard({ player }: RankingPlayerCardProps) {
-    return (
-        <Link
-            to={`/players/${player.profileId}`}
-            className="block rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:p-5"
-        >
+export function RankingPlayerCard({
+    player,
+    canOpenProfile = true,
+}: RankingPlayerCardProps) {
+    const content = (
+        <>
             <div className="flex items-start gap-3">
                 <div
                     className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-sm font-black ${getPositionClasses(
@@ -117,6 +118,24 @@ export function RankingPlayerCard({ player }: RankingPlayerCardProps) {
                     </p>
                 </div>
             </div>
+        </>
+    );
+
+    const className = canOpenProfile
+        ? "block rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md sm:p-5"
+        : "block rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5";
+
+    if (!canOpenProfile) {
+        return (
+            <div className={className} aria-disabled="true">
+                {content}
+            </div>
+        );
+    }
+
+    return (
+        <Link to={`/players/${player.profileId}`} className={className}>
+            {content}
         </Link>
     );
 }

@@ -45,6 +45,36 @@ function normalizeMaxParticipants(type: EventType, maxParticipants: number) {
     return maxParticipants;
 }
 
+function readRowValue<T>(
+    row: Record<string, unknown>,
+    snakeCaseKey: string,
+    camelCaseKey: string
+): T | undefined {
+    if (row[snakeCaseKey] !== undefined) {
+        return row[snakeCaseKey] as T;
+    }
+
+    if (row[camelCaseKey] !== undefined) {
+        return row[camelCaseKey] as T;
+    }
+
+    return undefined;
+}
+
+function normalizeNumericValue(value: unknown): number {
+    if (typeof value === "number") {
+        return Number.isFinite(value) ? value : 0;
+    }
+
+    if (typeof value === "string") {
+        const parsed = Number(value);
+
+        return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    return 0;
+}
+
 function normalizeEventStatus(
     status: unknown,
     startDate: string
@@ -84,7 +114,10 @@ function buildEventWritePayload(payload: CreateEventPayload) {
 }
 
 function mapEvent(row: any): Event {
+    const eventRow = row as Record<string, unknown>;
     const type = normalizeEventType(row.type);
+    const startDate =
+        readRowValue<string>(eventRow, "start_date", "startDate") ?? "";
 
     return {
         id: row.id,
@@ -93,17 +126,22 @@ function mapEvent(row: any): Event {
         type,
         visibility: normalizeEventVisibility(row.visibility),
         mode: normalizeEventMode(type, row.mode),
-        locationName: row.location_name,
-        latitude: Number(row.latitude),
-        longitude: Number(row.longitude),
-        startDate: row.start_date,
-        endDate: row.end_date,
-        maxParticipants: row.max_participants,
-        status: normalizeEventStatus(row.status, row.start_date),
-        imageUrl: row.image_url,
-        createdBy: row.created_by,
-        createdAt: row.created_at,
-        updatedAt: row.updated_at,
+        locationName:
+            readRowValue<string>(eventRow, "location_name", "locationName") ?? "",
+        latitude: normalizeNumericValue(row.latitude),
+        longitude: normalizeNumericValue(row.longitude),
+        startDate,
+        endDate: readRowValue<string | null>(eventRow, "end_date", "endDate") ?? null,
+        maxParticipants:
+            readRowValue<number>(eventRow, "max_participants", "maxParticipants") ?? 0,
+        status: normalizeEventStatus(row.status, startDate),
+        imageUrl: readRowValue<string | null>(eventRow, "image_url", "imageUrl") ?? null,
+        createdBy:
+            readRowValue<string>(eventRow, "created_by", "createdBy") ?? "",
+        createdAt:
+            readRowValue<string>(eventRow, "created_at", "createdAt") ?? "",
+        updatedAt:
+            readRowValue<string>(eventRow, "updated_at", "updatedAt") ?? "",
     };
 }
 
@@ -160,12 +198,23 @@ export async function getEventDetailSummary(
     if (error) throw error;
 
     const row = data as EventDetailSummaryRow;
+    const summaryRow = row as unknown as Record<string, unknown>;
 
     return {
         event: mapEvent(row.event),
-        creatorName: row.creatorName ?? null,
-        registrationsCount: Number(row.registrationsCount ?? 0),
-        isRegistered: Boolean(row.isRegistered),
+        creatorName:
+            summaryRow.creatorName?.toString() ??
+            summaryRow.creator_name?.toString() ??
+            null,
+        registrationsCount: Number(
+            summaryRow.registrationsCount ??
+            summaryRow.registrations_count ??
+            0
+        ),
+        isRegistered: Boolean(
+            summaryRow.isRegistered ??
+            summaryRow.is_registered
+        ),
     };
 }
 

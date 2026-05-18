@@ -1,27 +1,40 @@
-import { CalendarDays, Copy, MapPin, UserCircle2, Users } from "lucide-react";
-import { Suspense, lazy, useEffect, useState } from "react";
+import {
+  CalendarDays,
+  Clock3,
+  Copy,
+  Info,
+  MapPin,
+  Navigation,
+  Shield,
+  UserCircle2,
+  Users,
+} from "lucide-react";
+import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import { useEventInvitations } from "../../event-invitations/hooks/useEventInvitations";
+import { useEventJoinRequests } from "../../event-join-requests/hooks/useEventJoinRequests";
+import { useMatchPlayers } from "../../match-players/hooks/useMatchPlayers";
+import { useMatchResult } from "../../match-results/hooks/useMatchResult";
 import {
+  getEventParticipants,
   registerToEvent,
   unregisterFromEvent,
+  type EventParticipant,
 } from "../../registrations/services/registrations.service";
 import { getEventDetailSummary } from "../services/events.service";
 import type { Event } from "../types/event.types";
 import {
   getEventBadgeClasses,
   getEventDisplayStatus,
-  getEventModeLabel,
+  getEventFallbackImage,
   getEventModeBadgeClasses,
+  getEventModeLabel,
   getEventTypeLabel,
   getEventVisibilityBadgeClasses,
   getEventVisibilityLabel,
   isPastEvent,
 } from "../utils/event-display.utils";
-import { useMatchResult } from "../../match-results/hooks/useMatchResult";
-import { useEventInvitations } from "../../event-invitations/hooks/useEventInvitations";
-import { useMatchPlayers } from "../../match-players/hooks/useMatchPlayers";
-import { useEventJoinRequests } from "../../event-join-requests/hooks/useEventJoinRequests";
 
 const EventLocationMap = lazy(() =>
   import("../components/EventLocationMap").then((module) => ({
@@ -60,6 +73,87 @@ const PrivateEventAccessCard = lazy(() =>
   )
 );
 
+function formatEventDate(dateValue: string) {
+  if (!dateValue) {
+    return "Date pending";
+  }
+
+  const parsedDate = new Date(dateValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Date pending";
+  }
+
+  return parsedDate.toLocaleString();
+}
+
+function formatEventDateLabel(dateValue: string) {
+  if (!dateValue) {
+    return "Date pending";
+  }
+
+  const parsedDate = new Date(dateValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Date pending";
+  }
+
+  return parsedDate.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function formatEventTimeLabel(dateValue: string) {
+  if (!dateValue) {
+    return "Time pending";
+  }
+
+  const parsedDate = new Date(dateValue);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Time pending";
+  }
+
+  return parsedDate.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function getEventHighlights(event: Event) {
+  if (event.type === "tournament") {
+    return [
+      "Structured day built for bigger attendance and more competitive rhythm.",
+      "Ideal for brackets, community milestones, and featured beach events.",
+      "Share the event early so players can secure spots before it fills up.",
+    ];
+  }
+
+  if (event.type === "open_play") {
+    return [
+      "Relaxed open session focused on meeting players and getting quality reps in.",
+      "Flexible attendance makes it easier for the local community to join.",
+      "Great for partner rotations, casual games, and social beach sessions.",
+    ];
+  }
+
+  if (event.mode === "competitive") {
+    return [
+      "Accepted results feed into competitive rating and player history.",
+      "Rosters stay focused on four active players with clearer team structure.",
+      "Best for more serious matches with stronger level expectations.",
+    ];
+  }
+
+  return [
+    "Casual format designed for smooth games and an easy-going beach session.",
+    "Perfect for practice matches, friend meetups, and quick local games.",
+    "Results stay social only, so there is no rating impact here.",
+  ];
+}
+
 export function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -68,9 +162,12 @@ export function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [registrationsCount, setRegistrationsCount] = useState(0);
   const [alreadyJoined, setAlreadyJoined] = useState(false);
+  const [registeredParticipants, setRegisteredParticipants] = useState<EventParticipant[]>([]);
+  const [showAllParticipants, setShowAllParticipants] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const [creatorName, setCreatorName] = useState<string | null>(null);
@@ -86,21 +183,19 @@ export function EventDetailPage() {
       (profile.id === event.createdBy || isAdmin)
   );
 
-  const isFull = event
-    ? registrationsCount >= event.maxParticipants
-    : false;
-
+  const isFull = event ? registrationsCount >= event.maxParticipants : false;
   const isPast = event ? isPastEvent(event) : false;
   const isClosedEvent = Boolean(
     event &&
-      (event.status === "completed" ||
-        event.status === "cancelled" ||
-        isPast)
+      (event.status === "completed" || event.status === "cancelled" || isPast)
   );
   const canViewMatchPlayers = Boolean(
     event &&
       event.type === "match" &&
       (event.visibility === "public" || canEdit || alreadyJoined)
+  );
+  const canViewParticipants = Boolean(
+    event && (event.visibility === "public" || canEdit || alreadyJoined)
   );
 
   const matchPlayers = useMatchPlayers(eventId, {
@@ -110,13 +205,18 @@ export function EventDetailPage() {
   });
 
   const isMatchEvent = event?.type === "match";
-  const displayJoinedCount = isMatchEvent && canViewMatchPlayers
-    ? matchPlayers.state.activePlayers.length
-    : registrationsCount;
-  const displayAlreadyJoined = isMatchEvent && canViewMatchPlayers
-    ? Boolean(matchPlayers.state.currentPlayer)
-    : alreadyJoined;
-  const displayIsFull = isMatchEvent && canViewMatchPlayers ? matchPlayers.state.isFull : isFull;
+  const displayJoinedCount =
+    isMatchEvent && canViewMatchPlayers
+      ? matchPlayers.state.activePlayers.length
+      : registrationsCount;
+  const displayAlreadyJoined =
+    isMatchEvent && canViewMatchPlayers
+      ? Boolean(matchPlayers.state.currentPlayer)
+      : alreadyJoined;
+  const displayIsFull =
+    isMatchEvent && canViewMatchPlayers
+      ? matchPlayers.state.isFull
+      : isFull;
   const isMatchMembershipUpdating = Boolean(
     matchPlayers.state.actionLoadingId &&
       profile &&
@@ -164,7 +264,6 @@ export function EventDetailPage() {
       try {
         setLoading(true);
         setError("");
-
         await loadEventSummary(eventId);
       } catch (err) {
         console.error(err);
@@ -177,6 +276,29 @@ export function EventDetailPage() {
     loadEvent();
   }, [eventId, profile?.id]);
 
+  useEffect(() => {
+    async function loadParticipants() {
+      if (!eventId || !event || event.type === "match" || !canViewParticipants) {
+        setRegisteredParticipants([]);
+        setParticipantsLoading(false);
+        return;
+      }
+
+      try {
+        setParticipantsLoading(true);
+        const data = await getEventParticipants(eventId);
+        setRegisteredParticipants(data);
+      } catch (err) {
+        console.error(err);
+        setRegisteredParticipants([]);
+      } finally {
+        setParticipantsLoading(false);
+      }
+    }
+
+    loadParticipants();
+  }, [canViewParticipants, event, eventId]);
+
   async function handleJoinEvent() {
     if (!eventId) return;
 
@@ -185,11 +307,7 @@ export function EventDetailPage() {
       return;
     }
 
-    if (displayAlreadyJoined) {
-      return;
-    }
-
-    if (displayIsFull) {
+    if (displayAlreadyJoined || displayIsFull) {
       return;
     }
 
@@ -201,7 +319,6 @@ export function EventDetailPage() {
 
       setJoining(true);
       setError("");
-
       await registerToEvent(eventId, profile.id);
       await loadEventSummary(eventId);
     } catch (err) {
@@ -223,7 +340,6 @@ export function EventDetailPage() {
 
       setJoining(true);
       setError("");
-
       await unregisterFromEvent(eventId, profile.id);
       await loadEventSummary(eventId);
     } catch (err) {
@@ -277,217 +393,276 @@ export function EventDetailPage() {
     !isAcceptedMatch &&
     !displayAlreadyJoined &&
     (!(event.visibility === "private" && !canEdit) || isClosedEvent);
+  const participants =
+    event.type === "match"
+      ? matchPlayers.state.activePlayers.map((player) => ({
+          id: player.id,
+          userId: player.userId,
+          profile: {
+            id: player.profile.id,
+            fullName: player.profile.fullName,
+            avatarUrl: player.profile.avatarUrl,
+            country: null,
+          },
+        }))
+      : registeredParticipants;
+  const visibleParticipants = showAllParticipants
+    ? participants
+    : participants.slice(0, 5);
+  const spotsLeft = Math.max(event.maxParticipants - displayJoinedCount, 0);
+  const directionsUrl =
+    Number.isFinite(event.latitude) && Number.isFinite(event.longitude)
+      ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
+      : null;
+  const eventHighlights = getEventHighlights(event);
+  const shouldShowParticipantsCard =
+    canViewParticipants && (participantsLoading || participants.length > 0);
 
   return (
-    <section className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-      <div className="space-y-6">
-        <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-wrap gap-2">
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
-                event
-              )}`}
-            >
-              {getEventTypeLabel(event.type)}
-            </span>
-
-            {modeLabel && (
+    <section className="space-y-6">
+      <div className="overflow-hidden rounded-[2rem] bg-slate-950 shadow-sm">
+        <div
+          className="relative min-h-[290px] bg-cover bg-center px-6 py-6 sm:px-8 sm:py-8"
+          style={{
+            backgroundImage: `linear-gradient(180deg, rgba(2,6,23,0.22) 0%, rgba(2,6,23,0.8) 78%), url('${getEventFallbackImage(
+              event
+            )}')`,
+          }}
+        >
+          <div className="relative z-10 flex h-full flex-col justify-between gap-8">
+            <div className="flex flex-wrap gap-2">
               <span
-                className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventModeBadgeClasses(
-                  event.mode
+                className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
+                  event
                 )}`}
               >
-                {modeLabel}
+                {getEventTypeLabel(event.type)}
               </span>
-            )}
 
-            <span
-              className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
-                event.visibility
-              )}`}
-            >
-              {getEventVisibilityLabel(event.visibility)}
-            </span>
+              {modeLabel ? (
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventModeBadgeClasses(
+                    event.mode
+                  )}`}
+                >
+                  {modeLabel}
+                </span>
+              ) : null}
 
-            {displayStatus !== "Active" ? (
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase text-slate-700">
-                {displayStatus}
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+                  event.visibility
+                )}`}
+              >
+                {getEventVisibilityLabel(event.visibility)}
               </span>
-            ) : null}
-          </div>
 
-          <h1 className="mt-4 text-3xl font-bold text-slate-900">
-            {event.title}
-          </h1>
-
-          <p className="mt-3 text-slate-600">
-            {event.description || "No description provided."}
-          </p>
-
-          {error && (
-            <p className="mt-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
-              {error}
-            </p>
-          )}
-
-          <div className="mt-6 grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
-            <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
-              <CalendarDays size={18} className="text-blue-600" />
-              {new Date(event.startDate).toLocaleString()}
+              {displayStatus !== "Active" ? (
+                <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase text-white backdrop-blur">
+                  {displayStatus}
+                </span>
+              ) : null}
             </div>
 
-            <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
-              <MapPin size={18} className="text-blue-600" />
-              {event.locationName}
-            </div>
-
-            <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
-              <Users size={18} className="text-blue-600" />
-              {displayJoinedCount}/{event.maxParticipants} joined
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-4">
-              Visibility: {getEventVisibilityLabel(event.visibility)}
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-4">
-              Status: {displayStatus}
-            </div>
-
-            {modeLabel && (
-              <div className="rounded-2xl bg-slate-50 p-4">
-                Mode: {modeLabel}
-              </div>
-            )}
-
-            <div className="rounded-2xl bg-slate-50 p-4">
-              Type: {getEventTypeLabel(event.type)}
-            </div>
-
-            <div className="flex items-center gap-2 rounded-2xl bg-slate-50 p-4">
-              <UserCircle2 size={18} className="text-blue-600" />
-              Created by: {creatorName || "Loading creator..."}
+            <div className="max-w-3xl">
+              <h1 className="text-3xl font-black text-white sm:text-4xl">
+                {event.title}
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:text-base">
+                {event.description || "No description provided yet for this event."}
+              </p>
             </div>
           </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            {shouldShowJoinButton ? (
-              <button
-                onClick={isClosedEvent ? undefined : handleJoinEvent}
-                disabled={
-                  isClosedEvent ||
-                  joining ||
-                  isMatchMembershipUpdating ||
-                  displayIsFull ||
-                  isPast ||
-                  matchPlayers.state.loading
-                }
-                className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isClosedEvent
-                  ? "Event Finished"
-                  : displayIsFull
-                    ? "Event Full"
-                    : joining || isMatchMembershipUpdating
-                      ? "Joining..."
-                      : "Join Event"}
-              </button>
-            ) : !isAcceptedMatch && !isClosedEvent && displayAlreadyJoined ? (
-              <button
-                onClick={handleLeaveEvent}
-                disabled={joining || isMatchMembershipUpdating || matchPlayers.state.loading}
-                className="rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
-              >
-                {joining || isMatchMembershipUpdating ? "Leaving..." : "Leave Event"}
-              </button>
-            ) : null}
-
-            {event.visibility === "private" &&
-            !canEdit &&
-            !displayAlreadyJoined &&
-            !isClosedEvent &&
-            !isAcceptedMatch ? (
-              <div className="sm:max-w-sm">
-                <Suspense fallback={<SectionLoadingMessage message="Loading access..." />}>
-                  <PrivateEventAccessCard
-                    request={eventJoinRequests.state.myRequest}
-                    actionLoadingId={eventJoinRequests.state.actionLoadingId}
-                    onRequestAccess={eventJoinRequests.actions.requestAccess}
-                  />
-                </Suspense>
-              </div>
-            ) : null}
-
-            {canEdit && !isAcceptedMatch && !isClosedEvent && (
-              <Link
-                to={`/events/${event.id}/edit`}
-                className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-700"
-              >
-                Edit Event
-              </Link>
-            )}
-
-            {canCopyPrivateLink && (
-              <button
-                type="button"
-                onClick={handleCopyPrivateLink}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white"
-              >
-                <Copy size={16} />
-                Copy Private Link
-              </button>
-            )}
-          </div>
-
-          {copyMessage && (
-            <p className="mt-4 text-sm font-medium text-slate-600">
-              {copyMessage}
-            </p>
-          )}
         </div>
+      </div>
 
-        {event.type === "match" && canViewMatchPlayers && (
-          <Suspense fallback={<SectionLoadingMessage message="Loading teams..." />}>
-            <MatchPlayersSection
-              teamAPlayers={matchPlayers.state.teamAPlayers}
-              teamBPlayers={matchPlayers.state.teamBPlayers}
-              loading={matchPlayers.state.loading}
-              actionLoadingId={matchPlayers.state.actionLoadingId}
-              error={matchPlayers.state.error}
-              isManager={matchPlayers.state.isManager && !isAcceptedMatch && !isClosedEvent}
-              currentUserId={profile?.id}
-              onAssignTeam={matchPlayers.actions.assignTeam}
-              onRemove={matchPlayers.actions.remove}
-            />
-          </Suspense>
-        )}
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <EventDetailStatCard
+          icon={<CalendarDays size={18} className="text-blue-600" />}
+          label="Date"
+          value={formatEventDateLabel(event.startDate)}
+        />
+        <EventDetailStatCard
+          icon={<Clock3 size={18} className="text-blue-600" />}
+          label="Start time"
+          value={formatEventTimeLabel(event.startDate)}
+        />
+        <EventDetailStatCard
+          icon={<MapPin size={18} className="text-blue-600" />}
+          label="Location"
+          value={event.locationName || "Location pending"}
+        />
+        <EventDetailStatCard
+          icon={<Users size={18} className="text-blue-600" />}
+          label="Joined"
+          value={`${displayJoinedCount} / ${event.maxParticipants}`}
+          helper={spotsLeft > 0 ? `${spotsLeft} spots left` : "Event full"}
+        />
+      </div>
 
-        {event.type === "match" && (
-          <Suspense fallback={<SectionLoadingMessage message="Loading result..." />}>
-            <MatchResultSection
-              result={matchResult.matchResult}
-              sets={matchResult.sets}
-              eventMode={event?.mode ?? null}
-              isCompetitiveFixedSets={matchResult.isCompetitiveFixedSets}
-              loading={matchResult.loading}
-              submitting={matchResult.submitting}
-              validating={matchResult.validating}
-              error={matchResult.error}
-              canManageResult={matchResult.canManageResult}
-              canValidateResult={matchResult.canValidateResult}
-              onAddSet={matchResult.addSet}
-              onRemoveSet={matchResult.removeSet}
-              onUpdateSet={matchResult.updateSet}
-              onSubmit={matchResult.submitResult}
-              onValidate={matchResult.validateResult}
-              onReject={matchResult.rejectResult}
-            />
-          </Suspense>
-        )}
+      {error ? (
+        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          {error}
+        </p>
+      ) : null}
 
-        {event.visibility === "private" &&
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
+        <div className="space-y-6">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,0.9fr)]">
+            <div className="rounded-3xl bg-white p-6 shadow-sm">
+              <div className="flex items-center gap-2 text-slate-900">
+                <Info size={18} className="text-blue-600" />
+                <h2 className="text-lg font-black">About this event</h2>
+              </div>
+
+              <p className="mt-4 text-sm leading-7 text-slate-600">
+                {event.description ||
+                  "No extra notes yet. Use the summary cards and participants section to understand the event at a glance."}
+              </p>
+
+              <div className="mt-5 space-y-3">
+                {eventHighlights.map((highlight) => (
+                  <div
+                    key={highlight}
+                    className="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600"
+                  >
+                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                    <span>{highlight}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {shouldShowParticipantsCard ? (
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-900">
+                      Participants
+                    </h2>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {participants.length} joined
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700">
+                    {spotsLeft > 0 ? `${spotsLeft} spots left` : "Full"}
+                  </span>
+                </div>
+
+                {participantsLoading ? (
+                  <div className="mt-5 space-y-3">
+                    {Array.from({ length: 4 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="h-14 animate-pulse rounded-2xl bg-slate-100"
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-5 space-y-3">
+                      {visibleParticipants.map((participant) => (
+                        <ParticipantRow
+                          key={participant.id}
+                          participant={participant}
+                        />
+                      ))}
+                    </div>
+
+                    {participants.length > 5 ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllParticipants((current) => !current)}
+                        className="mt-5 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                      >
+                        {showAllParticipants
+                          ? "Show fewer participants"
+                          : `View all ${participants.length} participants`}
+                      </button>
+                    ) : null}
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
+
+          <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-lg font-black text-slate-900">Court location</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {event.locationName || "Location pending"}
+                </p>
+              </div>
+
+              {directionsUrl ? (
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                >
+                  <Navigation size={16} />
+                  Get directions
+                </a>
+              ) : null}
+            </div>
+
+            <div className="mt-5 h-72 overflow-hidden rounded-2xl bg-slate-100">
+              <Suspense fallback={<SectionLoadingMessage message="Loading map..." />}>
+                <EventLocationMap
+                  latitude={event.latitude}
+                  longitude={event.longitude}
+                  title={event.title}
+                  locationName={event.locationName}
+                />
+              </Suspense>
+            </div>
+          </div>
+
+          {event.type === "match" && canViewMatchPlayers ? (
+            <Suspense fallback={<SectionLoadingMessage message="Loading teams..." />}>
+              <MatchPlayersSection
+                teamAPlayers={matchPlayers.state.teamAPlayers}
+                teamBPlayers={matchPlayers.state.teamBPlayers}
+                loading={matchPlayers.state.loading}
+                actionLoadingId={matchPlayers.state.actionLoadingId}
+                error={matchPlayers.state.error}
+                isManager={matchPlayers.state.isManager && !isAcceptedMatch && !isClosedEvent}
+                currentUserId={profile?.id}
+                onAssignTeam={matchPlayers.actions.assignTeam}
+                onRemove={matchPlayers.actions.remove}
+              />
+            </Suspense>
+          ) : null}
+
+          {event.type === "match" ? (
+            <Suspense fallback={<SectionLoadingMessage message="Loading result..." />}>
+              <MatchResultSection
+                result={matchResult.matchResult}
+                sets={matchResult.sets}
+                eventMode={event.mode ?? null}
+                isCompetitiveFixedSets={matchResult.isCompetitiveFixedSets}
+                loading={matchResult.loading}
+                submitting={matchResult.submitting}
+                validating={matchResult.validating}
+                error={matchResult.error}
+                canManageResult={matchResult.canManageResult}
+                canValidateResult={matchResult.canValidateResult}
+                onAddSet={matchResult.addSet}
+                onRemoveSet={matchResult.removeSet}
+                onUpdateSet={matchResult.updateSet}
+                onSubmit={matchResult.submitResult}
+                onValidate={matchResult.validateResult}
+                onReject={matchResult.rejectResult}
+              />
+            </Suspense>
+          ) : null}
+
+          {event.visibility === "private" &&
           !isClosedEvent &&
-          eventInvitations.state.pendingInvitationForCurrentUser && (
+          eventInvitations.state.pendingInvitationForCurrentUser ? (
             <Suspense fallback={<SectionLoadingMessage message="Loading invitation..." />}>
               <EventInvitationResponseCard
                 invitation={eventInvitations.state.pendingInvitationForCurrentUser}
@@ -496,36 +671,213 @@ export function EventDetailPage() {
                 onDecline={eventInvitations.actions.declineInvitation}
               />
             </Suspense>
-          )}
+          ) : null}
 
-        {event.visibility === "private" && canEdit && !displayIsFull && !isAcceptedMatch && !isClosedEvent && (
-          <Suspense fallback={<SectionLoadingMessage message="Loading requests..." />}>
-            <EventJoinRequestSection
-              requests={eventJoinRequests.state.pendingRequests}
-              actionLoadingId={eventJoinRequests.state.actionLoadingId}
-              onAccept={eventJoinRequests.actions.acceptRequest}
-              onReject={eventJoinRequests.actions.rejectRequest}
-            />
-          </Suspense>
-        )}
-
-      </div>
-
-      <aside className="rounded-3xl bg-white p-6 shadow-sm">
-        <h2 className="font-bold text-slate-900">Location</h2>
-
-        <div className="mt-4 h-64 overflow-hidden rounded-2xl bg-slate-100">
-          <Suspense fallback={<SectionLoadingMessage message="Loading map..." />}>
-            <EventLocationMap
-              latitude={event.latitude}
-              longitude={event.longitude}
-              title={event.title}
-              locationName={event.locationName}
-            />
-          </Suspense>
+          {event.visibility === "private" &&
+          canEdit &&
+          !displayIsFull &&
+          !isAcceptedMatch &&
+          !isClosedEvent ? (
+            <Suspense fallback={<SectionLoadingMessage message="Loading requests..." />}>
+              <EventJoinRequestSection
+                requests={eventJoinRequests.state.pendingRequests}
+                actionLoadingId={eventJoinRequests.state.actionLoadingId}
+                onAccept={eventJoinRequests.actions.acceptRequest}
+                onReject={eventJoinRequests.actions.rejectRequest}
+              />
+            </Suspense>
+          ) : null}
         </div>
-      </aside>
+
+        <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+          <div className="rounded-3xl bg-white p-6 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
+              Event snapshot
+            </p>
+
+            <div className="mt-4 space-y-3">
+              <SidebarInfoRow
+                label="Starts"
+                value={formatEventDate(event.startDate)}
+                icon={<CalendarDays size={16} className="text-blue-600" />}
+              />
+              <SidebarInfoRow
+                label="Created by"
+                value={creatorName || "Loading creator..."}
+                icon={<UserCircle2 size={16} className="text-blue-600" />}
+              />
+              <SidebarInfoRow
+                label="Visibility"
+                value={getEventVisibilityLabel(event.visibility)}
+                icon={<Shield size={16} className="text-blue-600" />}
+              />
+              <SidebarInfoRow
+                label="Location"
+                value={event.locationName || "Location pending"}
+                icon={<MapPin size={16} className="text-blue-600" />}
+              />
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-blue-50 px-4 py-4">
+              <p className="text-xs font-bold uppercase tracking-wide text-blue-700">
+                Availability
+              </p>
+              <p className="mt-2 text-3xl font-black text-slate-900">
+                {spotsLeft}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                spots left out of {event.maxParticipants}
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3">
+              {shouldShowJoinButton ? (
+                <button
+                  onClick={isClosedEvent ? undefined : handleJoinEvent}
+                  disabled={
+                    isClosedEvent ||
+                    joining ||
+                    isMatchMembershipUpdating ||
+                    displayIsFull ||
+                    isPast ||
+                    matchPlayers.state.loading
+                  }
+                  className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isClosedEvent
+                    ? "Event Finished"
+                    : displayIsFull
+                      ? "Event Full"
+                      : joining || isMatchMembershipUpdating
+                        ? "Joining..."
+                        : "Join Event"}
+                </button>
+              ) : !isAcceptedMatch && !isClosedEvent && displayAlreadyJoined ? (
+                <button
+                  onClick={handleLeaveEvent}
+                  disabled={joining || isMatchMembershipUpdating || matchPlayers.state.loading}
+                  className="rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
+                >
+                  {joining || isMatchMembershipUpdating ? "Leaving..." : "Leave Event"}
+                </button>
+              ) : null}
+
+              {canEdit && !isAcceptedMatch && !isClosedEvent ? (
+                <Link
+                  to={`/events/${event.id}/edit`}
+                  className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-700"
+                >
+                  Edit Event
+                </Link>
+              ) : null}
+
+              {canCopyPrivateLink ? (
+                <button
+                  type="button"
+                  onClick={handleCopyPrivateLink}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white"
+                >
+                  <Copy size={16} />
+                  Copy Private Link
+                </button>
+              ) : null}
+            </div>
+
+            {copyMessage ? (
+              <p className="mt-4 text-sm font-medium text-slate-600">
+                {copyMessage}
+              </p>
+            ) : null}
+          </div>
+
+          {event.visibility === "private" &&
+          !canEdit &&
+          !displayAlreadyJoined &&
+          !isClosedEvent &&
+          !isAcceptedMatch ? (
+            <Suspense fallback={<SectionLoadingMessage message="Loading access..." />}>
+              <PrivateEventAccessCard
+                request={eventJoinRequests.state.myRequest}
+                actionLoadingId={eventJoinRequests.state.actionLoadingId}
+                onRequestAccess={eventJoinRequests.actions.requestAccess}
+              />
+            </Suspense>
+          ) : null}
+        </aside>
+      </section>
     </section>
+  );
+}
+
+function EventDetailStatCard({
+  icon,
+  label,
+  value,
+  helper,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  helper?: string;
+}) {
+  return (
+    <div className="rounded-3xl bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-2">{icon}</div>
+      <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-base font-black text-slate-900">{value}</p>
+      {helper ? <p className="mt-1 text-sm text-slate-500">{helper}</p> : null}
+    </div>
+  );
+}
+
+function ParticipantRow({ participant }: { participant: EventParticipant }) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+      {participant.profile.avatarUrl ? (
+        <img
+          src={participant.profile.avatarUrl}
+          alt={participant.profile.fullName}
+          className="h-11 w-11 rounded-2xl object-cover"
+        />
+      ) : (
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white">
+          {participant.profile.fullName.charAt(0).toUpperCase()}
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-slate-900">
+          {participant.profile.fullName}
+        </p>
+        <p className="truncate text-xs text-slate-500">
+          {participant.profile.country || "Beach volleyball player"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SidebarInfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+      <div className="mt-0.5">{icon}</div>
+      <div className="min-w-0">
+        <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+          {label}
+        </p>
+        <p className="mt-1 text-sm font-semibold text-slate-700">{value}</p>
+      </div>
+    </div>
   );
 }
 

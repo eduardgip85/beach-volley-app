@@ -6,6 +6,51 @@ interface EventParticipationRow {
   status: string;
 }
 
+interface EventParticipantProfileRow {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  country: string | null;
+}
+
+interface EventParticipantRow {
+  id: string;
+  user_id: string;
+  profile: EventParticipantProfileRow[] | EventParticipantProfileRow;
+}
+
+export interface EventParticipantProfile {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+  country: string | null;
+}
+
+export interface EventParticipant {
+  id: string;
+  userId: string;
+  profile: EventParticipantProfile;
+}
+
+function normalizeRelation<T>(relation: T[] | T): T {
+  return Array.isArray(relation) ? relation[0] : relation;
+}
+
+function mapEventParticipant(row: EventParticipantRow): EventParticipant {
+  const profile = normalizeRelation(row.profile);
+
+  return {
+    id: row.id,
+    userId: row.user_id,
+    profile: {
+      id: profile.id,
+      fullName: profile.full_name,
+      avatarUrl: profile.avatar_url,
+      country: profile.country,
+    },
+  };
+}
+
 async function getEventParticipationRow(eventId: string): Promise<EventParticipationRow> {
   const { data, error } = await supabase
     .from("events")
@@ -107,4 +152,19 @@ export async function getEventRegisteredUserIds(eventId: string): Promise<string
   if (error) throw error;
 
   return data.map((item) => item.user_id);
+}
+
+export async function getEventParticipants(
+  eventId: string
+): Promise<EventParticipant[]> {
+  const { data, error } = await supabase
+    .from("registrations")
+    .select(
+      "id, user_id, profile:profiles!registrations_user_id_fkey(id, full_name, avatar_url, country)"
+    )
+    .eq("event_id", eventId);
+
+  if (error) throw error;
+
+  return data.map((row) => mapEventParticipant(row as EventParticipantRow));
 }

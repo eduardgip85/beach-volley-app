@@ -227,6 +227,44 @@ describe("events.service", () => {
             expect(result.registrationsCount).toBe(3);
             expect(result.isRegistered).toBe(true);
         });
+
+        it("maps rpc responses with snake_case summary fields and camelCase event fields", async () => {
+            mockRpc.mockResolvedValue({
+                data: {
+                    event: {
+                        ...eventRow,
+                        location_name: undefined,
+                        start_date: undefined,
+                        end_date: undefined,
+                        max_participants: undefined,
+                        image_url: undefined,
+                        created_by: undefined,
+                        created_at: undefined,
+                        updated_at: undefined,
+                        locationName: "Bogatell Beach",
+                        startDate: "2026-06-10T18:30:00.000Z",
+                        endDate: null,
+                        maxParticipants: 4,
+                        imageUrl: null,
+                        createdBy: "user-1",
+                        createdAt: "2026-06-01T08:00:00.000Z",
+                        updatedAt: "2026-06-01T08:00:00.000Z",
+                    },
+                    creator_name: "Carla Spike",
+                    registrations_count: 4,
+                    is_registered: false,
+                },
+                error: null,
+            });
+
+            const result = await getEventDetailSummary("event-1");
+
+            expect(result.event.locationName).toBe("Bogatell Beach");
+            expect(result.event.startDate).toBe("2026-06-10T18:30:00.000Z");
+            expect(result.creatorName).toBe("Carla Spike");
+            expect(result.registrationsCount).toBe(4);
+            expect(result.isRegistered).toBe(false);
+        });
     });
 
     describe("createEvent", () => {

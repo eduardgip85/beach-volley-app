@@ -82,7 +82,7 @@ describe("event-display.utils", () => {
             getEventBadgeClasses(
                 createEvent({ type: "open_play", mode: null, maxParticipants: 12 })
             )
-        ).toBe("bg-amber-100 text-amber-700");
+        ).toBe("bg-orange-100 text-orange-700");
         expect(getEventVisibilityBadgeClasses("private")).toBe(
             "bg-slate-900 text-white"
         );

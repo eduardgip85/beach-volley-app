@@ -153,7 +153,11 @@ export function RankingPage() {
                 {!loading && !error && players.length > 0 ? (
                     <div className="mt-6 grid gap-4">
                         {players.map((player) => (
-                            <RankingPlayerCard key={player.profileId} player={player} />
+                            <RankingPlayerCard
+                                key={player.profileId}
+                                player={player}
+                                canOpenProfile={isAuthenticated}
+                            />
                         ))}
                     </div>
                 ) : null}
