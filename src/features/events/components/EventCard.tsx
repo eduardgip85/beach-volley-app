@@ -2,6 +2,7 @@ import { CalendarDays, MapPin, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getEventRegistrationsCount } from "../../registrations/services/registrations.service";
+import { isUnlimitedEventCapacity } from "../types/event.types";
 import type { Event } from "../types/event.types";
 import {
   getEventBadgeClasses,
@@ -20,7 +21,9 @@ interface Props {
 export function EventCard({ event }: Props) {
   const [registrationsCount, setRegistrationsCount] = useState(0);
   const image = getEventFallbackImage(event);
-  const isFull = registrationsCount >= event.maxParticipants;
+  const hasUnlimitedSpots =
+    event.type !== "match" && isUnlimitedEventCapacity(event.maxParticipants);
+  const isFull = !hasUnlimitedSpots && registrationsCount >= event.maxParticipants;
   const isPast = isPastEvent(event);
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
 
@@ -90,8 +93,9 @@ export function EventCard({ event }: Props) {
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <Users size={17} />
             <span>
-              {registrationsCount}/{event.maxParticipants}{" "}
-              {isFull ? "Full" : "joined"}
+              {hasUnlimitedSpots
+                ? `${registrationsCount} joined`
+                : `${registrationsCount}/${event.maxParticipants} ${isFull ? "Full" : "joined"}`}
             </span>
           </div>
 

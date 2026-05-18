@@ -9,6 +9,7 @@ import {
 } from "../../registrations/services/registrations.service";
 import { supabase } from "../../../config/supabase";
 import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
+import { isUnlimitedEventCapacity } from "../../events/types/event.types";
 import type { EventMode, EventStatus, EventType, EventVisibility } from "../../events/types/event.types";
 import type {
     EventInvitation,
@@ -322,7 +323,10 @@ export async function acceptEventInvitation(
     if (!alreadyRegistered) {
         const registrationsCount = await getEventRegistrationsCount(invitation.eventId);
 
-        if (registrationsCount >= invitation.event.maxParticipants) {
+        if (
+            !isUnlimitedEventCapacity(invitation.event.maxParticipants) &&
+            registrationsCount >= invitation.event.maxParticipants
+        ) {
             throw new Error("This event is already full");
         }
     }

@@ -6,6 +6,12 @@ export type EventMode = "casual" | "competitive";
 
 export type EventStatus = "active" | "cancelled" | "completed";
 
+export const UNLIMITED_EVENT_CAPACITY = 9999;
+
+export function isUnlimitedEventCapacity(maxParticipants: number) {
+    return maxParticipants >= UNLIMITED_EVENT_CAPACITY;
+}
+
 export interface Event {
     id: string;
     title: string;

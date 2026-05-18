@@ -23,6 +23,7 @@ import {
   type EventParticipant,
 } from "../../registrations/services/registrations.service";
 import { getEventDetailSummary } from "../services/events.service";
+import { isUnlimitedEventCapacity } from "../types/event.types";
 import type { Event } from "../types/event.types";
 import {
   getEventBadgeClasses,
@@ -183,7 +184,14 @@ export function EventDetailPage() {
       (profile.id === event.createdBy || isAdmin)
   );
 
-  const isFull = event ? registrationsCount >= event.maxParticipants : false;
+  const hasUnlimitedSpots = Boolean(
+    event &&
+      event.type !== "match" &&
+      isUnlimitedEventCapacity(event.maxParticipants)
+  );
+  const isFull = event
+    ? !hasUnlimitedSpots && registrationsCount >= event.maxParticipants
+    : false;
   const isPast = event ? isPastEvent(event) : false;
   const isClosedEvent = Boolean(
     event &&
@@ -409,7 +417,9 @@ export function EventDetailPage() {
   const visibleParticipants = showAllParticipants
     ? participants
     : participants.slice(0, 5);
-  const spotsLeft = Math.max(event.maxParticipants - displayJoinedCount, 0);
+  const spotsLeft = hasUnlimitedSpots
+    ? null
+    : Math.max(event.maxParticipants - displayJoinedCount, 0);
   const directionsUrl =
     Number.isFinite(event.latitude) && Number.isFinite(event.longitude)
       ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
@@ -495,8 +505,18 @@ export function EventDetailPage() {
         <EventDetailStatCard
           icon={<Users size={18} className="text-blue-600" />}
           label="Joined"
-          value={`${displayJoinedCount} / ${event.maxParticipants}`}
-          helper={spotsLeft > 0 ? `${spotsLeft} spots left` : "Event full"}
+          value={
+            hasUnlimitedSpots
+              ? `${displayJoinedCount} joined`
+              : `${displayJoinedCount} / ${event.maxParticipants}`
+          }
+          helper={
+            hasUnlimitedSpots
+              ? "Unlimited spots"
+              : spotsLeft && spotsLeft > 0
+                ? `${spotsLeft} spots left`
+                : "Event full"
+          }
         />
       </div>
 
@@ -546,7 +566,11 @@ export function EventDetailPage() {
                   </div>
 
                   <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700">
-                    {spotsLeft > 0 ? `${spotsLeft} spots left` : "Full"}
+                    {hasUnlimitedSpots
+                      ? "Unlimited"
+                      : spotsLeft && spotsLeft > 0
+                        ? `${spotsLeft} spots left`
+                        : "Full"}
                   </span>
                 </div>
 
@@ -723,10 +747,12 @@ export function EventDetailPage() {
                 Availability
               </p>
               <p className="mt-2 text-3xl font-black text-slate-900">
-                {spotsLeft}
+                {hasUnlimitedSpots ? "∞" : spotsLeft}
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                spots left out of {event.maxParticipants}
+                {hasUnlimitedSpots
+                  ? "no participant limit"
+                  : `spots left out of ${event.maxParticipants}`}
               </p>
             </div>
 

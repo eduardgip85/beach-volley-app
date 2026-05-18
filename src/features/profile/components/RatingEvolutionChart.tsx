@@ -10,7 +10,12 @@ import {
     XAxis,
     YAxis,
 } from "recharts";
-import { DEFAULT_COMPETITIVE_RATING, formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
+import {
+    DEFAULT_COMPETITIVE_RATING,
+    MAX_COMPETITIVE_RATING,
+    MIN_COMPETITIVE_RATING,
+    formatCompetitiveRating,
+} from "../../ratings/utils/rating-display.utils";
 import type { CompetitiveChartPoint } from "../types/profileCompetitiveInsights.types";
 
 interface RatingEvolutionChartProps {
@@ -20,6 +25,20 @@ interface RatingEvolutionChartProps {
 
 function formatDeltaLabel(value: number) {
     return value > 0 ? `+${value}` : `${value}`;
+}
+
+function formatAxisRatingLabel(value: number) {
+    if (!Number.isFinite(value)) {
+        return "";
+    }
+
+    const normalizedValue = Number(value.toFixed(2));
+
+    if (Number.isInteger(normalizedValue)) {
+        return `${normalizedValue}`;
+    }
+
+    return normalizedValue.toFixed(2).replace(/\.?0+$/, "");
 }
 
 export function RatingEvolutionChart({
@@ -39,10 +58,11 @@ export function RatingEvolutionChart({
     const ratings = chartData.map((point) => point.rating);
     const minRating = ratings.length > 0 ? Math.min(...ratings) : DEFAULT_COMPETITIVE_RATING;
     const maxRating = ratings.length > 0 ? Math.max(...ratings) : DEFAULT_COMPETITIVE_RATING;
-    const rangePadding = Math.max(12, Math.ceil((maxRating - minRating || 12) * 0.35));
+    const ratingSpan = maxRating - minRating;
+    const rangePadding = Math.max(0.18, Number(((ratingSpan || 0.3) * 0.45).toFixed(2)));
     const yDomain: [number, number] = [
-        Math.max(0, minRating - rangePadding),
-        maxRating + rangePadding,
+        Math.max(MIN_COMPETITIVE_RATING, Number((minRating - rangePadding).toFixed(2))),
+        Math.min(MAX_COMPETITIVE_RATING, Number((maxRating + rangePadding).toFixed(2))),
     ];
 
     if (loading) {
@@ -64,18 +84,18 @@ export function RatingEvolutionChart({
         );
     }
 
-    const minWidth = Math.max(340, chartData.length * 78);
+    const minWidth = chartData.length > 6 ? chartData.length * 58 : undefined;
 
     return (
         <div className="overflow-x-auto">
             <div
-                className="rounded-[2rem] bg-gradient-to-b from-white to-blue-50/70 p-4 ring-1 ring-white/90 sm:p-5"
+                className="h-[220px] w-full rounded-[2rem] bg-gradient-to-b from-white to-blue-50/70 p-3 ring-1 ring-white/90 sm:h-[260px] sm:p-4 md:h-[300px] md:p-5"
                 style={{ minWidth }}
             >
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         data={chartData}
-                        margin={{ top: 18, right: 20, left: -14, bottom: 8 }}
+                        margin={{ top: 18, right: 22, left: 6, bottom: 4 }}
                     >
                         <defs>
                             <linearGradient id="ratingAreaFill" x1="0" y1="0" x2="0" y2="1">
@@ -92,16 +112,18 @@ export function RatingEvolutionChart({
 
                         <XAxis
                             dataKey="label"
-                            tick={{ fill: "#64748b", fontSize: 12, fontWeight: 600 }}
+                            tick={{ fill: "#64748b", fontSize: 11, fontWeight: 700 }}
                             axisLine={false}
                             tickLine={false}
+                            minTickGap={20}
                         />
 
                         <YAxis
-                            tick={{ fill: "#94a3b8", fontSize: 12, fontWeight: 600 }}
+                            tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 700 }}
                             axisLine={false}
                             tickLine={false}
-                            width={48}
+                            tickFormatter={formatAxisRatingLabel}
+                            width={50}
                             domain={yDomain}
                         />
 

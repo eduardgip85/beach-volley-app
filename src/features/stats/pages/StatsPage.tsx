@@ -45,16 +45,16 @@ export function StatsPage() {
   }
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-5 sm:space-y-6">
       <div className="space-y-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-600">
             Admin analytics
           </p>
-          <h1 className="mt-2 text-3xl font-black text-slate-950">
+          <h1 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
             Platform performance dashboard
           </h1>
-          <p className="mt-2 max-w-3xl text-sm text-slate-500 sm:text-base">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
             Track user growth, match mix, engagement and competitive rating
             health from a single aggregated view.
           </p>
@@ -66,7 +66,7 @@ export function StatsPage() {
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
         <AnalyticsSummaryCard
           label="Total users"
           value={stats.userAnalytics.totalUsers}
@@ -226,13 +226,13 @@ function InsightRow({
   value: string;
 }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-      <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
+    <div className="flex items-start gap-3 rounded-2xl bg-slate-50 px-3 py-3 sm:px-4">
+      <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white sm:h-10 sm:w-10">
         {icon}
       </div>
       <div className="min-w-0">
         <p className="text-sm font-black text-slate-950">{label}</p>
-        <p className="mt-1 text-sm text-slate-500">{value}</p>
+        <p className="mt-1 text-xs leading-5 text-slate-500 sm:text-sm">{value}</p>
       </div>
     </div>
   );

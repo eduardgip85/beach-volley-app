@@ -39,6 +39,7 @@ export function CreateEventPage() {
         searchingLocation={form.state.searchingLocation}
         onSubmit={form.actions.handleSubmit}
         onSearchLocation={form.actions.handleSearchLocation}
+        onMapLocationChange={form.actions.handleMapLocationChange}
         onCancel={() => navigate("/events")}
         submitLabel="Create Event"
         submittingLabel="Creating..."

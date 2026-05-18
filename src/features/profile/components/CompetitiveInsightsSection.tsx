@@ -29,10 +29,10 @@ export function CompetitiveInsightsSection({
             <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-2xl">
-                        <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
+                        <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600 sm:text-sm">
                             Competitive history
                         </p>
-                        <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                        <h2 className="mt-2 text-xl font-black text-slate-900 sm:text-2xl">
                             Rating evolution and personal performance
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-slate-500">
@@ -55,8 +55,8 @@ export function CompetitiveInsightsSection({
 
                 <CompetitiveStatsOverview insights={insights} />
 
-                <div className="grid gap-6 xl:grid-cols-[1.2fr_1fr]">
-                    <div className="rounded-3xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
+                <div className="grid gap-4 xl:grid-cols-[1.2fr_1fr] xl:gap-6">
+                    <div className="rounded-[1.75rem] border border-slate-100 bg-slate-50 p-4 sm:rounded-3xl sm:p-5">
                         <div className="mb-4 flex items-center gap-3">
                             <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
                                 <LineChart size={20} />
@@ -77,7 +77,7 @@ export function CompetitiveInsightsSection({
                         />
                     </div>
 
-                    <div className="rounded-3xl border border-slate-100 bg-slate-50 p-4 sm:p-5">
+                    <div className="rounded-[1.75rem] border border-slate-100 bg-slate-50 p-4 sm:rounded-3xl sm:p-5">
                         <div className="mb-4 flex items-center gap-3">
                             <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
                                 <Activity size={20} />
@@ -90,7 +90,7 @@ export function CompetitiveInsightsSection({
                             </div>
                         </div>
 
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                        <div className="grid grid-cols-2 gap-3 xl:grid-cols-1">
                             <SummaryCard
                                 label="Current rating"
                                 value={formatCompetitiveRating(insights.currentRating)}
@@ -117,7 +117,7 @@ export function CompetitiveInsightsSection({
 
                 <div>
                     <div className="mb-4">
-                        <h3 className="text-xl font-bold text-slate-900">Match history</h3>
+                        <h3 className="text-lg font-black text-slate-900 sm:text-xl">Match history</h3>
                         <p className="mt-1 text-sm text-slate-500">
                             Competitive matches with result, rating delta and set summary.
                         </p>
@@ -138,7 +138,7 @@ export function CompetitiveInsightsSection({
                             </p>
                         </div>
                     ) : (
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {insights.matchHistory.map((match) => (
                                 <CompetitiveMatchHistoryCard
                                     key={match.historyId}
@@ -163,12 +163,12 @@ function SummaryCard({
     accent: string;
 }) {
     return (
-        <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+        <div className="min-w-0 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 sm:text-xs">
                 {label}
             </p>
             <div
-                className={`mt-3 inline-flex rounded-full px-3 py-1 text-sm font-bold ${accent}`}
+                className={`mt-3 inline-flex max-w-full rounded-full px-3 py-1 text-sm font-bold ${accent}`}
             >
                 {value}
             </div>

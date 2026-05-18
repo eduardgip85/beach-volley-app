@@ -25,7 +25,7 @@ export function AnalyticsFilterTabs({
             type="button"
             onClick={() => onChange(option.value)}
             className={[
-              "whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold transition",
+              "whitespace-nowrap rounded-xl px-3 py-2 text-xs font-bold transition sm:px-4 sm:py-2.5 sm:text-sm",
               value === option.value
                 ? "bg-slate-950 text-white shadow-sm"
                 : "text-slate-600 hover:bg-white hover:text-slate-950",

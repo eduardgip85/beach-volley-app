@@ -1,7 +1,17 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useEventForm } from "../../features/events/hooks/useEventForm";
 import type { Event } from "../../features/events/types/event.types";
+
+const { mockSearchLocation, mockReverseGeocodeLocation } = vi.hoisted(() => ({
+    mockSearchLocation: vi.fn(),
+    mockReverseGeocodeLocation: vi.fn(),
+}));
+
+vi.mock("../../features/events/services/geocoding.service", () => ({
+    searchLocation: mockSearchLocation,
+    reverseGeocodeLocation: mockReverseGeocodeLocation,
+}));
 
 function createSubmitEvent() {
     return {
@@ -33,6 +43,12 @@ function createInitialEvent(overrides: Partial<Event> = {}): Event {
 }
 
 describe("useEventForm", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockSearchLocation.mockResolvedValue(null);
+        mockReverseGeocodeLocation.mockResolvedValue(null);
+    });
+
     it("loads existing match values and keeps max participants locked to four", () => {
         const onSubmit = vi.fn();
 
@@ -150,6 +166,72 @@ describe("useEventForm", () => {
             maxParticipants: 14,
             imageUrl: null,
         });
+    });
+
+    it("submits open play payload with unlimited participants", async () => {
+        const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+        const { result } = renderHook(() =>
+            useEventForm({
+                onSubmit,
+            })
+        );
+
+        act(() => {
+            result.current.setters.setType("open_play");
+            result.current.setters.setTitle("Unlimited Session");
+            result.current.setters.setDate("2026-06-03");
+            result.current.setters.setTime("20:00");
+            result.current.setters.setLocationName("Mar Bella Beach");
+            result.current.setters.setUnlimitedParticipants(true);
+        });
+
+        await act(async () => {
+            await result.current.actions.handleSubmit(createSubmitEvent());
+        });
+
+        expect(onSubmit).toHaveBeenCalledWith({
+            title: "Unlimited Session",
+            description: "",
+            type: "open_play",
+            visibility: "public",
+            mode: null,
+            locationName: "Mar Bella Beach",
+            latitude: 41.3851,
+            longitude: 2.1734,
+            startDate: new Date("2026-06-03T20:00").toISOString(),
+            maxParticipants: 9999,
+            imageUrl: null,
+        });
+    });
+
+    it("fills the location name from the selected map pin", async () => {
+        const onSubmit = vi.fn();
+
+        mockReverseGeocodeLocation.mockResolvedValue({
+            displayName: "Nova Icaria Beach, Barcelona",
+            latitude: 41.39,
+            longitude: 2.2,
+        });
+
+        const { result } = renderHook(() =>
+            useEventForm({
+                onSubmit,
+            })
+        );
+
+        await act(async () => {
+            await result.current.actions.handleMapLocationChange({
+                latitude: 41.39,
+                longitude: 2.2,
+            });
+        });
+
+        expect(result.current.values.latitude).toBe(41.39);
+        expect(result.current.values.longitude).toBe(2.2);
+        expect(result.current.values.locationName).toBe(
+            "Nova Icaria Beach, Barcelona"
+        );
     });
 
     it("blocks tournament submission", async () => {

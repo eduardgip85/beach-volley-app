@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { searchLocation } from "../../features/events/services/geocoding.service";
+import {
+    reverseGeocodeLocation,
+    searchLocation,
+} from "../../features/events/services/geocoding.service";
 
 describe("geocoding.service", () => {
     beforeEach(() => {
@@ -16,6 +19,9 @@ describe("geocoding.service", () => {
                 display_name: "Barceloneta Beach, Barcelona",
                 lat: "41.3784",
                 lon: "2.1925",
+                address: {
+                    city: "Barcelona",
+                },
             },
             ]),
         })
@@ -24,7 +30,7 @@ describe("geocoding.service", () => {
         const result = await searchLocation("Barceloneta");
 
         expect(result).toEqual({
-        displayName: "Barceloneta Beach, Barcelona",
+        displayName: "Barcelona",
         latitude: 41.3784,
         longitude: 2.1925,
         });
@@ -32,7 +38,8 @@ describe("geocoding.service", () => {
         expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining(
             "https://nominatim.openstreetmap.org/search?"
-        )
+        ),
+        expect.any(Object)
         );
     });
 
@@ -61,5 +68,37 @@ describe("geocoding.service", () => {
             await expect(searchLocation("Barceloneta")).rejects.toThrow(
             "Could not search location"
             );
+    });
+
+    it("should return a reverse geocoding result from map coordinates", async () => {
+        vi.stubGlobal(
+            "fetch",
+            vi.fn().mockResolvedValue({
+                ok: true,
+                json: vi.fn().mockResolvedValue({
+                    display_name: "South Beach Court 3, Barcelona",
+                    lat: "41.401",
+                    lon: "2.201",
+                    address: {
+                        municipality: "Barcelona",
+                    },
+                }),
+            })
+        );
+
+        const result = await reverseGeocodeLocation(41.401, 2.201);
+
+        expect(result).toEqual({
+            displayName: "Barcelona",
+            latitude: 41.401,
+            longitude: 2.201,
+        });
+
+        expect(fetch).toHaveBeenCalledWith(
+            expect.stringContaining(
+                "https://nominatim.openstreetmap.org/reverse?"
+            ),
+            expect.any(Object)
+        );
     });
 });

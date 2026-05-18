@@ -16,6 +16,7 @@ interface EventFormProps {
     date: string;
     time: string;
     maxParticipants: number;
+    unlimitedParticipants: boolean;
     locationName: string;
     latitude: number;
     longitude: number;
@@ -32,6 +33,10 @@ interface EventFormProps {
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onCancel: () => void;
     onSearchLocation: () => void;
+    onMapLocationChange: (coords: {
+        latitude: number;
+        longitude: number;
+    }) => void | Promise<void>;
 
     setTitle: Dispatch<SetStateAction<string>>;
     setDescription: Dispatch<SetStateAction<string>>;
@@ -41,9 +46,7 @@ interface EventFormProps {
     setDate: Dispatch<SetStateAction<string>>;
     setTime: Dispatch<SetStateAction<string>>;
     setMaxParticipants: Dispatch<SetStateAction<number>>;
-    setLocationName: Dispatch<SetStateAction<string>>;
-    setLatitude: Dispatch<SetStateAction<number>>;
-    setLongitude: Dispatch<SetStateAction<number>>;
+    setUnlimitedParticipants: Dispatch<SetStateAction<boolean>>;
     setLocationSearch: Dispatch<SetStateAction<string>>;
 }
 
@@ -56,6 +59,7 @@ export function EventForm({
     date,
     time,
     maxParticipants,
+    unlimitedParticipants,
     locationName,
     latitude,
     longitude,
@@ -69,6 +73,7 @@ export function EventForm({
     onSubmit,
     onCancel,
     onSearchLocation,
+    onMapLocationChange,
     setTitle,
     setDescription,
     setType,
@@ -77,9 +82,7 @@ export function EventForm({
     setDate,
     setTime,
     setMaxParticipants,
-    setLocationName,
-    setLatitude,
-    setLongitude,
+    setUnlimitedParticipants,
     setLocationSearch,
 }: EventFormProps) {
     const typeHelperText =
@@ -245,23 +248,55 @@ export function EventForm({
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Max participants
+                        {type === "match" ? "Max participants" : "Participant limit"}
                     </label>
-                    <input
-                        type="number"
-                        value={maxParticipants}
-                        onChange={(event) => setMaxParticipants(Number(event.target.value))}
-                        className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
-                        required
-                        min={1}
-                        disabled={type === "match"}
-                    />
 
-                    <p className="mt-2 text-xs text-slate-500">
-                        {type === "match"
-                            ? "Matches are locked to 4 participants."
-                            : "Choose how many players can join this session."}
-                    </p>
+                    {type === "match" ? (
+                        <>
+                            <input
+                                type="number"
+                                value={4}
+                                readOnly
+                                className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-500 outline-none"
+                            />
+
+                            <p className="mt-2 text-xs text-slate-500">
+                                Matches are locked to 4 participants.
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <label className="mt-3 inline-flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+                                <input
+                                    type="checkbox"
+                                    checked={unlimitedParticipants}
+                                    onChange={(event) =>
+                                        setUnlimitedParticipants(event.target.checked)
+                                    }
+                                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                />
+                                Unlimited spots
+                            </label>
+
+                            <input
+                                type="number"
+                                value={unlimitedParticipants ? "" : maxParticipants}
+                                onChange={(event) =>
+                                    setMaxParticipants(Number(event.target.value))
+                                }
+                                className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500 disabled:text-slate-400"
+                                min={1}
+                                disabled={unlimitedParticipants}
+                                placeholder="e.g. 12"
+                            />
+
+                            <p className="mt-2 text-xs text-slate-500">
+                                {unlimitedParticipants
+                                    ? "Anyone can join this session."
+                                    : "Set a limit only if you want to cap the group size."}
+                            </p>
+                        </>
+                    )}
                 </div>
 
                 <div>
@@ -272,13 +307,18 @@ export function EventForm({
                     <div className="mt-2 flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 ring-1 ring-transparent focus-within:ring-blue-500">
                         <MapPin size={18} className="text-slate-400" />
                         <input
-                        placeholder="e.g. Barceloneta Beach Court 4"
+                        placeholder="Search or click on the map to fill this automatically"
                         value={locationName}
-                        onChange={(event) => setLocationName(event.target.value)}
                         className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
                         required
+                        readOnly
                         />
                     </div>
+
+                    <p className="mt-2 text-xs text-slate-500">
+                        This name now comes from the selected coordinates to keep
+                        locations real and consistent in filters.
+                    </p>
                 </div>
 
                 <div>
@@ -319,10 +359,7 @@ export function EventForm({
                         <LocationPickerMap
                         latitude={latitude}
                         longitude={longitude}
-                        onChange={(coords) => {
-                            setLatitude(coords.latitude);
-                            setLongitude(coords.longitude);
-                        }}
+                        onChange={onMapLocationChange}
                         />
                     </div>
 

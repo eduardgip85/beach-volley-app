@@ -1,5 +1,6 @@
 import { supabase } from "../../../config/supabase";
 import { joinMatch } from "../../match-players/services/matchPlayers.service";
+import { UNLIMITED_EVENT_CAPACITY } from "../types/event.types";
 import type {
     CreateEventPayload,
     Event,
@@ -10,7 +11,16 @@ import type {
 } from "../types/event.types";
 
 function normalizeEventType(type: unknown): EventType {
-    if (type === "open_play" || type === "tournament") {
+    if (
+        type === "open_play" ||
+        type === "openPlay" ||
+        type === "openplay" ||
+        type === "tournament"
+    ) {
+        if (type === "openPlay" || type === "openplay") {
+            return "open_play";
+        }
+
         return type;
     }
 
@@ -40,6 +50,10 @@ function normalizeEventMode(type: EventType, mode: unknown): EventMode | null {
 function normalizeMaxParticipants(type: EventType, maxParticipants: number) {
     if (type === "match") {
         return 4;
+    }
+
+    if (!Number.isFinite(maxParticipants) || maxParticipants <= 0) {
+        return UNLIMITED_EVENT_CAPACITY;
     }
 
     return maxParticipants;
@@ -111,6 +125,92 @@ function buildEventWritePayload(payload: CreateEventPayload) {
         end_date: payload.endDate ?? null,
         max_participants: normalizeMaxParticipants(type, payload.maxParticipants),
     };
+}
+
+function isTypeConstraintError(error: unknown) {
+    if (!error || typeof error !== "object") {
+        return false;
+    }
+
+    const dbError = error as {
+        code?: string;
+        message?: string;
+        constraint?: string;
+    };
+
+    return (
+        dbError.constraint === "events_type_check" ||
+        dbError.message?.includes("events_type_check") ||
+        dbError.code === "23514"
+    );
+}
+
+async function insertEventWithTypeFallback(payload: Record<string, unknown>) {
+    const candidateTypes =
+        payload.type === "open_play"
+            ? ["open_play", "openPlay", "openplay"]
+            : [payload.type];
+
+    let lastError: unknown = null;
+
+    for (const candidateType of candidateTypes) {
+        const { data, error } = await supabase
+            .from("events")
+            .insert({
+                ...payload,
+                type: candidateType,
+            })
+            .select()
+            .single();
+
+        if (!error) {
+            return data;
+        }
+
+        lastError = error;
+
+        if (!(payload.type === "open_play" && isTypeConstraintError(error))) {
+            throw error;
+        }
+    }
+
+    throw lastError;
+}
+
+async function updateEventWithTypeFallback(
+    eventId: string,
+    payload: Record<string, unknown>
+) {
+    const candidateTypes =
+        payload.type === "open_play"
+            ? ["open_play", "openPlay", "openplay"]
+            : [payload.type];
+
+    let lastError: unknown = null;
+
+    for (const candidateType of candidateTypes) {
+        const { data, error } = await supabase
+            .from("events")
+            .update({
+                ...payload,
+                type: candidateType,
+            })
+            .eq("id", eventId)
+            .select()
+            .single();
+
+        if (!error) {
+            return data;
+        }
+
+        lastError = error;
+
+        if (!(payload.type === "open_play" && isTypeConstraintError(error))) {
+            throw error;
+        }
+    }
+
+    throw lastError;
 }
 
 function mapEvent(row: any): Event {
@@ -222,17 +322,11 @@ export async function createEvent(
     payload: CreateEventPayload,
     userId: string
 ): Promise<Event> {
-    const { data, error } = await supabase
-        .from("events")
-        .insert({
+    const data = await insertEventWithTypeFallback({
         ...buildEventWritePayload(payload),
         created_by: userId,
         status: "active",
-        })
-        .select()
-        .single();
-
-    if (error) throw error;
+    });
 
     const event = mapEvent(data);
 
@@ -251,17 +345,10 @@ export async function updateEvent(
     eventId: string,
     payload: CreateEventPayload
 ): Promise<Event> {
-    const { data, error } = await supabase
-        .from("events")
-        .update({
+    const data = await updateEventWithTypeFallback(eventId, {
         ...buildEventWritePayload(payload),
         updated_at: new Date().toISOString(),
-        })
-        .eq("id", eventId)
-        .select()
-        .single();
-
-    if (error) throw error;
+    });
 
     return mapEvent(data);
 }

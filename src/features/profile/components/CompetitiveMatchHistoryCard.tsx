@@ -21,7 +21,7 @@ export function CompetitiveMatchHistoryCard({
     return (
         <Link
             to={`/events/${match.eventId}`}
-            className={`block rounded-3xl border p-5 transition ${
+            className={`block rounded-[1.75rem] border p-4 transition sm:rounded-3xl sm:p-5 ${
                 isWin
                     ? "border-emerald-200 bg-emerald-50 hover:bg-emerald-100/70"
                     : "border-red-200 bg-red-50 hover:bg-red-100/70"
@@ -68,7 +68,7 @@ export function CompetitiveMatchHistoryCard({
                         )}
                     </div>
 
-                    <h3 className="mt-4 text-lg font-bold text-slate-900">
+                    <h3 className="mt-4 text-base font-black text-slate-900 sm:text-lg">
                         {match.title}
                     </h3>
 

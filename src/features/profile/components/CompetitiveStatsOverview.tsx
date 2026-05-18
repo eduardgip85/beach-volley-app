@@ -69,24 +69,24 @@ export function CompetitiveStatsOverview({
     ];
 
     return (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             {items.map((item) => {
                 const Icon = item.icon;
 
                 return (
                     <article
                         key={item.key}
-                        className="rounded-3xl border border-slate-100 bg-slate-50 p-4"
+                        className="rounded-[1.5rem] border border-slate-100 bg-[linear-gradient(180deg,_rgba(248,250,252,1)_0%,_rgba(255,255,255,1)_100%)] p-4 sm:rounded-[1.75rem]"
                     >
                         <span
-                            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${item.accent}`}
+                            className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${item.accent} sm:h-11 sm:w-11`}
                         >
-                            <Icon size={20} />
+                            <Icon size={18} />
                         </span>
-                        <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                        <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 sm:text-xs">
                             {item.label}
                         </p>
-                        <p className="mt-2 text-2xl font-black text-slate-900">
+                        <p className="mt-2 text-xl font-black leading-none text-slate-900 sm:text-2xl">
                             {item.value}
                         </p>
                     </article>

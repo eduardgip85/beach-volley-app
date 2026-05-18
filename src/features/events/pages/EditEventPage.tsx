@@ -180,6 +180,7 @@ function EditEventContent({
         searchingLocation={form.state.searchingLocation}
         onSubmit={form.actions.handleSubmit}
         onSearchLocation={form.actions.handleSearchLocation}
+        onMapLocationChange={form.actions.handleMapLocationChange}
         onCancel={() => navigate(`/events/${eventData.id}`)}
         submitLabel="Save Changes"
         submittingLabel="Saving..."

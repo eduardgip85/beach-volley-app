@@ -86,22 +86,22 @@ export function ProfileStatsCard({
               ];
 
     return (
-        <div className="rounded-[2rem] bg-white p-8 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
+        <div className="rounded-[2rem] bg-white p-5 shadow-sm sm:p-6 md:p-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
+                    <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600 sm:text-sm">
                         Performance
                     </p>
-                    <h2 className="mt-2 text-2xl font-bold text-slate-900">
+                    <h2 className="mt-2 text-xl font-black text-slate-900 sm:text-2xl">
                         Your profile stats
                     </h2>
                 </div>
 
-                <div className="flex rounded-full bg-slate-100 p-1">
+                <div className="inline-flex self-start rounded-full bg-slate-100 p-1">
                     <button
                         type="button"
                         onClick={() => setSelectedMode("competitive")}
-                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
+                        className={`rounded-full px-3 py-1.5 text-[11px] font-bold uppercase sm:text-xs ${
                             selectedMode === "competitive"
                                 ? "bg-blue-600 text-white"
                                 : "text-slate-600"
@@ -126,25 +126,25 @@ export function ProfileStatsCard({
             {loading ? (
                 <p className="mt-6 text-sm text-slate-500">Loading your statistics...</p>
             ) : (
-                <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
                     {statItems.map((item) => {
                         const Icon = item.icon;
 
                         return (
                             <div
                                 key={item.key}
-                                className="rounded-3xl border border-slate-100 bg-slate-50 p-5"
+                                className="rounded-[1.5rem] border border-slate-100 bg-[linear-gradient(180deg,_rgba(248,250,252,1)_0%,_rgba(255,255,255,1)_100%)] p-4"
                             >
                                 <span
-                                    className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl ${item.accent}`}
+                                    className={`inline-flex h-10 w-10 items-center justify-center rounded-2xl ${item.accent}`}
                                 >
-                                    <Icon size={20} />
+                                    <Icon size={18} />
                                 </span>
 
-                                <p className="mt-4 text-sm font-medium text-slate-500">
+                                <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                                     {item.label}
                                 </p>
-                                <p className="mt-1 text-3xl font-black text-slate-900">
+                                <p className="mt-2 text-2xl font-black leading-none text-slate-900 sm:text-3xl">
                                     {item.value}
                                 </p>
                             </div>

@@ -46,20 +46,24 @@ export function AnalyticsTopListCard({
         {items.map((item, index) => (
           <div
             key={isTopLocation(item) ? item.locationName : item.id}
-            className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3"
+            className="flex items-center gap-3 rounded-2xl bg-slate-50 px-3 py-3 sm:px-4"
           >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-sm font-black text-white">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-xs font-black text-white sm:h-10 sm:w-10 sm:text-sm">
               #{index + 1}
             </div>
 
             {isTopUser(item) && (
               <>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white sm:h-11 sm:w-11">
                   {item.fullName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-slate-950">{item.fullName}</p>
-                  <p className="text-sm text-slate-500">{item.activityCount} event actions</p>
+                  <p className="truncate text-sm font-bold text-slate-950 sm:text-base">
+                    {item.fullName}
+                  </p>
+                  <p className="text-xs text-slate-500 sm:text-sm">
+                    {item.activityCount} event actions
+                  </p>
                 </div>
                 <User className="shrink-0 text-slate-400" size={18} />
               </>
@@ -68,8 +72,12 @@ export function AnalyticsTopListCard({
             {isTopLocation(item) && (
               <>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-slate-950">{item.locationName}</p>
-                  <p className="text-sm text-slate-500">{item.eventsCount} scheduled events</p>
+                  <p className="truncate text-sm font-bold text-slate-950 sm:text-base">
+                    {item.locationName}
+                  </p>
+                  <p className="text-xs text-slate-500 sm:text-sm">
+                    {item.eventsCount} scheduled events
+                  </p>
                 </div>
                 <MapPin className="shrink-0 text-slate-400" size={18} />
               </>
@@ -77,19 +85,23 @@ export function AnalyticsTopListCard({
 
             {isTopRatedPlayer(item) && (
               <>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-500 text-sm font-black text-slate-950">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500 text-sm font-black text-slate-950 sm:h-11 sm:w-11">
                   {item.fullName.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-slate-950">{item.fullName}</p>
-                  <p className="text-sm text-slate-500">
+                  <p className="truncate text-sm font-bold text-slate-950 sm:text-base">
+                    {item.fullName}
+                  </p>
+                  <p className="text-xs text-slate-500 sm:text-sm">
                     {item.wins}/{item.losses} W/L
                     {item.country ? ` · ${item.country}` : ""}
                   </p>
                 </div>
                 <div className="shrink-0 text-right">
-                  <p className="font-black text-slate-950">{item.competitiveRating}</p>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <p className="text-sm font-black text-slate-950 sm:text-base">
+                    {item.competitiveRating}
+                  </p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
                     Rating
                   </p>
                 </div>

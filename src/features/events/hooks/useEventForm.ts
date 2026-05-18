@@ -1,5 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { searchLocation } from "../services/geocoding.service";
+import {
+    reverseGeocodeLocation,
+    searchLocation,
+} from "../services/geocoding.service";
+import { UNLIMITED_EVENT_CAPACITY, isUnlimitedEventCapacity } from "../types/event.types";
 import type {
     CreateEventPayload,
     Event,
@@ -49,6 +53,33 @@ function getInitialMaxParticipants(initialEvent?: Event) {
     return initialEvent?.maxParticipants ?? 8;
 }
 
+function getInitialUnlimitedParticipants(initialEvent?: Event) {
+    const type = getInitialType(initialEvent);
+
+    if (type === "match") {
+        return false;
+    }
+
+    return isUnlimitedEventCapacity(initialEvent?.maxParticipants ?? 8);
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+    if (error instanceof Error && error.message) {
+        return error.message;
+    }
+
+    if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string"
+    ) {
+        return error.message;
+    }
+
+    return fallback;
+}
+
 export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     const [title, setTitle] = useState(initialEvent?.title ?? "");
     const [description, setDescription] = useState(initialEvent?.description ?? "");
@@ -71,6 +102,9 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     const [maxParticipants, setMaxParticipantsState] = useState(
         getInitialMaxParticipants(initialEvent)
     );
+    const [unlimitedParticipants, setUnlimitedParticipants] = useState(
+        getInitialUnlimitedParticipants(initialEvent)
+    );
 
     const [locationName, setLocationName] = useState(
         initialEvent?.locationName ?? ""
@@ -87,6 +121,10 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
 
     useEffect(() => {
         if (type === "match") {
+            if (unlimitedParticipants) {
+                setUnlimitedParticipants(false);
+            }
+
             if (maxParticipants !== 4) {
                 setMaxParticipantsState(4);
             }
@@ -101,7 +139,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         if (mode !== null) {
             setModeState(null);
         }
-    }, [type, mode, maxParticipants]);
+    }, [type, mode, maxParticipants, unlimitedParticipants]);
 
     async function handleSearchLocation() {
         if (!locationSearch.trim()) {
@@ -122,15 +160,33 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
 
         setLatitude(result.latitude);
         setLongitude(result.longitude);
-
-        if (!locationName) {
-            setLocationName(result.displayName);
-        }
+        setLocationName(result.displayName);
         } catch (err) {
         console.error(err);
         setError("Could not search location");
         } finally {
         setSearchingLocation(false);
+        }
+    }
+
+    async function handleMapLocationChange(coords: {
+        latitude: number;
+        longitude: number;
+    }) {
+        setLatitude(coords.latitude);
+        setLongitude(coords.longitude);
+
+        try {
+            const result = await reverseGeocodeLocation(
+                coords.latitude,
+                coords.longitude
+            );
+
+            if (result?.displayName) {
+                setLocationName(result.displayName);
+            }
+        } catch (err) {
+            console.error(err);
         }
     }
 
@@ -141,7 +197,11 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         const trimmedLocationName = locationName.trim();
         const resolvedMode = type === "match" ? mode : null;
         const resolvedMaxParticipants =
-            type === "match" ? 4 : Number(maxParticipants);
+            type === "match"
+                ? 4
+                : unlimitedParticipants
+                  ? UNLIMITED_EVENT_CAPACITY
+                  : Number(maxParticipants);
 
         if (!trimmedTitle || !date || !time || !trimmedLocationName) {
         setError("Title, date, time, and location are required");
@@ -165,6 +225,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
 
         if (
             type === "open_play" &&
+            !unlimitedParticipants &&
             (!Number.isFinite(resolvedMaxParticipants) || resolvedMaxParticipants < 1)
         ) {
         setError("Max participants must be at least 1");
@@ -192,7 +253,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         });
         } catch (err) {
         console.error(err);
-        setError("Could not save event");
+        setError(getErrorMessage(err, "Could not save event"));
         } finally {
         setSubmitting(false);
         }
@@ -208,6 +269,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         date,
         time,
         maxParticipants,
+        unlimitedParticipants,
         locationName,
         latitude,
         longitude,
@@ -223,6 +285,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         setDate,
         setTime,
         setMaxParticipants: setMaxParticipantsState,
+        setUnlimitedParticipants,
         setLocationName,
         setLatitude,
         setLongitude,
@@ -238,6 +301,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         actions: {
         handleSubmit,
         handleSearchLocation,
+        handleMapLocationChange,
         setError,
         },
     };

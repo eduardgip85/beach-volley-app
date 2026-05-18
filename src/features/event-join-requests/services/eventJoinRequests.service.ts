@@ -6,6 +6,7 @@ import {
     registerToEvent,
 } from "../../registrations/services/registrations.service";
 import { supabase } from "../../../config/supabase";
+import { isUnlimitedEventCapacity } from "../../events/types/event.types";
 import type {
     EventMode,
     EventStatus,
@@ -357,7 +358,10 @@ export async function acceptEventJoinRequest(
     if (!alreadyRegistered) {
         const registrationsCount = await getEventRegistrationsCount(request.eventId);
 
-        if (registrationsCount >= request.event.maxParticipants) {
+        if (
+            !isUnlimitedEventCapacity(request.event.maxParticipants) &&
+            registrationsCount >= request.event.maxParticipants
+        ) {
             throw new Error("This event is already full");
         }
     }

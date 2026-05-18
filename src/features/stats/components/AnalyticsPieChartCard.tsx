@@ -17,18 +17,22 @@ export function AnalyticsPieChartCard({
   data,
   colors = defaultColors,
 }: AnalyticsPieChartCardProps) {
+  const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
+
   return (
     <AnalyticsPanel title={title} description={description}>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_12rem] lg:items-center">
-        <div className="h-64 w-full">
+        <div className="h-48 w-full pr-2 sm:h-64 sm:pr-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 dataKey="value"
                 nameKey="name"
-                innerRadius={52}
-                outerRadius={92}
+                cx="50%"
+                cy="50%"
+                innerRadius="38%"
+                outerRadius="62%"
                 paddingAngle={3}
               >
                 {data.map((entry, index) => (
@@ -44,6 +48,14 @@ export function AnalyticsPieChartCard({
         </div>
 
         <div className="space-y-3">
+          <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+              Total
+            </p>
+            <p className="mt-1 text-2xl font-black text-slate-950">{totalValue}</p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
           {data.map((entry, index) => (
             <div
               key={entry.name}
@@ -54,11 +66,17 @@ export function AnalyticsPieChartCard({
                   className="h-3 w-3 rounded-full"
                   style={{ backgroundColor: colors[index % colors.length] }}
                 />
-                <span className="font-semibold text-slate-700">{entry.name}</span>
+                <span className="text-xs font-semibold text-slate-700 sm:text-sm">{entry.name}</span>
               </div>
-              <span className="font-black text-slate-950">{entry.value}</span>
+              <span className="text-right font-black text-slate-950">
+                {entry.value}
+                <span className="ml-2 text-[10px] font-semibold text-slate-400 sm:text-xs">
+                  {totalValue > 0 ? `${Math.round((entry.value / totalValue) * 100)}%` : "0%"}
+                </span>
+              </span>
             </div>
           ))}
+          </div>
         </div>
       </div>
     </AnalyticsPanel>

@@ -20,16 +20,18 @@ export function AnalyticsSummaryCard({
   helper,
 }: AnalyticsSummaryCardProps) {
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
+    <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-slate-100 sm:rounded-3xl sm:p-5">
       <div
-        className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] ring-1 ${accentClasses[accent]}`}
+        className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ring-1 sm:text-[11px] sm:tracking-[0.2em] ${accentClasses[accent]}`}
       >
         {label}
       </div>
 
-      <p className="mt-4 text-3xl font-black text-slate-950">{value}</p>
+      <p className="mt-4 text-2xl font-black leading-none text-slate-950 sm:text-3xl">
+        {value}
+      </p>
 
-      {helper && <p className="mt-2 text-sm text-slate-500">{helper}</p>}
+      {helper && <p className="mt-2 text-xs leading-5 text-slate-500 sm:text-sm">{helper}</p>}
     </div>
   );
 }
