@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { EventFilters } from "../../../shared/components/EventFilters";
-import { getPublicEvents } from "../../events/services/events.service";
+import { useAuth } from "../../auth/context/AuthContext";
+import { getAccessibleEventsForUser } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
 import { isPastEvent } from "../../events/utils/event-display.utils";
@@ -8,8 +9,10 @@ import { EventsMap } from "../components/EventsMap";
 
 export function MapPage() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [myEventIds, setMyEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { profile } = useAuth();
   const visibleEvents = events.filter(
     (event) => event.status === "active" && !isPastEvent(event)
   );
@@ -20,7 +23,9 @@ export function MapPage() {
     locations,
     updateFilter,
     clearFilters,
-  } = useEventFilters(visibleEvents);
+  } = useEventFilters(visibleEvents, {
+    isMyEvent: (event) => myEventIds.includes(event.id),
+  });
 
   useEffect(() => {
     async function loadEvents() {
@@ -28,8 +33,9 @@ export function MapPage() {
         setLoading(true);
         setError("");
 
-        const data = await getPublicEvents();
-        setEvents(data);
+        const result = await getAccessibleEventsForUser(profile?.id);
+        setEvents(result.events);
+        setMyEventIds(result.myEventIds);
       } catch (err) {
         console.error(err);
         setError("Could not load map events");
@@ -39,7 +45,7 @@ export function MapPage() {
     }
 
     loadEvents();
-  }, []);
+  }, [profile?.id]);
 
   return (
     <section>
@@ -47,6 +53,7 @@ export function MapPage() {
       <EventFilters
         filters={filters}
         locations={locations}
+        showMyEventsFilter={Boolean(profile)}
         onFilterChange={updateFilter}
         onClearFilters={clearFilters}
       />

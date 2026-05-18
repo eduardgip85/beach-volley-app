@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import { EventFilters } from "../../../shared/components/EventFilters";
-import { getPublicEvents } from "../../events/services/events.service";
+import { useAuth } from "../../auth/context/AuthContext";
+import { getAccessibleEventsForUser } from "../../events/services/events.service";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
 import type { Event } from "../../events/types/event.types";
 import { EventsCalendar } from "../components/EventsCalendar";
 
 export function CalendarPage() {
   const [events, setEvents] = useState<Event[]>([]);
+  const [myEventIds, setMyEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { profile } = useAuth();
   const { filteredEvents, filters, locations, updateFilter, clearFilters } =
-    useEventFilters(events);
+    useEventFilters(events, {
+      isMyEvent: (event) => myEventIds.includes(event.id),
+    });
 
   useEffect(() => {
     async function loadEvents() {
@@ -18,8 +23,9 @@ export function CalendarPage() {
         setLoading(true);
         setError("");
 
-        const data = await getPublicEvents();
-        setEvents(data);
+        const result = await getAccessibleEventsForUser(profile?.id);
+        setEvents(result.events);
+        setMyEventIds(result.myEventIds);
       } catch (err) {
         console.error(err);
         setError("Could not load calendar events");
@@ -29,13 +35,14 @@ export function CalendarPage() {
     }
 
     loadEvents();
-  }, []);
+  }, [profile?.id]);
 
   return (
     <section className="space-y-4">
       <EventFilters
         filters={filters}
         locations={locations}
+        showMyEventsFilter={Boolean(profile)}
         onFilterChange={updateFilter}
         onClearFilters={clearFilters}
       />

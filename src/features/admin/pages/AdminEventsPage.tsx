@@ -1,8 +1,18 @@
-import { Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  MapPin,
+  Pencil,
+  Search,
+  Trash2,
+  UserCircle2,
+} from "lucide-react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { deleteEvent, getEvents } from "../../events/services/events.service";
-import type { Event } from "../../events/types/event.types";
+import { deleteEvent } from "../../events/services/events.service";
+import { isUnlimitedEventCapacity } from "../../events/types/event.types";
 import {
   getEventBadgeClasses,
   getEventDisplayStatus,
@@ -11,38 +21,60 @@ import {
   getEventVisibilityBadgeClasses,
   getEventVisibilityLabel,
 } from "../../events/utils/event-display.utils";
+import { useAdminEvents } from "../hooks/useAdminEvents";
+
+const PAGE_SIZE = 12;
 
 export function AdminEventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [searchInput, setSearchInput] = useState("");
+  const [hideInactive, setHideInactive] = useState(false);
+  const deferredSearch = useDeferredValue(searchInput.trim());
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  async function loadEvents() {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getEvents();
-      setEvents(data);
-    } catch (err) {
-      console.error(err);
-      setError("Could not load events");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { items, totalCount, loading, error: loadError, setItems } = useAdminEvents({
+    page,
+    pageSize: PAGE_SIZE,
+    search: deferredSearch,
+    onlyVisibleActive: hideInactive,
+  });
 
   useEffect(() => {
-    loadEvents();
-  }, []);
+    setPage(1);
+  }, [deferredSearch, hideInactive]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const visibleFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const visibleTo = Math.min(page * PAGE_SIZE, totalCount);
+
+  const summary = useMemo(() => {
+    return items.reduce(
+      (acc, item) => {
+        const status = getEventDisplayStatus(item.event);
+
+        if (status === "Finished") {
+          acc.finished += 1;
+        } else if (status === "Cancelled") {
+          acc.cancelled += 1;
+        } else {
+          acc.active += 1;
+        }
+
+        return acc;
+      },
+      { active: 0, finished: 0, cancelled: 0 }
+    );
+  }, [items]);
 
   async function handleDelete(eventId: string) {
     const confirmed = window.confirm(
       "Are you sure you want to delete this event?"
     );
 
-    if (!confirmed) return;
+    if (!confirmed) {
+      return;
+    }
 
     try {
       setDeletingId(eventId);
@@ -50,8 +82,8 @@ export function AdminEventsPage() {
 
       await deleteEvent(eventId);
 
-      setEvents((currentEvents) =>
-        currentEvents.filter((event) => event.id !== eventId)
+      setItems((currentItems) =>
+        currentItems.filter((item) => item.event.id !== eventId)
       );
     } catch (err) {
       console.error(err);
@@ -61,208 +93,507 @@ export function AdminEventsPage() {
     }
   }
 
-  if (loading) return <p className="text-slate-500">Loading events...</p>;
-
   return (
-    <section>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">
-          Events Management
-        </h1>
+    <section className="space-y-6">
+      <div className="rounded-[2rem] bg-white p-5 shadow-sm sm:p-6 md:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-600">
+              Admin events
+            </p>
+            <h1 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
+              Events management
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
+              Review published events, inspect creators, and keep large event
+              catalogs under control with search and pagination.
+            </p>
+          </div>
 
-        <Link
-          to="/profile"
-          className="mt-4 inline-block rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white"
-        >
-          Back
-        </Link>
+          <Link
+            to="/profile"
+            className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white"
+          >
+            Back to profile
+          </Link>
+        </div>
+
+        <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <SummaryCard label="Total results" value={totalCount} accent="blue" />
+          <SummaryCard label="Active" value={summary.active} accent="emerald" />
+          <SummaryCard label="Finished" value={summary.finished} accent="amber" />
+          <SummaryCard label="Cancelled" value={summary.cancelled} accent="rose" />
+        </div>
+
+        <div className="mt-5 flex flex-col gap-3 rounded-[1.5rem] bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <label className="relative block w-full sm:max-w-md">
+            <Search
+              size={18}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              type="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Search by title, location or creator"
+              className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          </label>
+
+          <div className="flex flex-col gap-3 sm:items-end">
+            <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-600">
+              <input
+                type="checkbox"
+                checked={hideInactive}
+                onChange={(event) => setHideInactive(event.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              />
+              Hide cancelled / finished
+            </label>
+
+            <span className="text-sm text-slate-500">
+              Showing <strong className="text-slate-900">{visibleFrom}</strong>-
+              <strong className="text-slate-900">{visibleTo}</strong> of{" "}
+              <strong className="text-slate-900">{totalCount}</strong>
+            </span>
+          </div>
+        </div>
       </div>
 
-      {error && (
-        <div className="mb-6 rounded-2xl bg-red-50 p-4 text-sm text-red-600">
-          {error}
+      {(error || loadError) && (
+        <div className="rounded-2xl bg-red-50 p-4 text-sm text-red-600">
+          {error || loadError}
         </div>
       )}
 
-      <div className="space-y-4 md:hidden">
-        {events.map((event) => {
-          const modeLabel =
-            event.type === "match" ? getEventModeLabel(event.mode) : null;
-
-          return (
-            <article key={event.id} className="rounded-3xl bg-white p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="flex flex-wrap gap-2">
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
-                        event
-                      )}`}
-                    >
-                      {getEventTypeLabel(event.type)}
-                    </span>
-
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
-                        event.visibility
-                      )}`}
-                    >
-                      {getEventVisibilityLabel(event.visibility)}
-                    </span>
-
-                    {modeLabel && (
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                        {modeLabel}
-                      </span>
-                    )}
-                  </div>
-
-                  <h2 className="mt-3 text-lg font-bold text-slate-900">
-                    {event.title}
-                  </h2>
-
-                  <p className="mt-2 text-sm text-slate-500">
-                    {event.locationName}
-                  </p>
-
-                  <p className="mt-1 text-sm text-slate-500">
-                    {new Date(event.startDate).toLocaleString()}
-                  </p>
-
-                  <p className="mt-1 text-sm font-semibold text-slate-700">
-                    {getEventDisplayStatus(event)}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => handleDelete(event.id)}
-                  disabled={deletingId === event.id}
-                  className="rounded-2xl bg-red-50 p-3 text-red-600 disabled:opacity-50"
-                  aria-label={`Delete ${event.title}`}
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <Link
-                  to={`/events/${event.id}`}
-                  className="rounded-2xl bg-blue-600 px-4 py-3 text-center text-sm font-bold text-white"
-                >
-                  View
-                </Link>
-
-                <Link
-                  to={`/events/${event.id}/edit`}
-                  className="rounded-2xl bg-blue-50 px-4 py-3 text-center text-sm font-bold text-blue-700"
-                >
-                  Edit
-                </Link>
-              </div>
-            </article>
-          );
-        })}
-      </div>
-
-      <div className="hidden overflow-hidden rounded-3xl bg-white shadow-sm md:block">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-sm text-slate-500">
-            <tr>
-              <th className="p-4">Title</th>
-              <th className="p-4">Type</th>
-              <th className="p-4">Location</th>
-              <th className="p-4">Date</th>
-              <th className="p-4">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {events.map((event) => {
-              const modeLabel =
-                event.type === "match" ? getEventModeLabel(event.mode) : null;
-
-              return (
-                <tr key={event.id} className="border-t">
-                  <td className="p-4 font-semibold">{event.title}</td>
-
-                  <td className="p-4">
-                    <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
-                          event
-                        )}`}
-                      >
-                        {getEventTypeLabel(event.type)}
-                      </span>
-
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
-                          event.visibility
-                        )}`}
-                      >
-                        {getEventVisibilityLabel(event.visibility)}
-                      </span>
-
-                      {modeLabel && (
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
-                          {modeLabel}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  <td className="p-4 text-sm text-slate-500">
-                    {event.locationName}
-                  </td>
-
-                  <td className="p-4 text-sm text-slate-500">
-                    <div>{new Date(event.startDate).toLocaleString()}</div>
-                    <div className="mt-1 font-semibold text-slate-700">
-                      {getEventDisplayStatus(event)}
-                    </div>
-                  </td>
-
-                  <td className="p-4">
-                    <div className="flex items-center gap-4">
-                      <Link
-                        to={`/events/${event.id}`}
-                        className="rounded-2xl px-2 py-1 text-sm font-semibold text-blue-600 hover:bg-blue-50"
-                      >
-                        View
-                      </Link>
-
-                      <Link
-                        to={`/events/${event.id}/edit`}
-                        className="rounded-2xl px-2 py-1 text-sm font-semibold text-slate-600 hover:bg-slate-100"
-                      >
-                        Edit
-                      </Link>
-
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        disabled={deletingId === event.id}
-                        className="inline-flex items-center gap-1 rounded-2xl px-2 py-1 text-sm font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
-                      >
-                        <Trash2 size={15} />
-                        {deletingId === event.id ? "Deleting..." : "Delete"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {events.length === 0 && (
-        <div className="mt-6 rounded-3xl bg-white p-8 text-center shadow-sm">
+      {loading ? (
+        <div className="grid gap-4 lg:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div
+              key={index}
+              className="h-56 animate-pulse rounded-[1.75rem] bg-white shadow-sm"
+            />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="rounded-[2rem] bg-white p-8 text-center shadow-sm">
           <p className="font-semibold text-slate-900">No events found</p>
           <p className="mt-2 text-sm text-slate-500">
-            Events created by users will appear here.
+            Try a different search or wait for new events to be created.
           </p>
         </div>
+      ) : (
+        <>
+          <div className="grid gap-4 xl:hidden">
+            {items.map((item) => (
+              <MobileAdminEventCard
+                key={item.event.id}
+                item={item}
+                deleting={deletingId === item.event.id}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+
+          <div className="hidden overflow-hidden rounded-[2rem] bg-white shadow-sm xl:block">
+            <table className="w-full text-left">
+              <thead className="bg-slate-50 text-sm text-slate-500">
+                <tr>
+                  <th className="px-6 py-4">Event</th>
+                  <th className="px-6 py-4">Creator</th>
+                  <th className="px-6 py-4">Location</th>
+                  <th className="px-6 py-4">Schedule</th>
+                  <th className="px-6 py-4">Capacity</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {items.map((item) => (
+                  <DesktopAdminEventRow
+                    key={item.event.id}
+                    item={item}
+                    deleting={deletingId === item.event.id}
+                    onDelete={handleDelete}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex flex-col gap-3 rounded-[1.75rem] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <p className="text-sm text-slate-500">
+              Page <strong className="text-slate-900">{page}</strong> of{" "}
+              <strong className="text-slate-900">{totalPages}</strong>
+            </p>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={page === 1}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ChevronLeft size={16} />
+                Previous
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPage((current) => Math.min(totalPages, current + 1))
+                }
+                disabled={page >= totalPages}
+                className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </section>
+  );
+}
+
+function MobileAdminEventCard({
+  item,
+  deleting,
+  onDelete,
+}: {
+  item: ReturnType<typeof useAdminEvents>["items"][number];
+  deleting: boolean;
+  onDelete: (eventId: string) => void;
+}) {
+  const { event, creatorName, creatorAvatarUrl } = item;
+  const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+
+  return (
+    <article className="rounded-[1.75rem] bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
+                event
+              )}`}
+            >
+              {getEventTypeLabel(event.type)}
+            </span>
+
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+                event.visibility
+              )}`}
+            >
+              {getEventVisibilityLabel(event.visibility)}
+            </span>
+
+            {modeLabel && (
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                {modeLabel}
+              </span>
+            )}
+          </div>
+
+          <h2 className="mt-3 truncate text-lg font-black text-slate-950">
+            {event.title}
+          </h2>
+
+          <div className="mt-4 space-y-2 text-sm text-slate-500">
+            <InfoRow
+              icon={<UserCircle2 size={16} />}
+              label={creatorName ?? "Unknown creator"}
+              avatarUrl={creatorAvatarUrl}
+            />
+            <InfoRow
+              icon={<MapPin size={16} />}
+              label={event.locationName || "Location pending"}
+            />
+            <InfoRow
+              icon={<CalendarDays size={16} />}
+              label={new Date(event.startDate).toLocaleString()}
+            />
+          </div>
+        </div>
+
+        <button
+          onClick={() => onDelete(event.id)}
+          disabled={deleting}
+          className="rounded-2xl bg-red-50 p-3 text-red-600 disabled:opacity-50"
+          aria-label={`Delete ${event.title}`}
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 rounded-[1.25rem] bg-slate-50 p-3">
+        <MiniStat label="Status" value={getEventDisplayStatus(event)} />
+        <MiniStat
+          label="Capacity"
+          value={
+            isUnlimitedEventCapacity(event.maxParticipants)
+              ? "Unlimited"
+              : `${event.maxParticipants}`
+          }
+        />
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-3">
+        <ActionLink to={`/events/${event.id}`} label="View" icon={<Eye size={16} />} />
+        <ActionLink
+          to={`/events/${event.id}/edit`}
+          label="Edit"
+          icon={<Pencil size={16} />}
+          variant="secondary"
+        />
+        <button
+          type="button"
+          onClick={() => onDelete(event.id)}
+          disabled={deleting}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 disabled:opacity-50"
+        >
+          <Trash2 size={16} />
+          {deleting ? "Deleting" : "Delete"}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+function DesktopAdminEventRow({
+  item,
+  deleting,
+  onDelete,
+}: {
+  item: ReturnType<typeof useAdminEvents>["items"][number];
+  deleting: boolean;
+  onDelete: (eventId: string) => void;
+}) {
+  const { event, creatorName, creatorAvatarUrl } = item;
+  const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+
+  return (
+    <tr className="border-t border-slate-100 align-top">
+      <td className="px-6 py-5">
+        <div className="min-w-0">
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventBadgeClasses(
+                event
+              )}`}
+            >
+              {getEventTypeLabel(event.type)}
+            </span>
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${getEventVisibilityBadgeClasses(
+                event.visibility
+              )}`}
+            >
+              {getEventVisibilityLabel(event.visibility)}
+            </span>
+            {modeLabel && (
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                {modeLabel}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-3 font-black text-slate-950">{event.title}</p>
+          {event.description && (
+            <p className="mt-1 line-clamp-2 max-w-md text-sm text-slate-500">
+              {event.description}
+            </p>
+          )}
+        </div>
+      </td>
+
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-3">
+          <CreatorAvatar
+            fullName={creatorName ?? "?"}
+            avatarUrl={creatorAvatarUrl}
+          />
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-slate-900">
+              {creatorName ?? "Unknown creator"}
+            </p>
+            <p className="text-sm text-slate-500">{event.createdBy}</p>
+          </div>
+        </div>
+      </td>
+
+      <td className="px-6 py-5 text-sm text-slate-500">
+        <div className="flex items-start gap-2">
+          <MapPin size={16} className="mt-0.5 shrink-0 text-slate-400" />
+          <span>{event.locationName || "Location pending"}</span>
+        </div>
+      </td>
+
+      <td className="px-6 py-5 text-sm text-slate-500">
+        <div>{new Date(event.startDate).toLocaleString()}</div>
+        <div className="mt-1 font-semibold text-slate-700">
+          {getEventDisplayStatus(event)}
+        </div>
+      </td>
+
+      <td className="px-6 py-5 text-sm text-slate-500">
+        {isUnlimitedEventCapacity(event.maxParticipants)
+          ? "Unlimited"
+          : event.maxParticipants}
+      </td>
+
+      <td className="px-6 py-5">
+        <div className="flex items-center justify-end gap-2">
+          <ActionLink
+            to={`/events/${event.id}`}
+            label="View"
+            icon={<Eye size={15} />}
+            compact
+          />
+          <ActionLink
+            to={`/events/${event.id}/edit`}
+            label="Edit"
+            icon={<Pencil size={15} />}
+            variant="secondary"
+            compact
+          />
+          <button
+            onClick={() => onDelete(event.id)}
+            disabled={deleting}
+            className="inline-flex items-center gap-2 rounded-2xl bg-red-50 px-3 py-2 text-sm font-bold text-red-600 disabled:opacity-50"
+          >
+            <Trash2 size={15} />
+            {deleting ? "Deleting" : "Delete"}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function SummaryCard({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent: "blue" | "emerald" | "amber" | "rose";
+}) {
+  const accentClasses = {
+    blue: "bg-blue-50 text-blue-700",
+    emerald: "bg-emerald-50 text-emerald-700",
+    amber: "bg-amber-50 text-amber-700",
+    rose: "bg-rose-50 text-rose-700",
+  } as const;
+
+  return (
+    <div className="rounded-[1.25rem] border border-slate-100 bg-slate-50 p-4">
+      <div
+        className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${accentClasses[accent]}`}
+      >
+        {label}
+      </div>
+      <p className="mt-3 text-2xl font-black text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-white px-3 py-3">
+      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-black text-slate-950">{value}</p>
+    </div>
+  );
+}
+
+function ActionLink({
+  to,
+  label,
+  icon,
+  variant = "primary",
+  compact = false,
+}: {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+  variant?: "primary" | "secondary";
+  compact?: boolean;
+}) {
+  const classes =
+    variant === "primary"
+      ? "bg-slate-900 text-white"
+      : "bg-blue-50 text-blue-700";
+
+  return (
+    <Link
+      to={to}
+      className={`inline-flex items-center justify-center gap-2 rounded-2xl font-bold ${classes} ${
+        compact ? "px-3 py-2 text-sm" : "px-4 py-3 text-sm"
+      }`}
+    >
+      {icon}
+      {label}
+    </Link>
+  );
+}
+
+function InfoRow({
+  icon,
+  label,
+  avatarUrl,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  avatarUrl?: string | null;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      {avatarUrl ? (
+        <img
+          src={avatarUrl}
+          alt={label}
+          className="h-5 w-5 rounded-full object-cover"
+        />
+      ) : (
+        <span className="text-slate-400">{icon}</span>
+      )}
+      <span className="truncate">{label}</span>
+    </div>
+  );
+}
+
+function CreatorAvatar({
+  fullName,
+  avatarUrl,
+}: {
+  fullName: string;
+  avatarUrl: string | null;
+}) {
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={fullName}
+        className="h-11 w-11 rounded-2xl object-cover"
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white">
+      {fullName.charAt(0).toUpperCase()}
+    </div>
   );
 }

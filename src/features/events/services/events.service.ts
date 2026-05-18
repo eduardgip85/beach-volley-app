@@ -1,5 +1,6 @@
 import { supabase } from "../../../config/supabase";
 import { joinMatch } from "../../match-players/services/matchPlayers.service";
+import { getUserRegisteredEventIds } from "../../registrations/services/registrations.service";
 import { UNLIMITED_EVENT_CAPACITY } from "../types/event.types";
 import type {
     CreateEventPayload,
@@ -259,6 +260,11 @@ export interface EventDetailSummary {
     isRegistered: boolean;
 }
 
+export interface AccessibleEventsResult {
+    events: Event[];
+    myEventIds: string[];
+}
+
 export async function getEvents(): Promise<Event[]> {
     const { data, error } = await supabase
         .from("events")
@@ -274,6 +280,44 @@ export async function getPublicEvents(): Promise<Event[]> {
     const events = await getEvents();
 
     return events.filter((event) => event.visibility === "public");
+}
+
+export async function getAccessibleEventsForUser(
+    userId?: string | null
+): Promise<AccessibleEventsResult> {
+    if (!userId) {
+        return {
+            events: await getPublicEvents(),
+            myEventIds: [],
+        };
+    }
+
+    const [publicEvents, createdEvents, registeredEventIds] = await Promise.all([
+        getPublicEvents(),
+        getEventsCreatedByUser(userId),
+        getUserRegisteredEventIds(userId),
+    ]);
+
+    const joinedEvents =
+        registeredEventIds.length > 0 ? await getEventsByIds(registeredEventIds) : [];
+
+    const mergedEvents = new Map<string, Event>();
+
+    [...publicEvents, ...createdEvents, ...joinedEvents].forEach((event) => {
+        mergedEvents.set(event.id, event);
+    });
+
+    return {
+        events: Array.from(mergedEvents.values()).sort((left, right) =>
+            left.startDate.localeCompare(right.startDate)
+        ),
+        myEventIds: Array.from(
+            new Set([
+                ...createdEvents.map((event) => event.id),
+                ...registeredEventIds,
+            ])
+        ),
+    };
 }
 
 export async function getEventById(eventId: string): Promise<Event> {

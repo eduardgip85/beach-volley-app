@@ -10,6 +10,7 @@ export interface EventFiltersState {
     mode: EventModeFilter;
     location: string;
     date: string;
+    myEventsOnly: boolean;
 }
 
 const initialFilters: EventFiltersState = {
@@ -18,10 +19,16 @@ const initialFilters: EventFiltersState = {
     mode: "all",
     location: "all",
     date: "",
+    myEventsOnly: false,
 };
 
-export function useEventFilters(events: Event[]) {
+interface UseEventFiltersOptions {
+    isMyEvent?: (event: Event) => boolean;
+}
+
+export function useEventFilters(events: Event[], options: UseEventFiltersOptions = {}) {
     const [filters, setFilters] = useState<EventFiltersState>(initialFilters);
+    const isMyEvent = options.isMyEvent;
 
     function updateFilter<K extends keyof EventFiltersState>(
         key: K,
@@ -64,15 +71,21 @@ export function useEventFilters(events: Event[]) {
         const matchesDate =
             !filters.date || event.startDate.slice(0, 10) === filters.date;
 
+        const matchesMyEvents =
+            !filters.myEventsOnly ||
+            !isMyEvent ||
+            isMyEvent(event);
+
         return (
             matchesSearch &&
             matchesType &&
             matchesMode &&
             matchesLocation &&
-            matchesDate
+            matchesDate &&
+            matchesMyEvents
         );
         });
-    }, [events, filters]);
+    }, [events, filters, isMyEvent]);
 
     return {
         filters,

@@ -9,6 +9,7 @@ import type {
 interface EventFiltersProps {
   filters: EventFiltersState;
   locations: string[];
+  showMyEventsFilter?: boolean;
   onFilterChange: <K extends keyof EventFiltersState>(
     key: K,
     value: EventFiltersState[K]
@@ -19,6 +20,7 @@ interface EventFiltersProps {
 export function EventFilters({
   filters,
   locations,
+  showMyEventsFilter = false,
   onFilterChange,
   onClearFilters,
 }: EventFiltersProps) {
@@ -29,7 +31,8 @@ export function EventFilters({
     filters.type !== "all" ||
     filters.mode !== "all" ||
     filters.location !== "all" ||
-    filters.date !== "";
+    filters.date !== "" ||
+    filters.myEventsOnly;
 
   return (
     <div className="mt-4 rounded-3xl bg-white p-4 shadow-sm sm:p-5">
@@ -63,6 +66,7 @@ export function EventFilters({
           <FiltersContent
             filters={filters}
             locations={locations}
+            showMyEventsFilter={showMyEventsFilter}
             onFilterChange={onFilterChange}
             onClearFilters={onClearFilters}
             hasFilters={hasFilters}
@@ -71,7 +75,7 @@ export function EventFilters({
       )}
 
       {/* Desktop filters */}
-      <div className="hidden gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_150px_150px_180px_180px_auto]">
+      <div className="hidden gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_150px_150px_180px_180px_auto_auto]">
         <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
           <Search size={18} className="text-slate-400" />
           <input
@@ -85,6 +89,7 @@ export function EventFilters({
         <FiltersContent
           filters={filters}
           locations={locations}
+          showMyEventsFilter={showMyEventsFilter}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
           hasFilters={hasFilters}
@@ -97,6 +102,7 @@ export function EventFilters({
 function FiltersContent({
   filters,
   locations,
+  showMyEventsFilter = false,
   onFilterChange,
   onClearFilters,
   hasFilters,
@@ -150,6 +156,20 @@ function FiltersContent({
         />
         <CalendarDays size={17} className="text-slate-400" />
       </div>
+
+      {showMyEventsFilter ? (
+        <label className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
+          <input
+            type="checkbox"
+            checked={filters.myEventsOnly}
+            onChange={(event) =>
+              onFilterChange("myEventsOnly", event.target.checked)
+            }
+            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+          />
+          My events
+        </label>
+      ) : null}
 
       <button
         type="button"

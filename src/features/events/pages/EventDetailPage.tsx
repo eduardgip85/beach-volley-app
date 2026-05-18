@@ -5,6 +5,7 @@ import {
   Info,
   MapPin,
   Navigation,
+  Share2,
   Shield,
   UserCircle2,
   Users,
@@ -374,6 +375,38 @@ export function EventDetailPage() {
     } catch (err) {
       console.error(err);
       setCopyMessage("Could not copy private link");
+    }
+  }
+
+  async function handleSharePrivateLink() {
+    if (!event) return;
+
+    const privateUrl = `${window.location.origin}/events/${event.id}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: event.title,
+          text: "Join my private beach volleyball event.",
+          url: privateUrl,
+        });
+        setCopyMessage("Private link shared");
+        return;
+      }
+
+      await handleCopyPrivateLink();
+    } catch (err) {
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "name" in err &&
+        err.name === "AbortError"
+      ) {
+        return;
+      }
+
+      console.error(err);
+      setCopyMessage("Could not share private link");
     }
   }
 
@@ -798,14 +831,25 @@ export function EventDetailPage() {
               ) : null}
 
               {canCopyPrivateLink ? (
-                <button
-                  type="button"
-                  onClick={handleCopyPrivateLink}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white"
-                >
-                  <Copy size={16} />
-                  Copy Private Link
-                </button>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={handleSharePrivateLink}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white"
+                  >
+                    <Share2 size={16} />
+                    Share
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleCopyPrivateLink}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white"
+                  >
+                    <Copy size={16} />
+                    Copy Link
+                  </button>
+                </div>
               ) : null}
             </div>
 
