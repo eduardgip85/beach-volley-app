@@ -2,6 +2,7 @@ import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useEventForm } from "../../features/events/hooks/useEventForm";
 import type { Event } from "../../features/events/types/event.types";
+import { setAppLanguage } from "../../i18n";
 
 const { mockSearchLocation, mockReverseGeocodeLocation } = vi.hoisted(() => ({
     mockSearchLocation: vi.fn(),
@@ -43,8 +44,9 @@ function createInitialEvent(overrides: Partial<Event> = {}): Event {
 }
 
 describe("useEventForm", () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks();
+        await setAppLanguage("en");
         mockSearchLocation.mockResolvedValue(null);
         mockReverseGeocodeLocation.mockResolvedValue(null);
     });

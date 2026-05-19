@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/context/AuthContext";
 
@@ -24,24 +25,6 @@ interface NavItem {
   icon: typeof Home;
   end?: boolean;
 }
-
-const publicNavItems: NavItem[] = [
-  { label: "Home", path: "/", icon: Home, end: true },
-  { label: "Events", path: "/events", icon: Trophy },
-  { label: "Ranking", path: "/ranking", icon: Medal },
-  { label: "Map", path: "/map", icon: Map },
-  { label: "Calendar", path: "/calendar", icon: CalendarDays },
-];
-
-const authenticatedNavItems: NavItem[] = [
-  { label: "Friends", path: "/friends", icon: Users },
-  { label: "Profile", path: "/profile", icon: User },
-  { label: "Settings", path: "/settings", icon: Settings },
-];
-
-const adminNavItems: NavItem[] = [
-  { label: "Stats", path: "/stats", icon: LayoutDashboard },
-];
 
 function getDesktopNavClasses(isActive: boolean) {
   return [
@@ -62,6 +45,7 @@ function getMobileNavClasses(isActive: boolean) {
 }
 
 export function AppLayout() {
+  const { t } = useTranslation();
   const { isAuthenticated, isAdmin, profile, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -81,17 +65,31 @@ export function AppLayout() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  const publicNavItems: NavItem[] = [
+    { label: t("nav.home"), path: "/", icon: Home, end: true },
+    { label: t("nav.events"), path: "/events", icon: Trophy },
+    { label: t("nav.ranking"), path: "/ranking", icon: Medal },
+    { label: t("nav.map"), path: "/map", icon: Map },
+    { label: t("nav.calendar"), path: "/calendar", icon: CalendarDays },
+  ];
+
+  const authenticatedNavItems: NavItem[] = [
+    { label: t("nav.friends"), path: "/friends", icon: Users },
+    { label: t("nav.profile"), path: "/profile", icon: User },
+    { label: t("nav.settings"), path: "/settings", icon: Settings },
+  ];
+
+  const adminNavItems: NavItem[] = [
+    { label: t("nav.stats"), path: "/stats", icon: LayoutDashboard },
+  ];
+
   const desktopNavItems = [
     ...publicNavItems,
     ...(isAuthenticated ? authenticatedNavItems : []),
     ...(isAdmin ? adminNavItems : []),
   ];
 
-  const mobileNavItems = [
-    ...publicNavItems,
-    ...(isAuthenticated ? authenticatedNavItems : []),
-    ...(isAdmin ? adminNavItems : []),
-  ];
+  const mobileNavItems = desktopNavItems;
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-100 md:flex">
@@ -100,10 +98,10 @@ export function AppLayout() {
         <div className="relative flex items-center justify-between px-3 py-3">
           <Link to="/" className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
-              Beach Volley App
+              {t("app.name")}
             </p>
             <h1 className="truncate text-base font-black text-white">
-              Play. Meet. Repeat.
+              {t("app.tagline")}
             </h1>
           </Link>
 
@@ -111,7 +109,7 @@ export function AppLayout() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(true)}
-              aria-label="Open menu"
+              aria-label={t("nav.openMenu")}
               aria-expanded={false}
               className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white transition hover:bg-white/15"
             >
@@ -130,10 +128,10 @@ export function AppLayout() {
           <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
             <Link to="/" className="block">
               <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-300">
-                Beach Volley App
+                {t("app.name")}
               </p>
               <h1 className="mt-3 text-2xl font-black text-white">
-                Play. Meet. Repeat.
+                {t("app.tagline")}
               </h1>
             </Link>
           </div>
@@ -150,15 +148,15 @@ export function AppLayout() {
                     {profile.fullName}
                   </p>
                   <p className="mt-1 text-xs font-medium uppercase tracking-widest text-slate-400">
-                    {profile.role}
+                    {t(`roles.${profile.role}`)}
                   </p>
                 </div>
               </div>
             ) : (
               <div>
-                <p className="text-sm font-bold text-white">Welcome to the app</p>
+                <p className="text-sm font-bold text-white">{t("nav.welcomeTitle")}</p>
                 <p className="mt-1 text-sm text-slate-300">
-                  Log in to manage your profile and create events.
+                  {t("nav.welcomeBody")}
                 </p>
               </div>
             )}
@@ -193,7 +191,7 @@ export function AppLayout() {
                 <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
                   <LogOut size={18} />
                 </span>
-                Logout
+                {t("nav.logout")}
               </button>
             ) : (
               <div className="space-y-2">
@@ -204,7 +202,7 @@ export function AppLayout() {
                   <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
                     <LogIn size={18} />
                   </span>
-                  <span>Login</span>
+                  <span>{t("nav.login")}</span>
                 </NavLink>
 
                 <NavLink
@@ -214,7 +212,7 @@ export function AppLayout() {
                   <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
                     <UserPlus size={18} />
                   </span>
-                  <span>Register</span>
+                  <span>{t("nav.register")}</span>
                 </NavLink>
               </div>
             )}
@@ -225,7 +223,7 @@ export function AppLayout() {
       {isMobileMenuOpen && (
         <button
           type="button"
-          aria-label="Close menu"
+          aria-label={t("nav.closeMenu")}
           onClick={() => setIsMobileMenuOpen(false)}
           className="fixed inset-0 z-[2050] bg-slate-950/45 backdrop-blur-[2px] md:hidden"
         />
@@ -243,16 +241,16 @@ export function AppLayout() {
             <div className="mb-4 flex items-center justify-between">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-300">
-                  Beach Volley App
+                  {t("app.name")}
                 </p>
                 <h2 className="truncate text-lg font-black text-white">
-                  Play. Meet. Repeat.
+                  {t("app.tagline")}
                 </h2>
               </div>
 
               <button
                 type="button"
-                aria-label="Close menu"
+                aria-label={t("nav.closeMenu")}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white transition hover:bg-white/15"
               >
@@ -271,15 +269,15 @@ export function AppLayout() {
                     {profile.fullName}
                   </p>
                   <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
-                    {profile.role}
+                    {t(`roles.${profile.role}`)}
                   </p>
                 </div>
               </div>
             ) : (
               <div>
-                <p className="text-sm font-bold text-white">Welcome</p>
+                <p className="text-sm font-bold text-white">{t("nav.welcomeShort")}</p>
                 <p className="mt-1 text-sm text-slate-300">
-                  Log in to manage your profile and create events.
+                  {t("nav.welcomeBody")}
                 </p>
               </div>
             )}
@@ -311,7 +309,7 @@ export function AppLayout() {
                 className="flex w-full items-center gap-3 rounded-2xl bg-red-500/15 px-4 py-3 text-sm font-semibold text-red-100 transition hover:bg-red-500/25"
               >
                 <LogOut size={18} />
-                Logout
+                {t("nav.logout")}
               </button>
             ) : (
               <div className="space-y-2">
@@ -320,7 +318,7 @@ export function AppLayout() {
                   className={({ isActive }) => getMobileNavClasses(isActive)}
                 >
                   <LogIn size={18} />
-                  <span>Login</span>
+                  <span>{t("nav.login")}</span>
                 </NavLink>
 
                 <NavLink
@@ -328,7 +326,7 @@ export function AppLayout() {
                   className={({ isActive }) => getMobileNavClasses(isActive)}
                 >
                   <UserPlus size={18} />
-                  <span>Register</span>
+                  <span>{t("nav.register")}</span>
                 </NavLink>
               </div>
             )}

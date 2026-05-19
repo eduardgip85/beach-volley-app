@@ -7,6 +7,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth/context/AuthContext";
 import {
   verifyEquipmentImage,
@@ -23,6 +24,7 @@ export function EquipmentVerificationCard({
   embedded = false,
   collapsible = true,
 }: EquipmentVerificationCardProps = {}) {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const [isOpen, setIsOpen] = useState(!collapsible);
 
@@ -49,11 +51,10 @@ export function EquipmentVerificationCard({
 
             <div>
               <h2 className="text-2xl font-bold text-slate-900">
-                Equipment verification
+                {t("equipmentVerification.title")}
               </h2>
               <p className="mt-2 text-sm text-slate-500">
-                Verify your volleyball equipment separately. Once verified, it will
-                appear as a badge on your profile.
+                {t("equipmentVerification.body")}
               </p>
             </div>
           </div>
@@ -70,15 +71,15 @@ export function EquipmentVerificationCard({
         <div className={`${collapsible ? "mt-6" : ""} grid gap-5 md:grid-cols-2`}>
           <EquipmentVerifyItem
             target="ball"
-            title="Verify ball"
-            description="Upload a clear photo where the volleyball ball is visible."
+            title={t("equipmentVerification.ballTitle")}
+            description={t("equipmentVerification.ballDescription")}
             alreadyVerified={profile.hasBall}
           />
 
           <EquipmentVerifyItem
             target="net"
-            title="Verify net"
-            description="Upload a clear photo where the volleyball net is visible."
+            title={t("equipmentVerification.netTitle")}
+            description={t("equipmentVerification.netDescription")}
             alreadyVerified={profile.hasNet}
           />
         </div>
@@ -98,6 +99,7 @@ function EquipmentVerifyItem({
   description: string;
   alreadyVerified: boolean;
 }) {
+  const { t } = useTranslation();
   const { refreshProfile } = useAuth();
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -117,12 +119,12 @@ function EquipmentVerifyItem({
 
   async function handleVerify() {
     if (alreadyVerified) {
-      setError("This equipment is already verified.");
+      setError(t("equipmentVerification.alreadyVerifiedError"));
       return;
     }
 
     if (!imageFile) {
-      setError("Please upload an image first.");
+      setError(t("equipmentVerification.uploadFirst"));
       return;
     }
 
@@ -141,16 +143,16 @@ function EquipmentVerifyItem({
       const status = err?.context?.status;
 
       if (status === 429) {
-        setError("Too many attempts. Please wait a minute and try again.");
+        setError(t("equipmentVerification.tooManyAttempts"));
         return;
       }
 
       if (status === 409) {
-        setError("This equipment is already verified.");
+        setError(t("equipmentVerification.alreadyVerifiedError"));
         return;
       }
 
-      setError("Could not verify equipment.");
+      setError(t("equipmentVerification.verifyError"));
     } finally {
       setLoading(false);
     }
@@ -186,12 +188,12 @@ function EquipmentVerifyItem({
         {alreadyVerified ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
             <CheckCircle2 size={14} />
-            Verified
+            {t("equipmentVerification.verified")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-500">
             <XCircle size={14} />
-            Pending
+            {t("equipmentVerification.pending")}
           </span>
         )}
       </div>
@@ -208,9 +210,11 @@ function EquipmentVerifyItem({
             ) : (
               <>
                 <ImagePlus className="text-blue-600" size={32} />
-                <p className="mt-3 font-bold text-slate-900">Upload photo</p>
+                <p className="mt-3 font-bold text-slate-900">
+                  {t("equipmentVerification.uploadPhoto")}
+                </p>
                 <p className="mt-1 text-sm text-slate-500">
-                  Select a clear image.
+                  {t("equipmentVerification.selectClearImage")}
                 </p>
               </>
             )}
@@ -232,7 +236,9 @@ function EquipmentVerifyItem({
               }`}
             >
               <p className="font-bold">
-                {result.detected ? "Detected" : "Not detected"}
+                {result.detected
+                  ? t("equipmentVerification.detected")
+                  : t("equipmentVerification.notDetected")}
               </p>
               <p className="mt-1 text-sm">{result.reason}</p>
             </div>
@@ -250,16 +256,18 @@ function EquipmentVerifyItem({
             disabled={loading}
             className="mt-5 w-full rounded-2xl bg-blue-600 px-5 py-4 font-bold text-white disabled:opacity-60"
           >
-            {loading ? "Verifying..." : title}
+            {loading ? t("equipmentVerification.verifying") : title}
           </button>
         </>
       )}
 
       {alreadyVerified && (
         <div className="mt-5 rounded-2xl bg-white p-4">
-          <p className="font-bold text-emerald-700">Already verified</p>
+          <p className="font-bold text-emerald-700">
+            {t("equipmentVerification.alreadyVerified")}
+          </p>
           <p className="mt-1 text-sm text-slate-500">
-            You do not need to verify this equipment again.
+            {t("equipmentVerification.alreadyVerifiedBody")}
           </p>
         </div>
       )}

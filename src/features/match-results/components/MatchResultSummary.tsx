@@ -1,4 +1,5 @@
 import type { MatchResult } from "../types/matchResult.types";
+import i18n from "../../../i18n";
 
 interface MatchResultSummaryProps {
     result: MatchResult;
@@ -7,14 +8,14 @@ interface MatchResultSummaryProps {
 function getValidationLabel(validationStatus: MatchResult["validationStatus"]) {
     switch (validationStatus) {
         case "accepted":
-            return "Validated";
+            return i18n.t("matchResult.validated");
         case "rejected":
         case "disputed":
-            return "Rejected / disputed";
+            return i18n.t("matchResult.rejectedDisputed");
         case "expired":
-            return "Expired";
+            return i18n.t("matchResult.expired");
         default:
-            return "Pending validation";
+            return i18n.t("matchResult.pendingValidation");
     }
 }
 
@@ -35,10 +36,10 @@ function getValidationClasses(validationStatus: MatchResult["validationStatus"])
 export function MatchResultSummary({ result }: MatchResultSummaryProps) {
     const winningTeamLabel =
         result.winningTeam === "team_a"
-            ? "Team A wins"
+            ? i18n.t("matchResult.teamAWins")
             : result.winningTeam === "team_b"
-              ? "Team B wins"
-              : "Winner pending";
+              ? i18n.t("matchResult.teamBWins")
+              : i18n.t("matchResult.winnerPending");
 
     return (
         <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
@@ -52,7 +53,7 @@ export function MatchResultSummary({ result }: MatchResultSummaryProps) {
                 </span>
 
                 <span className="text-sm text-slate-500">
-                    {result.sets.length} {result.sets.length === 1 ? "set" : "sets"}
+                    {i18n.t("matchResult.set", { count: result.sets.length })}
                 </span>
 
                 <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase text-blue-700">
@@ -67,7 +68,7 @@ export function MatchResultSummary({ result }: MatchResultSummaryProps) {
                         className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 ring-1 ring-slate-200"
                     >
                         <span className="text-sm font-bold text-slate-500">
-                            Set {set.setNumber}
+                            {i18n.t("matchResult.setLabel", { number: set.setNumber })}
                         </span>
 
                         <span className="text-lg font-black text-slate-900">

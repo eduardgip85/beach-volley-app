@@ -11,6 +11,7 @@ import {
   Users,
 } from "lucide-react";
 import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useEventInvitations } from "../../event-invitations/hooks/useEventInvitations";
@@ -75,90 +76,91 @@ const PrivateEventAccessCard = lazy(() =>
   )
 );
 
-function formatEventDate(dateValue: string) {
+function formatEventDate(dateValue: string, locale: string, fallback: string) {
   if (!dateValue) {
-    return "Date pending";
+    return fallback;
   }
 
   const parsedDate = new Date(dateValue);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "Date pending";
+    return fallback;
   }
 
-  return parsedDate.toLocaleString();
+  return parsedDate.toLocaleString(locale);
 }
 
-function formatEventDateLabel(dateValue: string) {
+function formatEventDateLabel(dateValue: string, locale: string, fallback: string) {
   if (!dateValue) {
-    return "Date pending";
+    return fallback;
   }
 
   const parsedDate = new Date(dateValue);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "Date pending";
+    return fallback;
   }
 
-  return parsedDate.toLocaleDateString(undefined, {
+  return parsedDate.toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
 }
 
-function formatEventTimeLabel(dateValue: string) {
+function formatEventTimeLabel(dateValue: string, locale: string, fallback: string) {
   if (!dateValue) {
-    return "Time pending";
+    return fallback;
   }
 
   const parsedDate = new Date(dateValue);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "Time pending";
+    return fallback;
   }
 
-  return parsedDate.toLocaleTimeString(undefined, {
+  return parsedDate.toLocaleTimeString(locale, {
     hour: "2-digit",
     minute: "2-digit",
   });
 }
 
-function getEventHighlights(event: Event) {
+function getEventHighlights(event: Event, t: (key: string) => string) {
   if (event.type === "tournament") {
     return [
-      "Structured day built for bigger attendance and more competitive rhythm.",
-      "Ideal for brackets, community milestones, and featured beach events.",
-      "Share the event early so players can secure spots before it fills up.",
+      t("eventDetail.highlights.tournament1"),
+      t("eventDetail.highlights.tournament2"),
+      t("eventDetail.highlights.tournament3"),
     ];
   }
 
   if (event.type === "open_play") {
     return [
-      "Relaxed open session focused on meeting players and getting quality reps in.",
-      "Flexible attendance makes it easier for the local community to join.",
-      "Great for partner rotations, casual games, and social beach sessions.",
+      t("eventDetail.highlights.openPlay1"),
+      t("eventDetail.highlights.openPlay2"),
+      t("eventDetail.highlights.openPlay3"),
     ];
   }
 
   if (event.mode === "competitive") {
     return [
-      "Accepted results feed into competitive rating and player history.",
-      "Rosters stay focused on four active players with clearer team structure.",
-      "Best for more serious matches with stronger level expectations.",
+      t("eventDetail.highlights.competitive1"),
+      t("eventDetail.highlights.competitive2"),
+      t("eventDetail.highlights.competitive3"),
     ];
   }
 
   return [
-    "Casual format designed for smooth games and an easy-going beach session.",
-    "Perfect for practice matches, friend meetups, and quick local games.",
-    "Results stay social only, so there is no rating impact here.",
+    t("eventDetail.highlights.casual1"),
+    t("eventDetail.highlights.casual2"),
+    t("eventDetail.highlights.casual3"),
   ];
 }
 
 export function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, profile, isAdmin } = useAuth();
 
   const [event, setEvent] = useState<Event | null>(null);
@@ -184,6 +186,7 @@ export function EventDetailPage() {
       profile &&
       (profile.id === event.createdBy || isAdmin)
   );
+  const canShareLink = Boolean(event);
 
   const hasUnlimitedSpots = Boolean(
     event &&
@@ -276,14 +279,14 @@ export function EventDetailPage() {
         await loadEventSummary(eventId);
       } catch (err) {
         console.error(err);
-        setError("Could not load event");
+        setError(t("eventDetail.loadError"));
       } finally {
         setLoading(false);
       }
     }
 
     loadEvent();
-  }, [eventId, profile?.id]);
+  }, [eventId, profile?.id, t]);
 
   useEffect(() => {
     async function loadParticipants() {
@@ -332,7 +335,7 @@ export function EventDetailPage() {
       await loadEventSummary(eventId);
     } catch (err) {
       console.error(err);
-      setError("Could not join this event");
+      setError(t("eventDetail.joinError"));
     } finally {
       setJoining(false);
     }
@@ -353,10 +356,21 @@ export function EventDetailPage() {
       await loadEventSummary(eventId);
     } catch (err) {
       console.error(err);
-      setError("Could not leave this event");
+      setError(t("eventDetail.leaveError"));
     } finally {
       setJoining(false);
     }
+  }
+
+  async function handleRequestPrivateAccess() {
+    if (!eventId) return;
+
+    if (!isAuthenticated || !profile) {
+      navigate(`/login?redirect=/events/${eventId}`);
+      return;
+    }
+
+    await eventJoinRequests.actions.requestAccess();
   }
 
   async function handleCopyPrivateLink() {
@@ -367,18 +381,18 @@ export function EventDetailPage() {
     try {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(privateUrl);
-        setCopyMessage("Private link copied");
+        setCopyMessage(t("eventDetail.copySuccess"));
         return;
       }
 
-      setCopyMessage("Copy not available on this device");
+      setCopyMessage(t("eventDetail.copyUnavailable"));
     } catch (err) {
       console.error(err);
-      setCopyMessage("Could not copy private link");
+      setCopyMessage(t("eventDetail.copyError"));
     }
   }
 
-  async function handleSharePrivateLink() {
+  async function handleShareLink() {
     if (!event) return;
 
     const privateUrl = `${window.location.origin}/events/${event.id}`;
@@ -387,10 +401,10 @@ export function EventDetailPage() {
       if (navigator.share) {
         await navigator.share({
           title: event.title,
-          text: "Join my private beach volleyball event.",
+          text: t("eventDetail.shareText"),
           url: privateUrl,
         });
-        setCopyMessage("Private link shared");
+        setCopyMessage(t("eventDetail.shareSuccess"));
         return;
       }
 
@@ -406,21 +420,21 @@ export function EventDetailPage() {
       }
 
       console.error(err);
-      setCopyMessage("Could not share private link");
+      setCopyMessage(t("eventDetail.shareError"));
     }
   }
 
   if (loading) {
-    return <p className="text-slate-500">Loading event...</p>;
+    return <p className="text-slate-500">{t("eventDetail.loading")}</p>;
   }
 
   if (error && !event) {
     return (
       <section className="rounded-2xl bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">Event not found</h1>
+        <h1 className="text-xl font-bold text-slate-900">{t("eventDetail.notFoundTitle")}</h1>
         <p className="mt-2 text-slate-500">{error}</p>
         <Link to="/events" className="mt-4 inline-block text-blue-600">
-          Back to events
+          {t("eventDetail.backToEvents")}
         </Link>
       </section>
     );
@@ -457,7 +471,7 @@ export function EventDetailPage() {
     Number.isFinite(event.latitude) && Number.isFinite(event.longitude)
       ? `https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`
       : null;
-  const eventHighlights = getEventHighlights(event);
+  const eventHighlights = getEventHighlights(event, t);
   const shouldShowParticipantsCard =
     canViewParticipants && (participantsLoading || participants.length > 0);
 
@@ -500,7 +514,7 @@ export function EventDetailPage() {
                 {getEventVisibilityLabel(event.visibility)}
               </span>
 
-              {displayStatus !== "Active" ? (
+              {displayStatus !== t("eventStatus.active") ? (
                 <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase text-white backdrop-blur">
                   {displayStatus}
                 </span>
@@ -512,7 +526,7 @@ export function EventDetailPage() {
                 {event.title}
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-200 sm:text-base">
-                {event.description || "No description provided yet for this event."}
+                {event.description || t("eventDetail.noDescription")}
               </p>
             </div>
           </div>
@@ -522,33 +536,36 @@ export function EventDetailPage() {
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <EventDetailStatCard
           icon={<CalendarDays size={18} className="text-blue-600" />}
-          label="Date"
-          value={formatEventDateLabel(event.startDate)}
+          label={t("eventDetail.labels.date")}
+          value={formatEventDateLabel(event.startDate, i18n.language, t("eventDetail.datePending"))}
         />
         <EventDetailStatCard
           icon={<Clock3 size={18} className="text-blue-600" />}
-          label="Start time"
-          value={formatEventTimeLabel(event.startDate)}
+          label={t("eventDetail.labels.startTime")}
+          value={formatEventTimeLabel(event.startDate, i18n.language, t("eventDetail.timePending"))}
         />
         <EventDetailStatCard
           icon={<MapPin size={18} className="text-blue-600" />}
-          label="Location"
-          value={event.locationName || "Location pending"}
+          label={t("eventDetail.labels.location")}
+          value={event.locationName || t("eventDetail.locationPending")}
         />
         <EventDetailStatCard
           icon={<Users size={18} className="text-blue-600" />}
-          label="Joined"
+          label={t("eventDetail.labels.joined")}
           value={
             hasUnlimitedSpots
-              ? `${displayJoinedCount} joined`
-              : `${displayJoinedCount} / ${event.maxParticipants}`
+              ? t("eventDetail.joined", { count: displayJoinedCount })
+              : t("eventDetail.joinedProgress", {
+                  joined: displayJoinedCount,
+                  total: event.maxParticipants,
+                })
           }
           helper={
             hasUnlimitedSpots
-              ? "Unlimited spots"
+              ? t("eventDetail.unlimited")
               : spotsLeft && spotsLeft > 0
-                ? `${spotsLeft} spots left`
-                : "Event full"
+                ? t("eventDetail.spotsLeft", { count: spotsLeft })
+                : t("eventDetail.eventFull")
           }
         />
       </div>
@@ -565,12 +582,12 @@ export function EventDetailPage() {
             <div className="rounded-3xl bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2 text-slate-900">
                 <Info size={18} className="text-blue-600" />
-                <h2 className="text-lg font-black">About this event</h2>
+                <h2 className="text-lg font-black">{t("eventDetail.aboutTitle")}</h2>
               </div>
 
               <p className="mt-4 text-sm leading-7 text-slate-600">
                 {event.description ||
-                  "No extra notes yet. Use the summary cards and participants section to understand the event at a glance."}
+                  t("eventDetail.aboutFallback")}
               </p>
 
               <div className="mt-5 space-y-3">
@@ -591,19 +608,19 @@ export function EventDetailPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h2 className="text-lg font-black text-slate-900">
-                      Participants
+                      {t("eventDetail.participantsTitle")}
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      {participants.length} joined
+                      {t("eventDetail.joined", { count: participants.length })}
                     </p>
                   </div>
 
                   <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700">
                     {hasUnlimitedSpots
-                      ? "Unlimited"
+                      ? t("eventDetail.unlimited")
                       : spotsLeft && spotsLeft > 0
-                        ? `${spotsLeft} spots left`
-                        : "Full"}
+                        ? t("eventDetail.spotsLeft", { count: spotsLeft })
+                        : t("eventDetail.full")}
                   </span>
                 </div>
 
@@ -634,8 +651,10 @@ export function EventDetailPage() {
                         className="mt-5 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
                       >
                         {showAllParticipants
-                          ? "Show fewer participants"
-                          : `View all ${participants.length} participants`}
+                          ? t("eventDetail.showFewerParticipants")
+                          : t("eventDetail.viewAllParticipants", {
+                              count: participants.length,
+                            })}
                       </button>
                     ) : null}
                   </>
@@ -647,9 +666,9 @@ export function EventDetailPage() {
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-black text-slate-900">Court location</h2>
+                <h2 className="text-lg font-black text-slate-900">{t("eventDetail.courtLocation")}</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  {event.locationName || "Location pending"}
+                  {event.locationName || t("eventDetail.locationPending")}
                 </p>
               </div>
 
@@ -661,13 +680,13 @@ export function EventDetailPage() {
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
                 >
                   <Navigation size={16} />
-                  Get directions
+                  {t("eventDetail.getDirections")}
                 </a>
               ) : null}
             </div>
 
             <div className="mt-5 h-72 overflow-hidden rounded-2xl bg-slate-100">
-              <Suspense fallback={<SectionLoadingMessage message="Loading map..." />}>
+              <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingMap")} />}>
                 <EventLocationMap
                   latitude={event.latitude}
                   longitude={event.longitude}
@@ -679,7 +698,7 @@ export function EventDetailPage() {
           </div>
 
           {event.type === "match" && canViewMatchPlayers ? (
-            <Suspense fallback={<SectionLoadingMessage message="Loading teams..." />}>
+            <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingTeams")} />}>
               <MatchPlayersSection
                 teamAPlayers={matchPlayers.state.teamAPlayers}
                 teamBPlayers={matchPlayers.state.teamBPlayers}
@@ -695,7 +714,7 @@ export function EventDetailPage() {
           ) : null}
 
           {event.type === "match" ? (
-            <Suspense fallback={<SectionLoadingMessage message="Loading result..." />}>
+            <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingResult")} />}>
               <MatchResultSection
                 result={matchResult.matchResult}
                 sets={matchResult.sets}
@@ -720,7 +739,7 @@ export function EventDetailPage() {
           {event.visibility === "private" &&
           !isClosedEvent &&
           eventInvitations.state.pendingInvitationForCurrentUser ? (
-            <Suspense fallback={<SectionLoadingMessage message="Loading invitation..." />}>
+            <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingInvitation")} />}>
               <EventInvitationResponseCard
                 invitation={eventInvitations.state.pendingInvitationForCurrentUser}
                 actionLoadingId={eventInvitations.state.actionLoadingId}
@@ -735,7 +754,7 @@ export function EventDetailPage() {
           !displayIsFull &&
           !isAcceptedMatch &&
           !isClosedEvent ? (
-            <Suspense fallback={<SectionLoadingMessage message="Loading requests..." />}>
+            <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingRequests")} />}>
               <EventJoinRequestSection
                 requests={eventJoinRequests.state.pendingRequests}
                 actionLoadingId={eventJoinRequests.state.actionLoadingId}
@@ -749,43 +768,46 @@ export function EventDetailPage() {
         <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
-              Event snapshot
+              {t("eventDetail.snapshot")}
             </p>
 
             <div className="mt-4 space-y-3">
               <SidebarInfoRow
-                label="Starts"
-                value={formatEventDate(event.startDate)}
+                label={t("eventDetail.starts")}
+                value={formatEventDate(event.startDate, i18n.language, t("eventDetail.datePending"))}
                 icon={<CalendarDays size={16} className="text-blue-600" />}
               />
               <SidebarInfoRow
-                label="Created by"
-                value={creatorName || "Loading creator..."}
+                label={t("eventDetail.createdBy")}
+                value={creatorName || t("eventDetail.loadingCreator")}
                 icon={<UserCircle2 size={16} className="text-blue-600" />}
               />
               <SidebarInfoRow
-                label="Visibility"
+                label={t("mapPage.visibility")}
                 value={getEventVisibilityLabel(event.visibility)}
                 icon={<Shield size={16} className="text-blue-600" />}
               />
               <SidebarInfoRow
-                label="Location"
-                value={event.locationName || "Location pending"}
+                label={t("eventDetail.labels.location")}
+                value={event.locationName || t("eventDetail.locationPending")}
                 icon={<MapPin size={16} className="text-blue-600" />}
               />
             </div>
 
             <div className="mt-5 rounded-2xl bg-blue-50 px-4 py-4">
               <p className="text-xs font-bold uppercase tracking-wide text-blue-700">
-                Availability
+                {t("eventDetail.availability")}
               </p>
               <p className="mt-2 text-3xl font-black text-slate-900">
-                {hasUnlimitedSpots ? "∞" : spotsLeft}
+                {hasUnlimitedSpots ? t("eventDetail.unlimitedShort") : spotsLeft}
               </p>
               <p className="mt-1 text-sm text-slate-600">
                 {hasUnlimitedSpots
-                  ? "no participant limit"
-                  : `spots left out of ${event.maxParticipants}`}
+                  ? t("eventDetail.noParticipantLimit")
+                  : t("eventDetail.spotsLeftOutOf", {
+                      count: spotsLeft ?? 0,
+                      total: event.maxParticipants,
+                    })}
               </p>
             </div>
 
@@ -804,12 +826,12 @@ export function EventDetailPage() {
                   className="rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {isClosedEvent
-                    ? "Event Finished"
+                    ? t("eventDetail.eventFinished")
                     : displayIsFull
-                      ? "Event Full"
+                      ? t("eventDetail.eventFull")
                       : joining || isMatchMembershipUpdating
-                        ? "Joining..."
-                        : "Join Event"}
+                        ? t("eventDetail.joining")
+                        : t("eventDetail.joinEvent")}
                 </button>
               ) : !isAcceptedMatch && !isClosedEvent && displayAlreadyJoined ? (
                 <button
@@ -817,7 +839,9 @@ export function EventDetailPage() {
                   disabled={joining || isMatchMembershipUpdating || matchPlayers.state.loading}
                   className="rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
                 >
-                  {joining || isMatchMembershipUpdating ? "Leaving..." : "Leave Event"}
+                  {joining || isMatchMembershipUpdating
+                    ? t("eventDetail.leaving")
+                    : t("eventDetail.leaveEvent")}
                 </button>
               ) : null}
 
@@ -826,29 +850,37 @@ export function EventDetailPage() {
                   to={`/events/${event.id}/edit`}
                   className="rounded-2xl border border-slate-300 px-5 py-3 text-center font-bold text-slate-700"
                 >
-                  Edit Event
+                  {t("eventDetail.editEvent")}
                 </Link>
               ) : null}
 
-              {canCopyPrivateLink ? (
-                <div className="grid gap-3 sm:grid-cols-2">
+              {canShareLink || canCopyPrivateLink ? (
+                <div
+                  className={`grid gap-3 ${
+                    canShareLink && canCopyPrivateLink ? "sm:grid-cols-2" : ""
+                  }`}
+                >
+                  {canShareLink ? (
                   <button
                     type="button"
-                    onClick={handleSharePrivateLink}
+                    onClick={handleShareLink}
                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white"
                   >
                     <Share2 size={16} />
-                    Share
+                    {t("eventDetail.share")}
                   </button>
+                  ) : null}
 
+                  {canCopyPrivateLink ? (
                   <button
                     type="button"
                     onClick={handleCopyPrivateLink}
                     className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white"
                   >
                     <Copy size={16} />
-                    Copy Link
+                    {t("eventDetail.copyLink")}
                   </button>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -865,11 +897,11 @@ export function EventDetailPage() {
           !displayAlreadyJoined &&
           !isClosedEvent &&
           !isAcceptedMatch ? (
-            <Suspense fallback={<SectionLoadingMessage message="Loading access..." />}>
+            <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingAccess")} />}>
               <PrivateEventAccessCard
                 request={eventJoinRequests.state.myRequest}
                 actionLoadingId={eventJoinRequests.state.actionLoadingId}
-                onRequestAccess={eventJoinRequests.actions.requestAccess}
+                onRequestAccess={handleRequestPrivateAccess}
               />
             </Suspense>
           ) : null}
@@ -903,6 +935,8 @@ function EventDetailStatCard({
 }
 
 function ParticipantRow({ participant }: { participant: EventParticipant }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
       {participant.profile.avatarUrl ? (
@@ -922,7 +956,7 @@ function ParticipantRow({ participant }: { participant: EventParticipant }) {
           {participant.profile.fullName}
         </p>
         <p className="truncate text-xs text-slate-500">
-          {participant.profile.country || "Beach volleyball player"}
+          {participant.profile.country || t("eventDetail.labels.beachPlayer")}
         </p>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin, Mail } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { EventInvitation } from "../types/eventInvitation.types";
 
@@ -13,6 +14,8 @@ export function MyEventInvitationsSection({
     loading,
     error,
 }: MyEventInvitationsSectionProps) {
+    const { t, i18n } = useTranslation();
+
     return (
         <div className="rounded-[2rem] bg-white p-8 shadow-sm">
             <div className="flex items-center gap-3">
@@ -22,16 +25,16 @@ export function MyEventInvitationsSection({
 
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900">
-                        Private event invitations
+                        {t("eventInvitations.title")}
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Pending invitations to private events appear here.
+                        {t("eventInvitations.body")}
                     </p>
                 </div>
             </div>
 
             {loading ? (
-                <p className="mt-6 text-sm text-slate-500">Loading invitations...</p>
+                <p className="mt-6 text-sm text-slate-500">{t("eventInvitations.loading")}</p>
             ) : null}
 
             {error ? (
@@ -42,9 +45,9 @@ export function MyEventInvitationsSection({
 
             {!loading && !error && invitations.length === 0 ? (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No pending invitations</p>
+                    <p className="font-bold text-slate-900">{t("eventInvitations.emptyTitle")}</p>
                     <p className="mt-2 text-sm text-slate-500">
-                        When friends invite you to private events, they will appear here.
+                        {t("eventInvitations.emptyBody")}
                     </p>
                 </div>
             ) : null}
@@ -58,7 +61,9 @@ export function MyEventInvitationsSection({
                             className="rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:bg-blue-50"
                         >
                             <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
-                                Invited by {invitation.inviter.fullName}
+                                {t("eventInvitations.invitedBy", {
+                                    name: invitation.inviter.fullName,
+                                })}
                             </p>
 
                             <h3 className="mt-3 text-lg font-bold text-slate-900">
@@ -68,7 +73,7 @@ export function MyEventInvitationsSection({
                             <div className="mt-4 space-y-2 text-sm text-slate-500">
                                 <p className="flex items-center gap-2">
                                     <CalendarDays size={16} />
-                                    {new Date(invitation.event.startDate).toLocaleString()}
+                                    {new Date(invitation.event.startDate).toLocaleString(i18n.language)}
                                 </p>
                                 <p className="flex items-center gap-2">
                                     <MapPin size={16} />

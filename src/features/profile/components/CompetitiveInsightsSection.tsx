@@ -1,4 +1,5 @@
 import { Activity, LineChart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import { CompetitiveInsightsFilters } from "./CompetitiveInsightsFilters";
 import { CompetitiveMatchHistoryCard } from "./CompetitiveMatchHistoryCard";
@@ -24,20 +25,20 @@ export function CompetitiveInsightsSection({
     error = "",
     onFilterChange,
 }: CompetitiveInsightsSectionProps) {
+    const { t } = useTranslation();
     return (
         <section className="rounded-[2rem] bg-white p-5 shadow-sm sm:p-6 md:p-8">
             <div className="flex flex-col gap-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-2xl">
                         <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600 sm:text-sm">
-                            Competitive history
+                            {t("profile.competitiveHistoryEyebrow")}
                         </p>
                         <h2 className="mt-2 text-xl font-black text-slate-900 sm:text-2xl">
-                            Rating evolution and personal performance
+                            {t("profile.competitiveHistoryTitle")}
                         </h2>
                         <p className="mt-2 text-sm leading-6 text-slate-500">
-                            Track how your competitive rating moves, revisit recent
-                            validated matches, and keep an eye on your momentum.
+                            {t("profile.competitiveHistoryBody")}
                         </p>
                     </div>
 
@@ -63,10 +64,10 @@ export function CompetitiveInsightsSection({
                             </span>
                             <div>
                                 <h3 className="font-bold text-slate-900">
-                                    Rating evolution
+                                    {t("profile.ratingEvolution")}
                                 </h3>
                                 <p className="text-sm text-slate-500">
-                                    See how your accepted competitive matches moved your rating.
+                                    {t("profile.ratingEvolutionBody")}
                                 </p>
                             </div>
                         </div>
@@ -83,31 +84,31 @@ export function CompetitiveInsightsSection({
                                 <Activity size={20} />
                             </span>
                             <div>
-                                <h3 className="font-bold text-slate-900">Competitive summary</h3>
+                                <h3 className="font-bold text-slate-900">{t("profile.competitiveSummary")}</h3>
                                 <p className="text-sm text-slate-500">
-                                    Current rating, average level and overall streaks.
+                                    {t("profile.competitiveSummaryBody")}
                                 </p>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3 xl:grid-cols-1">
                             <SummaryCard
-                                label="Current rating"
+                                label={t("profile.currentRating")}
                                 value={formatCompetitiveRating(insights.currentRating)}
                                 accent="bg-blue-600 text-white"
                             />
                             <SummaryCard
-                                label="Average rating"
+                                label={t("profile.averageRating")}
                                 value={formatCompetitiveRating(insights.averageRating)}
                                 accent="bg-slate-900 text-white"
                             />
                             <SummaryCard
-                                label="Current streak"
+                                label={t("profile.currentStreak")}
                                 value={insights.currentStreak}
                                 accent="bg-amber-500 text-white"
                             />
                             <SummaryCard
-                                label="Best streak"
+                                label={t("profile.bestStreak")}
                                 value={insights.bestStreak}
                                 accent="bg-emerald-600 text-white"
                             />
@@ -117,24 +118,23 @@ export function CompetitiveInsightsSection({
 
                 <div>
                     <div className="mb-4">
-                        <h3 className="text-lg font-black text-slate-900 sm:text-xl">Match history</h3>
+                        <h3 className="text-lg font-black text-slate-900 sm:text-xl">{t("profile.matchHistory")}</h3>
                         <p className="mt-1 text-sm text-slate-500">
-                            Competitive matches with result, rating delta and set summary.
+                            {t("profile.matchHistoryBody")}
                         </p>
                     </div>
 
                     {loading ? (
                         <p className="rounded-3xl bg-slate-50 p-6 text-sm text-slate-500">
-                            Loading competitive match history...
+                            {t("profile.loadingCompetitiveHistory")}
                         </p>
                     ) : insights.matchHistory.length === 0 ? (
                         <div className="rounded-3xl bg-slate-50 p-6 text-center">
                             <p className="font-bold text-slate-900">
-                                No competitive history for this range yet
+                                {t("profile.noCompetitiveHistory")}
                             </p>
                             <p className="mt-2 text-sm text-slate-500">
-                                Play and validate competitive matches to unlock your graph and
-                                history cards.
+                                {t("profile.noCompetitiveHistoryBody")}
                             </p>
                         </div>
                     ) : (

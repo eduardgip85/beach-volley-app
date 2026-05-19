@@ -1,5 +1,6 @@
 import { BarChart3, Swords, Target, Trophy } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { ProfileStatsData } from "../types/profileStats.types";
 
@@ -12,6 +13,7 @@ export function ProfileStatsCard({
     stats,
     loading = false,
 }: ProfileStatsCardProps) {
+    const { t } = useTranslation();
     const [selectedMode, setSelectedMode] = useState<"competitive" | "casual">(
         "competitive"
     );
@@ -22,28 +24,28 @@ export function ProfileStatsCard({
             ? [
                   {
                       key: "competitiveRating",
-                      label: "Competitive rating",
+                      label: t("profile.competitiveRating"),
                       icon: Trophy,
                       accent: "bg-blue-100 text-blue-700",
                       value: formatCompetitiveRating(stats.competitiveRating),
                   },
                   {
                       key: "matchesPlayed",
-                      label: "Matches played",
+                      label: t("profile.matchesPlayed"),
                       icon: Swords,
                       accent: "bg-slate-100 text-slate-700",
                       value: selectedStats.matchesPlayed,
                   },
                   {
                       key: "wins",
-                      label: "Wins",
+                      label: t("profile.wins"),
                       icon: BarChart3,
                       accent: "bg-emerald-100 text-emerald-700",
                       value: selectedStats.wins,
                   },
                   {
                       key: "losses",
-                      label: "Losses",
+                      label: t("profile.losses"),
                       icon: Target,
                       accent: "bg-red-100 text-red-700",
                       value: selectedStats.losses,
@@ -52,28 +54,28 @@ export function ProfileStatsCard({
             : [
                   {
                       key: "matchesPlayed",
-                      label: "Casual matches",
+                      label: t("profile.casualMatches"),
                       icon: Swords,
                       accent: "bg-amber-100 text-amber-700",
                       value: selectedStats.matchesPlayed,
                   },
                   {
                       key: "wins",
-                      label: "Wins",
+                      label: t("profile.wins"),
                       icon: BarChart3,
                       accent: "bg-emerald-100 text-emerald-700",
                       value: selectedStats.wins,
                   },
                   {
                       key: "losses",
-                      label: "Losses",
+                      label: t("profile.losses"),
                       icon: Target,
                       accent: "bg-red-100 text-red-700",
                       value: selectedStats.losses,
                   },
                   {
                       key: "winRate",
-                      label: "Win rate",
+                      label: t("profile.winRate"),
                       icon: Trophy,
                       accent: "bg-blue-100 text-blue-700",
                       value:
@@ -90,10 +92,10 @@ export function ProfileStatsCard({
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <p className="text-xs font-bold uppercase tracking-[0.24em] text-blue-600 sm:text-sm">
-                        Performance
+                        {t("profile.performanceEyebrow")}
                     </p>
                     <h2 className="mt-2 text-xl font-black text-slate-900 sm:text-2xl">
-                        Your profile stats
+                        {t("profile.performanceTitle")}
                     </h2>
                 </div>
 
@@ -107,7 +109,7 @@ export function ProfileStatsCard({
                                 : "text-slate-600"
                         }`}
                     >
-                        Competitive
+                        {t("profile.competitiveTab")}
                     </button>
                     <button
                         type="button"
@@ -118,13 +120,13 @@ export function ProfileStatsCard({
                                 : "text-slate-600"
                         }`}
                     >
-                        Casual
+                        {t("profile.casualTab")}
                     </button>
                 </div>
             </div>
 
             {loading ? (
-                <p className="mt-6 text-sm text-slate-500">Loading your statistics...</p>
+                <p className="mt-6 text-sm text-slate-500">{t("profile.loadingStats")}</p>
             ) : (
                 <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
                     {statItems.map((item) => {

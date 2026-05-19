@@ -1,8 +1,9 @@
 import { CalendarDays, MapPin, X } from "lucide-react";
-import { useState } from "react";
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
-import { Link } from "react-router-dom";
 import { divIcon } from "leaflet";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
   getEventBadgeClasses,
@@ -19,14 +20,17 @@ interface EventsMapProps {
   events: Event[];
 }
 
-function getMarkerIcon(event: Event) {
+function getMarkerIcon(event: Event, isSelected: boolean) {
   const color = getEventColorClasses(event);
+  const selectedClasses = isSelected
+    ? "scale-110 ring-4 ring-blue-300/80 ring-offset-2 ring-offset-white"
+    : "";
 
   return divIcon({
     className: "",
     html: `
       <div class="flex items-center justify-center">
-        <div class="${color} h-5 w-6 rounded-full border-2 border-white shadow-md"></div>
+        <div class="${color} ${selectedClasses} h-5 w-6 rounded-full border-2 border-white shadow-md transition-all"></div>
       </div>
     `,
     iconSize: [20, 20],
@@ -34,10 +38,36 @@ function getMarkerIcon(event: Event) {
   });
 }
 
+function MapSelectionReset({
+  onReset,
+}: {
+  onReset: () => void;
+}) {
+  useMapEvents({
+    click: () => {
+      onReset();
+    },
+  });
+
+  return null;
+}
+
 export function EventsMap({ events }: EventsMapProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const defaultCenter: [number, number] = [41.3851, 2.1734];
+
+  useEffect(() => {
+    if (!selectedEvent) {
+      return;
+    }
+
+    const selectedStillVisible = events.some((event) => event.id === selectedEvent.id);
+
+    if (!selectedStillVisible) {
+      setSelectedEvent(null);
+    }
+  }, [events, selectedEvent]);
 
   return (
     <div className="relative h-full w-full">
@@ -51,12 +81,14 @@ export function EventsMap({ events }: EventsMapProps) {
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
+        <MapSelectionReset onReset={() => setSelectedEvent(null)} />
 
         {events.map((event) => (
           <Marker
             key={event.id}
             position={[event.latitude, event.longitude]}
-            icon={getMarkerIcon(event)}
+            icon={getMarkerIcon(event, selectedEvent?.id === event.id)}
+            zIndexOffset={selectedEvent?.id === event.id ? 1000 : 0}
             eventHandlers={{
               click: () => setSelectedEvent(event),
             }}
@@ -64,12 +96,12 @@ export function EventsMap({ events }: EventsMapProps) {
         ))}
       </MapContainer>
 
-      {selectedEvent && (
+      {selectedEvent ? (
         <MapEventPreview
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
         />
-      )}
+      ) : null}
     </div>
   );
 }
@@ -81,6 +113,7 @@ function MapEventPreview({
   event: Event;
   onClose: () => void;
 }) {
+  const { t, i18n } = useTranslation();
   const image = getEventFallbackImage(event);
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
   const displayStatus = getEventDisplayStatus(event);
@@ -136,7 +169,7 @@ function MapEventPreview({
 
           <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-slate-600">
             <CalendarDays size={13} />
-            {new Date(event.startDate).toLocaleTimeString([], {
+            {new Date(event.startDate).toLocaleTimeString(i18n.language, {
               hour: "2-digit",
               minute: "2-digit",
             })}
@@ -147,7 +180,7 @@ function MapEventPreview({
           to={`/events/${event.id}`}
           className="absolute bottom-3 right-3 rounded-2xl bg-blue-600 px-4 py-2 text-xs font-bold text-white"
         >
-          Details
+          {t("mapPage.details")}
         </Link>
       </div>
 
@@ -182,7 +215,7 @@ function MapEventPreview({
                 {new Date(event.startDate).getDate()}
               </p>
               <p className="text-[10px] font-bold uppercase">
-                {new Date(event.startDate).toLocaleString("en", {
+                {new Date(event.startDate).toLocaleString(i18n.language, {
                   month: "short",
                 })}
               </p>
@@ -192,7 +225,7 @@ function MapEventPreview({
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-slate-50 p-3">
               <p className="text-[10px] font-bold uppercase text-slate-400">
-                Type
+                {t("mapPage.type")}
               </p>
               <p className="mt-1 text-sm font-bold text-slate-800">
                 {getEventTypeLabel(event.type)}
@@ -201,7 +234,7 @@ function MapEventPreview({
 
             <div className="rounded-2xl bg-slate-50 p-3">
               <p className="text-[10px] font-bold uppercase text-slate-400">
-                Status
+                {t("mapPage.status")}
               </p>
               <p className="mt-1 text-sm font-bold text-slate-800">
                 {displayStatus}
@@ -210,7 +243,7 @@ function MapEventPreview({
 
             <div className="rounded-2xl bg-slate-50 p-3">
               <p className="text-[10px] font-bold uppercase text-slate-400">
-                Visibility
+                {t("mapPage.visibility")}
               </p>
               <p className="mt-1 text-sm font-bold text-slate-800">
                 {getEventVisibilityLabel(event.visibility)}
@@ -219,11 +252,11 @@ function MapEventPreview({
 
             <div className="rounded-2xl bg-slate-50 p-3">
               <p className="text-[10px] font-bold uppercase text-slate-400">
-                {modeLabel ? "Mode" : "Date"}
+                {modeLabel ? t("mapPage.mode") : t("mapPage.date")}
               </p>
               <p className="mt-1 text-sm font-bold text-slate-800">
                 {modeLabel ??
-                  new Date(event.startDate).toLocaleTimeString([], {
+                  new Date(event.startDate).toLocaleTimeString(i18n.language, {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
@@ -235,7 +268,7 @@ function MapEventPreview({
             to={`/events/${event.id}`}
             className="mt-4 block rounded-2xl bg-blue-600 px-5 py-4 text-center font-bold text-white shadow-sm hover:bg-blue-700"
           >
-            View Details
+            {t("common.viewDetails")}
           </Link>
         </div>
       </div>

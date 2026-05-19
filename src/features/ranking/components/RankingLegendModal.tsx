@@ -1,4 +1,5 @@
 import { CircleHelp, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { getCompetitiveRatingDetailedLegend } from "../../ratings/utils/rating-display.utils";
 
 interface RankingLegendModalProps {
@@ -24,6 +25,8 @@ export function RankingLegendModal({
     open,
     onClose,
 }: RankingLegendModalProps) {
+    const { t } = useTranslation();
+
     if (!open) {
         return null;
     }
@@ -34,7 +37,7 @@ export function RankingLegendModal({
         <div className="fixed inset-0 z-[70]">
             <button
                 type="button"
-                aria-label="Close rating legend"
+                aria-label={t("ranking.closeRatingLegend")}
                 className="absolute inset-0 bg-slate-950/65 backdrop-blur-[2px]"
                 onClick={onClose}
             />
@@ -48,16 +51,13 @@ export function RankingLegendModal({
                                     <CircleHelp size={22} />
                                 </div>
                                 <p className="mt-4 text-xs font-black uppercase tracking-[0.24em] text-blue-600">
-                                    Competitive rating guide
+                                    {t("ranking.legendEyebrow")}
                                 </p>
                                 <h3 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
-                                    Playtomic-inspired level map for beach volleyball
+                                    {t("ranking.legendTitle")}
                                 </h3>
                                 <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-                                    This scale runs from <strong>0.0</strong> to{" "}
-                                    <strong>10.0</strong>. It is a practical skill guide
-                                    to help players understand what each rating roughly
-                                    means inside the app.
+                                    {t("ranking.legendBody")}
                                 </p>
                             </div>
 
@@ -65,7 +65,7 @@ export function RankingLegendModal({
                                 type="button"
                                 onClick={onClose}
                                 className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-slate-500 ring-1 ring-slate-200 transition hover:bg-slate-50 hover:text-slate-900"
-                                aria-label="Close legend"
+                                aria-label={t("ranking.closeLegend")}
                             >
                                 <X size={18} />
                             </button>

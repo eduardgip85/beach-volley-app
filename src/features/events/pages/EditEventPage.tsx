@@ -1,5 +1,6 @@
 import { Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { EventForm } from "../components/EventForm";
@@ -14,6 +15,7 @@ import type { CreateEventPayload, Event } from "../types/event.types";
 export function EditEventPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { profile, isAdmin } = useAuth();
 
   const [eventData, setEventData] = useState<Event | null>(null);
@@ -37,20 +39,20 @@ export function EditEventPage() {
         setEventData(event);
       } catch (err) {
         console.error(err);
-        setPageError("Could not load event");
+        setPageError(t("editEvent.loadError"));
       } finally {
         setLoading(false);
       }
     }
 
     loadEvent();
-  }, [eventId]);
+  }, [eventId, t]);
 
   async function handleUpdateEvent(payload: CreateEventPayload) {
     if (!eventId) return;
 
     if (!canManage) {
-      throw new Error("You do not have permission to edit this event");
+      throw new Error(t("editEvent.permissionEditError"));
     }
 
     const updatedEvent = await updateEvent(eventId, payload);
@@ -61,13 +63,11 @@ export function EditEventPage() {
     if (!eventId) return;
 
     if (!canManage) {
-      setPageError("You do not have permission to delete this event");
+      setPageError(t("editEvent.permissionDeleteError"));
       return;
     }
 
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this event? This action cannot be undone."
-    );
+    const confirmed = window.confirm(t("editEvent.deleteConfirm"));
 
     if (!confirmed) return;
 
@@ -79,23 +79,23 @@ export function EditEventPage() {
       navigate("/events", { replace: true });
     } catch (err) {
       console.error(err);
-      setPageError("Could not delete event");
+      setPageError(t("editEvent.deleteError"));
     } finally {
       setDeleting(false);
     }
   }
 
   if (loading) {
-    return <p className="text-slate-500">Loading event...</p>;
+    return <p className="text-slate-500">{t("editEvent.loading")}</p>;
   }
 
   if (pageError && !eventData) {
     return (
       <section className="rounded-3xl bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">Event not found</h1>
+        <h1 className="text-xl font-bold text-slate-900">{t("editEvent.notFoundTitle")}</h1>
         <p className="mt-2 text-slate-500">{pageError}</p>
         <Link to="/events" className="mt-4 inline-block text-blue-600">
-          Back to events
+          {t("editEvent.backToEvents")}
         </Link>
       </section>
     );
@@ -106,15 +106,15 @@ export function EditEventPage() {
   if (!canManage) {
     return (
       <section className="rounded-3xl bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">No permission</h1>
+        <h1 className="text-xl font-bold text-slate-900">{t("editEvent.noPermissionTitle")}</h1>
         <p className="mt-2 text-slate-500">
-          You can only edit events created by you.
+          {t("editEvent.noPermissionBody")}
         </p>
         <Link
           to={`/events/${eventData.id}`}
           className="mt-4 inline-block text-blue-600"
         >
-          Back to event
+          {t("editEvent.backToEvent")}
         </Link>
       </section>
     );
@@ -145,6 +145,7 @@ function EditEventContent({
   onSubmit: (payload: CreateEventPayload) => Promise<void>;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const form = useEventForm({
     initialEvent: eventData,
@@ -153,23 +154,13 @@ function EditEventContent({
 
   return (
     <section className="mx-auto max-w-2xl">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-950">Edit Event</h1>
+          <h1 className="text-3xl font-bold text-slate-950">{t("editEvent.title")}</h1>
           <p className="mt-2 text-slate-500">
-            Update your beach volleyball event details.
+            {t("editEvent.body")}
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={onDelete}
-          disabled={deleting}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
-        >
-          <Trash2 size={18} />
-          {deleting ? "Deleting..." : "Delete"}
-        </button>
       </div>
 
       <EventForm
@@ -182,8 +173,19 @@ function EditEventContent({
         onSearchLocation={form.actions.handleSearchLocation}
         onMapLocationChange={form.actions.handleMapLocationChange}
         onCancel={() => navigate(`/events/${eventData.id}`)}
-        submitLabel="Save Changes"
-        submittingLabel="Saving..."
+        extraActions={
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={deleting}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-50 px-5 py-4 font-bold text-red-600 disabled:opacity-60"
+          >
+            <Trash2 size={18} />
+            {deleting ? t("editEvent.deleting") : t("editEvent.delete")}
+          </button>
+        }
+        submitLabel={t("editEvent.saveChanges")}
+        submittingLabel={t("editEvent.saving")}
       />
     </section>
   );

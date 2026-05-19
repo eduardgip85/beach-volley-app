@@ -1,8 +1,11 @@
 import { supabase } from "../../../config/supabase";
 import type {
     AvailabilityStatus,
+    PreferredCourtSide,
+    PreferredHand,
     PreferredLanguage,
     PreferredMatchMode,
+    PreferredPlayDay,
 } from "../../auth/types/auth.types";
 
 interface ProfileSettingsUpdate {
@@ -15,6 +18,9 @@ interface ProfileSettingsUpdate {
     preferredLanguage?: PreferredLanguage;
     preferredMatchMode?: PreferredMatchMode;
     availabilityStatus?: AvailabilityStatus;
+    preferredHand?: PreferredHand;
+    preferredCourtSide?: PreferredCourtSide;
+    preferredPlayDays?: PreferredPlayDay[];
 }
 
 function normalizeString(value?: string | null) {
@@ -44,6 +50,9 @@ export async function updateProfileSettings({
     preferredLanguage,
     preferredMatchMode,
     availabilityStatus,
+    preferredHand,
+    preferredCourtSide,
+    preferredPlayDays,
 }: ProfileSettingsUpdate) {
     const payload = {
         ...(fullName !== undefined ? { full_name: fullName.trim() } : {}),
@@ -59,6 +68,15 @@ export async function updateProfileSettings({
             : {}),
         ...(availabilityStatus !== undefined
             ? { availability_status: availabilityStatus }
+            : {}),
+        ...(preferredHand !== undefined
+            ? { preferred_hand: preferredHand }
+            : {}),
+        ...(preferredCourtSide !== undefined
+            ? { preferred_court_side: preferredCourtSide }
+            : {}),
+        ...(preferredPlayDays !== undefined
+            ? { preferred_play_days: preferredPlayDays }
             : {}),
     };
 

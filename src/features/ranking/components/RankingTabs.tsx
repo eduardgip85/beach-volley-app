@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { RankingScope } from "../types/ranking.types";
 
 interface RankingTabsProps {
@@ -7,21 +8,22 @@ interface RankingTabsProps {
     hasFriendsScope: boolean;
 }
 
-const scopes: Array<{
-    scope: RankingScope;
-    label: string;
-}> = [
-    { scope: "global", label: "Global" },
-    { scope: "country", label: "Country" },
-    { scope: "friends", label: "Friends" },
-];
-
 export function RankingTabs({
     activeScope,
     onScopeChange,
     hasCountryScope,
     hasFriendsScope,
 }: RankingTabsProps) {
+    const { t } = useTranslation();
+    const scopes: Array<{
+        scope: RankingScope;
+        label: string;
+    }> = [
+        { scope: "global", label: t("ranking.tabs.global") },
+        { scope: "country", label: t("ranking.tabs.country") },
+        { scope: "friends", label: t("ranking.tabs.friends") },
+    ];
+
     return (
         <div className="sticky top-20 z-20 rounded-[1.75rem] border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur md:top-6">
             <div className="grid grid-cols-3 gap-2">

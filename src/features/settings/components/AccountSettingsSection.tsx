@@ -1,5 +1,6 @@
 import { LogOut, ShieldAlert, ShieldCheck, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { SettingsSectionStatus } from "../types/settings.types";
 import { ConfirmModal } from "./ConfirmModal";
 
@@ -16,6 +17,7 @@ export function AccountSettingsSection({
     onLogoutAllSessions,
     onDeleteAccount,
 }: AccountSettingsSectionProps) {
+    const { t } = useTranslation();
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -35,21 +37,23 @@ export function AccountSettingsSection({
         <>
             <div className="space-y-6">
                 <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
-                    <h3 className="text-lg font-bold text-slate-900">Change password</h3>
+                    <h3 className="text-lg font-bold text-slate-900">
+                        {t("settings.account.changePassword")}
+                    </h3>
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <input
                             type="password"
                             value={newPassword}
                             onChange={(event) => setNewPassword(event.target.value)}
                             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
-                            placeholder="New password"
+                            placeholder={t("settings.account.newPassword")}
                         />
                         <input
                             type="password"
                             value={confirmPassword}
                             onChange={(event) => setConfirmPassword(event.target.value)}
                             className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none"
-                            placeholder="Confirm new password"
+                            placeholder={t("settings.account.confirmPassword")}
                         />
                     </div>
                     <button
@@ -58,7 +62,9 @@ export function AccountSettingsSection({
                         disabled={status.loading}
                         className="mt-4 rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
                     >
-                        {status.loading ? "Working..." : "Update password"}
+                        {status.loading
+                            ? t("settings.account.working")
+                            : t("settings.account.updatePassword")}
                     </button>
                 </div>
 
@@ -73,10 +79,10 @@ export function AccountSettingsSection({
                         </span>
                         <span>
                             <span className="block font-bold text-slate-900">
-                                Log out all sessions
+                                {t("settings.account.logoutAll")}
                             </span>
                             <span className="mt-1 block text-sm text-slate-500">
-                                Close every active session across devices and browsers.
+                                {t("settings.account.logoutAllBody")}
                             </span>
                         </span>
                     </button>
@@ -91,11 +97,10 @@ export function AccountSettingsSection({
                         </span>
                         <span>
                             <span className="block font-bold text-red-700">
-                                Delete account
+                                {t("settings.account.deleteAccount")}
                             </span>
                             <span className="mt-1 block text-sm text-red-600/80">
-                                Permanently remove your profile, friendships and linked app
-                                data.
+                                {t("settings.account.deleteAccountBody")}
                             </span>
                         </span>
                     </button>
@@ -116,9 +121,9 @@ export function AccountSettingsSection({
 
             {showLogoutModal ? (
                 <ConfirmModal
-                    title="Log out all sessions?"
-                    description="This will sign you out everywhere, including your current device."
-                    confirmLabel="Log out all sessions"
+                    title={t("settings.account.logoutModalTitle")}
+                    description={t("settings.account.logoutModalBody")}
+                    confirmLabel={t("settings.account.logoutAll")}
                     loading={status.loading}
                     onCancel={() => setShowLogoutModal(false)}
                     onConfirm={async () => {
@@ -133,9 +138,9 @@ export function AccountSettingsSection({
 
             {showDeleteModal ? (
                 <ConfirmModal
-                    title="Delete account?"
-                    description='This action is permanent. Type "DELETE" below to confirm.'
-                    confirmLabel="Delete account"
+                    title={t("settings.account.deleteModalTitle")}
+                    description={t("settings.account.deleteModalBody")}
+                    confirmLabel={t("settings.account.deleteAccount")}
                     confirmDisabled={deleteConfirmation.trim().toUpperCase() !== "DELETE"}
                     loading={status.loading}
                     onCancel={() => {
@@ -155,22 +160,22 @@ export function AccountSettingsSection({
                         <div className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
                             <div className="flex items-center gap-2 font-semibold">
                                 <ShieldAlert size={16} />
-                                This cannot be undone
+                                {t("settings.account.cannotUndo")}
                             </div>
                             <p className="mt-2">
-                                Your profile, accepted friendships, invitations and event
-                                participation data will be removed.
+                                {t("settings.account.deleteConsequences")}
                             </p>
                         </div>
 
                         <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
                             <div className="flex items-center gap-2 font-semibold text-slate-800">
                                 <ShieldCheck size={16} />
-                                Safer confirmation
+                                {t("settings.account.saferConfirmation")}
                             </div>
                             <p className="mt-2">
-                                Type <span className="font-bold">DELETE</span> to unlock the
-                                final action.
+                                {t("settings.account.deletePrompt", {
+                                    keyword: "DELETE",
+                                })}
                             </p>
                         </div>
 
@@ -180,7 +185,7 @@ export function AccountSettingsSection({
                                 setDeleteConfirmation(event.target.value)
                             }
                             className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
-                            placeholder='Type "DELETE"'
+                            placeholder={t("settings.account.deletePlaceholder")}
                         />
                     </div>
                 </ConfirmModal>

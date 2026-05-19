@@ -14,6 +14,8 @@ export interface ProfileModeStats {
     losses: number;
 }
 
+export type ProfileMatchHistoryModeFilter = "all" | "competitive" | "casual";
+
 export interface ProfileRecentMatch {
     event: Event;
     result: MatchResult;

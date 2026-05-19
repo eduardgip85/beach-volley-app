@@ -4,39 +4,40 @@ import type {
     EventType,
     EventVisibility,
 } from "../types/event.types";
+import i18n from "../../../i18n";
+import {
+    getResolvedEventDisplayStatus,
+    isPastEventDate,
+} from "./event-status.utils";
 
 export function isPastEvent(event: Event) {
-    return new Date(event.startDate) < new Date();
-}
-
-function isCompletedEvent(event: Event) {
-    return event.status === "completed";
+    return isPastEventDate(event.startDate);
 }
 
 export function isFinishedEvent(event: Event) {
-    return isPastEvent(event) || isCompletedEvent(event);
+    return getResolvedEventDisplayStatus(event) === i18n.t("eventStatus.finished");
 }
 
 export function getEventTypeLabel(type: EventType) {
     switch (type) {
         case "match":
-            return "Match";
+            return i18n.t("eventTypes.match");
         case "open_play":
-            return "Open Play";
+            return i18n.t("eventTypes.open_play");
         case "tournament":
-            return "Tournament";
+            return i18n.t("eventTypes.tournament");
         default:
-            return "Event";
+            return i18n.t("eventTypes.event");
     }
 }
 
 export function getEventModeLabel(mode: EventMode | null) {
     if (mode === "casual") {
-        return "Casual";
+        return i18n.t("eventModes.casual");
     }
 
     if (mode === "competitive") {
-        return "Competitive";
+        return i18n.t("eventModes.competitive");
     }
 
     return null;
@@ -77,22 +78,24 @@ export function getEventModeSurfaceClasses(event: Event) {
 }
 
 export function getEventVisibilityLabel(visibility: EventVisibility) {
-    return visibility === "private" ? "Private" : "Public";
+    return visibility === "private"
+        ? i18n.t("eventVisibility.private")
+        : i18n.t("eventVisibility.public");
 }
 
 export function getEventDisplayStatus(event: Event) {
-    if (isFinishedEvent(event)) {
-        return "Finished";
-    }
-
     if (event.status === "cancelled") {
-        return "Cancelled";
+        return i18n.t("eventStatus.cancelled");
     }
 
-    return "Active";
+    return getResolvedEventDisplayStatus(event);
 }
 
 export function getEventColorClasses(event: Event) {
+    if (getEventDisplayStatus(event) === i18n.t("eventStatus.pendingResult")) {
+        return "bg-amber-500";
+    }
+
     if (isFinishedEvent(event)) {
         return "bg-red-500";
     }
@@ -109,6 +112,10 @@ export function getEventColorClasses(event: Event) {
 }
 
 export function getEventBadgeClasses(event: Event) {
+    if (getEventDisplayStatus(event) === i18n.t("eventStatus.pendingResult")) {
+        return "bg-amber-100 text-amber-700";
+    }
+
     if (isFinishedEvent(event)) {
         return "bg-red-100 text-red-700";
     }

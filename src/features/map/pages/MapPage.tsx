@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { EventFilters } from "../../../shared/components/EventFilters";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
@@ -8,6 +9,7 @@ import { isPastEvent } from "../../events/utils/event-display.utils";
 import { EventsMap } from "../components/EventsMap";
 
 export function MapPage() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<Event[]>([]);
   const [myEventIds, setMyEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,7 @@ export function MapPage() {
         setMyEventIds(result.myEventIds);
       } catch (err) {
         console.error(err);
-        setError("Could not load map events");
+        setError(t("mapPage.loadError"));
       } finally {
         setLoading(false);
       }
@@ -58,7 +60,7 @@ export function MapPage() {
         onClearFilters={clearFilters}
       />
 
-      {loading && <p className="mt-8 text-slate-500">Loading map...</p>}
+      {loading && <p className="mt-8 text-slate-500">{t("mapPage.loading")}</p>}
 
       {error && (
         <p className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">

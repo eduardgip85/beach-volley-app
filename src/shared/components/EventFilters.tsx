@@ -1,5 +1,6 @@
 import { CalendarDays, ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   EventFiltersState,
   EventModeFilter,
@@ -24,6 +25,7 @@ export function EventFilters({
   onFilterChange,
   onClearFilters,
 }: EventFiltersProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const hasFilters =
@@ -43,7 +45,7 @@ export function EventFilters({
           <input
             value={filters.search}
             onChange={(event) => onFilterChange("search", event.target.value)}
-            placeholder="Search events..."
+            placeholder={t("filters.searchEvents")}
             className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
           />
         </div>
@@ -70,6 +72,7 @@ export function EventFilters({
             onFilterChange={onFilterChange}
             onClearFilters={onClearFilters}
             hasFilters={hasFilters}
+            t={t}
           />
         </div>
       )}
@@ -81,7 +84,7 @@ export function EventFilters({
           <input
             value={filters.search}
             onChange={(event) => onFilterChange("search", event.target.value)}
-            placeholder="Search events..."
+            placeholder={t("filters.searchEvents")}
             className="w-full bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
           />
         </div>
@@ -93,6 +96,7 @@ export function EventFilters({
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
           hasFilters={hasFilters}
+          t={t}
         />
       </div>
     </div>
@@ -106,7 +110,8 @@ function FiltersContent({
   onFilterChange,
   onClearFilters,
   hasFilters,
-}: EventFiltersProps & { hasFilters: boolean }) {
+  t,
+}: EventFiltersProps & { hasFilters: boolean; t: (key: string) => string }) {
   return (
     <>
       <select
@@ -116,9 +121,9 @@ function FiltersContent({
         }
         className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
       >
-        <option value="all">All Types</option>
-        <option value="match">Match</option>
-        <option value="open_play">Open Play</option>
+        <option value="all">{t("filters.allTypes")}</option>
+        <option value="match">{t("eventTypes.match")}</option>
+        <option value="open_play">{t("eventTypes.open_play")}</option>
       </select>
 
       <select
@@ -128,9 +133,9 @@ function FiltersContent({
         }
         className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
       >
-        <option value="all">All Formats</option>
-        <option value="casual">Casual</option>
-        <option value="competitive">Competitive</option>
+        <option value="all">{t("filters.allFormats")}</option>
+        <option value="casual">{t("eventModes.casual")}</option>
+        <option value="competitive">{t("eventModes.competitive")}</option>
       </select>
 
       <select
@@ -138,7 +143,7 @@ function FiltersContent({
         onChange={(event) => onFilterChange("location", event.target.value)}
         className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
       >
-        <option value="all">All Locations</option>
+        <option value="all">{t("filters.allLocations")}</option>
 
         {locations.map((location) => (
           <option key={location} value={location}>
@@ -167,7 +172,7 @@ function FiltersContent({
             }
             className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
           />
-          My events
+          {t("filters.myEvents")}
         </label>
       ) : null}
 
@@ -177,7 +182,7 @@ function FiltersContent({
         disabled={!hasFilters}
         className="w-full rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
       >
-        Clear
+        {t("common.clear")}
       </button>
     </>
   );

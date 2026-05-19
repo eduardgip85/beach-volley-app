@@ -11,6 +11,8 @@ const mocks = vi.hoisted(() => ({
     mockSignUp: vi.fn(),
     mockSignInWithPassword: vi.fn(),
     mockSignInWithOAuth: vi.fn(),
+    mockResetPasswordForEmail: vi.fn(),
+    mockUpdateUser: vi.fn(),
     mockSignOut: vi.fn(),
     mockGetSession: vi.fn(),
     mockInsert: vi.fn(),
@@ -27,6 +29,8 @@ vi.mock("../../config/supabase", () => ({
         signUp: mocks.mockSignUp,
         signInWithPassword: mocks.mockSignInWithPassword,
         signInWithOAuth: mocks.mockSignInWithOAuth,
+        resetPasswordForEmail: mocks.mockResetPasswordForEmail,
+        updateUser: mocks.mockUpdateUser,
         signOut: mocks.mockSignOut,
         getSession: mocks.mockGetSession,
         },
@@ -64,11 +68,15 @@ const profileRow = {
     show_stats: true,
     preferred_language: "en",
     preferred_match_mode: "competitive",
+    preferred_hand: null,
+    preferred_court_side: null,
+    preferred_play_days: [],
 };
 
 describe("auth.service", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        window.localStorage.setItem("beach-volley-app-language", "en");
 
         mocks.mockSelect.mockReturnValue({
         eq: mocks.mockEq,
@@ -120,6 +128,7 @@ describe("auth.service", () => {
                 email: "test@test.com",
                 role: "player",
                 competitive_rating: 2,
+                preferred_language: "en",
             });
         });
 
@@ -308,6 +317,9 @@ describe("auth.service", () => {
                 showStats: true,
                 preferredLanguage: "en",
                 preferredMatchMode: "competitive",
+                preferredHand: null,
+                preferredCourtSide: null,
+                preferredPlayDays: [],
             });
 
             expect(mocks.mockSelect).toHaveBeenCalledWith("*");
@@ -361,6 +373,7 @@ describe("auth.service", () => {
                 role: "player",
                 avatar_url: "https://example.com/avatar.png",
                 competitive_rating: 2,
+                preferred_language: "en",
             });
             expect(result?.fullName).toBe("Google User");
             expect(result?.role).toBe("player");

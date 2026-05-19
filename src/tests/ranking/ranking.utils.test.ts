@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { setAppLanguage } from "../../i18n";
 import {
     calculateWinRate,
     getRankingEmptyStateMessage,
@@ -6,6 +7,10 @@ import {
 } from "../../features/ranking/utils/ranking.utils";
 
 describe("ranking.utils", () => {
+    beforeEach(async () => {
+        await setAppLanguage("en");
+    });
+
     it("returns zero win rate when there are no matches", () => {
         expect(calculateWinRate(0, 0)).toBe(0);
     });

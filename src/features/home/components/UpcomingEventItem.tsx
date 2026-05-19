@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../../events/utils/event-display.utils";
 
 export function UpcomingEventItem({ event }: { event: Event }) {
+    const { t, i18n } = useTranslation();
     const image = getEventFallbackImage(event);
     const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
 
@@ -59,7 +61,7 @@ export function UpcomingEventItem({ event }: { event: Event }) {
                         <div className="mt-3 flex flex-col gap-2 text-sm text-slate-500 md:flex-row md:gap-8">
                             <span className="inline-flex items-center gap-2">
                             <CalendarDays size={16} />
-                            {new Date(event.startDate).toLocaleString()}
+                            {new Date(event.startDate).toLocaleString(i18n.language)}
                             </span>
 
                             <span className="inline-flex items-center gap-2">
@@ -72,7 +74,7 @@ export function UpcomingEventItem({ event }: { event: Event }) {
                     <div 
                     className="rounded-2xl bg-slate-50 px-4 py-3 text-center text-sm font-bold text-slate-950 hover:bg-blue-600 hover:text-white md:px-6"
                     >
-                        View Details
+                        {t("common.viewDetails")}
                     </div>
                     
                 </div>

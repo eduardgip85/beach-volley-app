@@ -1,4 +1,5 @@
 import { Check, Mail, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { EventInvitation } from "../types/eventInvitation.types";
 
 interface EventInvitationResponseCardProps {
@@ -14,6 +15,7 @@ export function EventInvitationResponseCard({
     onAccept,
     onDecline,
 }: EventInvitationResponseCardProps) {
+    const { t } = useTranslation();
     const isAccepting = actionLoadingId === `accept:${invitation.id}`;
     const isDeclining = actionLoadingId === `decline:${invitation.id}`;
 
@@ -26,10 +28,12 @@ export function EventInvitationResponseCard({
 
                 <div>
                     <h2 className="text-xl font-bold text-slate-900">
-                        Private event invitation
+                        {t("eventInvitations.privateInvitationTitle")}
                     </h2>
                     <p className="mt-1 text-sm text-slate-600">
-                        {invitation.inviter.fullName} invited you to join this event.
+                        {t("eventInvitations.privateInvitationBody", {
+                            name: invitation.inviter.fullName,
+                        })}
                     </p>
                 </div>
             </div>
@@ -42,7 +46,9 @@ export function EventInvitationResponseCard({
                     className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white disabled:opacity-60"
                 >
                     <Check size={18} />
-                    {isAccepting ? "Accepting..." : "Accept invitation"}
+                    {isAccepting
+                        ? t("eventInvitations.accepting")
+                        : t("eventInvitations.acceptInvitation")}
                 </button>
 
                 <button
@@ -52,7 +58,9 @@ export function EventInvitationResponseCard({
                     className="flex items-center justify-center gap-2 rounded-2xl bg-red-500 px-5 py-3 font-bold text-white disabled:opacity-60"
                 >
                     <X size={18} />
-                    {isDeclining ? "Declining..." : "Decline invitation"}
+                    {isDeclining
+                        ? t("eventInvitations.declining")
+                        : t("eventInvitations.declineInvitation")}
                 </button>
             </div>
         </div>

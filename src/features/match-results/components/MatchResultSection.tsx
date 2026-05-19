@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { MatchSetEditor } from "./MatchSetEditor";
 import { MatchResultSummary } from "./MatchResultSummary";
 import type {
@@ -47,11 +48,13 @@ export function MatchResultSection({
     onValidate,
     onReject,
 }: MatchResultSectionProps) {
+    const { t } = useTranslation();
+
     if (loading) {
         return (
             <section className="rounded-3xl bg-white p-6 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900">Match Result</h2>
-                <p className="mt-3 text-sm text-slate-500">Loading result...</p>
+                <h2 className="text-xl font-bold text-slate-900">{t("matchResult.title")}</h2>
+                <p className="mt-3 text-sm text-slate-500">{t("matchResult.loading")}</p>
             </section>
         );
     }
@@ -60,11 +63,11 @@ export function MatchResultSection({
         <section className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900">Match Result</h2>
+                    <h2 className="text-xl font-bold text-slate-900">{t("matchResult.title")}</h2>
                     <p className="mt-2 text-sm text-slate-500">
                         {result
-                            ? "Track sets and validation status for this match."
-                            : "Add the set scores for this match."}
+                            ? t("matchResult.existingBody")
+                            : t("matchResult.newBody")}
                     </p>
                 </div>
 
@@ -91,7 +94,7 @@ export function MatchResultSection({
                 <div className="mt-6">
                     <div className="mb-4 flex items-center justify-between gap-3">
                         <h3 className="text-lg font-bold text-slate-900">
-                            {result ? "Edit sets" : "Add result"}
+                            {result ? t("matchResult.editSets") : t("matchResult.addResult")}
                         </h3>
 
                         {!isCompetitiveFixedSets && (
@@ -102,15 +105,14 @@ export function MatchResultSection({
                                 className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
                             >
                                 <Plus size={16} />
-                                Add set
+                                {t("matchResult.addSet")}
                             </button>
                         )}
                     </div>
 
                     {eventMode === "competitive" && (
                         <div className="mb-4 rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
-                            Competitive matches are fixed to best of 3:
-                            sets 1 and 2 to 21, deciding set 3 to 15, always win by 2.
+                            {t("matchResult.competitiveFormat")}
                         </div>
                     )}
 
@@ -130,8 +132,8 @@ export function MatchResultSection({
                                 helperText={
                                     eventMode === "competitive"
                                         ? set.setNumber === 3
-                                            ? "Deciding set to 15, win by 2"
-                                            : "Set to 21, win by 2"
+                                            ? t("matchResult.decidingSetHelper")
+                                            : t("matchResult.regularSetHelper")
                                         : undefined
                                 }
                                 disabled={submitting}
@@ -150,10 +152,10 @@ export function MatchResultSection({
                         className="mt-5 rounded-2xl bg-blue-600 px-5 py-3 font-bold text-white disabled:opacity-60"
                     >
                         {submitting
-                            ? "Saving result..."
+                            ? t("matchResult.savingResult")
                             : result
-                              ? "Update Result"
-                              : "Submit Result"}
+                              ? t("matchResult.updateResult")
+                              : t("matchResult.submitResult")}
                     </button>
                 </div>
             )}
@@ -166,7 +168,7 @@ export function MatchResultSection({
                         disabled={validating}
                         className="rounded-2xl bg-emerald-600 px-5 py-3 font-bold text-white disabled:opacity-60"
                     >
-                        {validating ? "Saving..." : "Accept Result"}
+                        {validating ? t("matchResult.saving") : t("matchResult.acceptResult")}
                     </button>
 
                     <button
@@ -175,7 +177,7 @@ export function MatchResultSection({
                         disabled={validating}
                         className="rounded-2xl bg-red-50 px-5 py-3 font-bold text-red-600 disabled:opacity-60"
                     >
-                        {validating ? "Saving..." : "Reject Result"}
+                        {validating ? t("matchResult.saving") : t("matchResult.rejectResult")}
                     </button>
                 </div>
             )}

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import i18n, { setAppLanguage } from "../../../i18n";
 import type { UserProfile } from "../../auth/types/auth.types";
 import { useAuth } from "../../auth/context/AuthContext";
 import {
@@ -13,18 +14,13 @@ import {
 } from "../services/locationSuggestions.service";
 import type { SettingsFormValues, SettingsSectionStatus } from "../types/settings.types";
 
-const usernamePattern = /^[A-Za-z0-9_.-]{3,20}$/;
-
 function buildInitialForm(profile: UserProfile): SettingsFormValues {
     return {
         fullName: profile.fullName,
-        username: profile.username ?? "",
         avatarUrl: profile.avatarUrl ?? "",
         country: profile.country ?? "",
         city: profile.city ?? "",
         preferredLanguage: profile.preferredLanguage,
-        preferredMatchMode: profile.preferredMatchMode,
-        availabilityStatus: profile.availabilityStatus,
     };
 }
 
@@ -64,16 +60,6 @@ export function useSettings(profile: UserProfile | null) {
 
     const canManage = Boolean(profile && form);
 
-    const hasUnsavedProfile = useMemo(() => {
-        if (!profile || !form) return false;
-
-        return (
-            form.fullName !== profile.fullName ||
-            form.username !== (profile.username ?? "") ||
-            form.avatarUrl !== (profile.avatarUrl ?? "")
-        );
-    }, [form, profile]);
-
     function updateField<K extends keyof SettingsFormValues>(
         key: K,
         value: SettingsFormValues[K]
@@ -90,15 +76,11 @@ export function useSettings(profile: UserProfile | null) {
 
     function validateProfileSection() {
         if (!form) {
-            return "Profile is not ready yet";
+            return i18n.t("settings.messages.profileNotReady");
         }
 
         if (!form.fullName.trim()) {
-            return "Full name is required";
-        }
-
-        if (form.username.trim() && !usernamePattern.test(form.username.trim())) {
-            return "Username must be 3-20 characters and use letters, numbers, dots, dashes or underscores";
+            return i18n.t("settings.messages.fullNameRequired");
         }
 
         if (form.avatarUrl.trim()) {
@@ -108,7 +90,7 @@ export function useSettings(profile: UserProfile | null) {
                 try {
                     new URL(trimmedAvatarUrl);
                 } catch {
-                    return "Avatar image could not be validated";
+                    return i18n.t("settings.messages.avatarInvalid");
                 }
             }
         }
@@ -140,7 +122,6 @@ export function useSettings(profile: UserProfile | null) {
             await updateProfileSettings({
                 userId: profile.id,
                 fullName: form.fullName,
-                username: form.username,
                 avatarUrl: form.avatarUrl,
             });
             await refreshProfile();
@@ -148,7 +129,7 @@ export function useSettings(profile: UserProfile | null) {
             setProfileStatus({
                 loading: false,
                 error: "",
-                success: "Profile updated",
+                success: i18n.t("settings.messages.profileUpdated"),
             });
         } catch (error) {
             setProfileStatus({
@@ -156,7 +137,7 @@ export function useSettings(profile: UserProfile | null) {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Could not update profile",
+                        : i18n.t("settings.messages.profileUpdateError"),
                 success: "",
             });
         }
@@ -171,7 +152,7 @@ export function useSettings(profile: UserProfile | null) {
         if (trimmedCountry && !isKnownCountry(trimmedCountry)) {
             setLocationStatus({
                 loading: false,
-                error: "Please choose a real country from the suggestions",
+                error: i18n.t("settings.messages.realCountryRequired"),
                 success: "",
             });
             return;
@@ -180,7 +161,7 @@ export function useSettings(profile: UserProfile | null) {
         if (trimmedCity && !trimmedCountry) {
             setLocationStatus({
                 loading: false,
-                error: "Choose a country before setting a city",
+                error: i18n.t("settings.messages.chooseCountryFirst"),
                 success: "",
             });
             return;
@@ -199,7 +180,7 @@ export function useSettings(profile: UserProfile | null) {
                 if (!cityExists) {
                     setLocationStatus({
                         loading: false,
-                        error: "Please choose a real city from the suggestions",
+                        error: i18n.t("settings.messages.realCityRequired"),
                         success: "",
                     });
                     return;
@@ -216,7 +197,7 @@ export function useSettings(profile: UserProfile | null) {
             setLocationStatus({
                 loading: false,
                 error: "",
-                success: "Location updated",
+                success: i18n.t("settings.messages.locationUpdated"),
             });
         } catch (error) {
             setLocationStatus({
@@ -224,7 +205,7 @@ export function useSettings(profile: UserProfile | null) {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Could not update location",
+                        : i18n.t("settings.messages.locationUpdateError"),
                 success: "",
             });
         }
@@ -243,15 +224,14 @@ export function useSettings(profile: UserProfile | null) {
             await updateProfileSettings({
                 userId: profile.id,
                 preferredLanguage: form.preferredLanguage,
-                preferredMatchMode: form.preferredMatchMode,
-                availabilityStatus: form.availabilityStatus,
             });
+            await setAppLanguage(form.preferredLanguage);
             await refreshProfile();
 
             setPreferencesStatus({
                 loading: false,
                 error: "",
-                success: "Preferences updated",
+                success: i18n.t("settings.messages.preferencesUpdated"),
             });
         } catch (error) {
             setPreferencesStatus({
@@ -259,7 +239,7 @@ export function useSettings(profile: UserProfile | null) {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Could not update preferences",
+                        : i18n.t("settings.messages.preferencesUpdateError"),
                 success: "",
             });
         }
@@ -269,7 +249,7 @@ export function useSettings(profile: UserProfile | null) {
         if (newPassword.length < 8) {
             setAccountStatus({
                 loading: false,
-                error: "Password must be at least 8 characters long",
+                error: i18n.t("settings.messages.passwordTooShort"),
                 success: "",
             });
             return false;
@@ -278,7 +258,7 @@ export function useSettings(profile: UserProfile | null) {
         if (newPassword !== confirmPassword) {
             setAccountStatus({
                 loading: false,
-                error: "Passwords do not match",
+                error: i18n.t("settings.messages.passwordsDoNotMatch"),
                 success: "",
             });
             return false;
@@ -294,7 +274,7 @@ export function useSettings(profile: UserProfile | null) {
             setAccountStatus({
                 loading: false,
                 error: "",
-                success: "Password updated",
+                success: i18n.t("settings.messages.passwordUpdated"),
             });
             return true;
         } catch (error) {
@@ -303,7 +283,7 @@ export function useSettings(profile: UserProfile | null) {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Could not update password",
+                        : i18n.t("settings.messages.passwordUpdateError"),
                 success: "",
             });
             return false;
@@ -321,7 +301,7 @@ export function useSettings(profile: UserProfile | null) {
             setAccountStatus({
                 loading: false,
                 error: "",
-                success: "All sessions closed",
+                success: i18n.t("settings.messages.sessionsClosed"),
             });
             return true;
         } catch (error) {
@@ -330,7 +310,7 @@ export function useSettings(profile: UserProfile | null) {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Could not log out all sessions",
+                        : i18n.t("settings.messages.sessionsCloseError"),
                 success: "",
             });
             return false;
@@ -341,7 +321,7 @@ export function useSettings(profile: UserProfile | null) {
         if (confirmationText.trim().toUpperCase() !== "DELETE") {
             setAccountStatus({
                 loading: false,
-                error: 'Type "DELETE" to confirm account deletion',
+                error: i18n.t("settings.messages.deleteKeywordRequired"),
                 success: "",
             });
             return false;
@@ -357,7 +337,7 @@ export function useSettings(profile: UserProfile | null) {
             setAccountStatus({
                 loading: false,
                 error: "",
-                success: "Account deleted",
+                success: i18n.t("settings.messages.accountDeleted"),
             });
             return true;
         } catch (error) {
@@ -366,7 +346,7 @@ export function useSettings(profile: UserProfile | null) {
                 error:
                     error instanceof Error
                         ? error.message
-                        : "Could not delete account",
+                        : i18n.t("settings.messages.accountDeleteError"),
                 success: "",
             });
             return false;
@@ -377,7 +357,6 @@ export function useSettings(profile: UserProfile | null) {
         canManage,
         form,
         updateField,
-        hasUnsavedProfile,
         statuses: {
             profile: profileStatus,
             location: locationStatus,

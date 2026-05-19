@@ -10,70 +10,15 @@ import {
   Volleyball,
 } from "lucide-react";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { HomeStatCard } from "../components/HomeStatCard";
 import { UpcomingEventItem } from "../components/UpcomingEventItem";
 import { useHomeData } from "../hooks/useHomeData";
 
-const faqItems = [
-  {
-    question: "What is Beach Volley App?",
-    answer:
-      "Beach Volley App is a platform to discover beach volleyball matches, open play sessions, private games and competitive events in one place.",
-  },
-  {
-    question: "Who is it for?",
-    answer:
-      "It is built for casual players, competitive duos, local communities and organizers who want a cleaner way to coordinate beach volleyball games.",
-  },
-  {
-    question: "What can you do inside the app?",
-    answer:
-      "You can explore public events, join matches, request access to private games, track validated results, manage friends and build a competitive profile over time.",
-  },
-  {
-    question: "How do competitive matches work?",
-    answer:
-      "Competitive matches use team assignment, result submission, opponent validation and Elo-based rating updates once the final result is accepted.",
-  },
-];
-
-const featureCards = [
-  {
-    icon: <Volleyball size={20} />,
-    title: "Organize real beach volleyball matches",
-    description:
-      "Create structured 2v2 matches or flexible open play sessions with clear visibility, capacity and location details.",
-  },
-  {
-    icon: <MapPin size={20} />,
-    title: "Find courts and sessions faster",
-    description:
-      "Use the map and calendar views to spot nearby games, check schedules and decide where to play next.",
-  },
-  {
-    icon: <ShieldCheck size={20} />,
-    title: "Validate results with more trust",
-    description:
-      "Competitive match results are reviewed by the opposing side, so stats and rating progress are tied to accepted results.",
-  },
-  {
-    icon: <Users size={20} />,
-    title: "Build your player network",
-    description:
-      "Send friend requests, open public player profiles and keep a better overview of the people you play with regularly.",
-  },
-];
-
-const useCases = [
-  "Discover upcoming beach volleyball matches without jumping between chats and spreadsheets.",
-  "Run private matches with approval-based access instead of posting links publicly.",
-  "Keep your profile history, recent matches and equipment badges in one place.",
-  "Give local players a clearer way to join, validate and revisit completed matches.",
-];
-
 export function HomePage() {
+  const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
   const {
     totalPlayers,
@@ -84,6 +29,40 @@ export function HomePage() {
     upcomingEvents,
     openPlayCount,
   } = useHomeData();
+  const faqItems = [
+    { question: t("homeContent.faq1q"), answer: t("homeContent.faq1a") },
+    { question: t("homeContent.faq2q"), answer: t("homeContent.faq2a") },
+    { question: t("homeContent.faq3q"), answer: t("homeContent.faq3a") },
+    { question: t("homeContent.faq4q"), answer: t("homeContent.faq4a") },
+  ];
+  const featureCards = [
+    {
+      icon: <Volleyball size={20} />,
+      title: t("homeContent.feature1t"),
+      description: t("homeContent.feature1d"),
+    },
+    {
+      icon: <MapPin size={20} />,
+      title: t("homeContent.feature2t"),
+      description: t("homeContent.feature2d"),
+    },
+    {
+      icon: <ShieldCheck size={20} />,
+      title: t("homeContent.feature3t"),
+      description: t("homeContent.feature3d"),
+    },
+    {
+      icon: <Users size={20} />,
+      title: t("homeContent.feature4t"),
+      description: t("homeContent.feature4d"),
+    },
+  ];
+  const useCases = [
+    t("homeContent.useCase1"),
+    t("homeContent.useCase2"),
+    t("homeContent.useCase3"),
+    t("homeContent.useCase4"),
+  ];
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -165,19 +144,15 @@ export function HomePage() {
             <div className="relative landing-fade-up-delay-1">
               <p className="inline-flex max-w-full items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200 sm:text-xs sm:tracking-[0.25em]">
                 <Globe size={14} />
-                Beach volleyball platform
+                {t("home.platformEyebrow")}
               </p>
 
               <h1 className="mt-4 max-w-4xl text-[2rem] font-black leading-tight text-white sm:text-[2.4rem] md:mt-6 md:text-6xl">
-                Find beach volleyball matches, join open play sessions and track
-                competitive progress in one place.
+                {t("home.heroTitle")}
               </h1>
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base md:mt-6 md:text-lg md:leading-8">
-                Beach Volley App is a web app for local beach volleyball
-                communities that want a cleaner way to discover events, manage
-                private sessions, validate match results and keep player profiles
-                organized beyond chat groups.
+                {t("home.heroBody")}
               </p>
 
               <div className="mt-6 flex flex-col gap-3 sm:flex-row md:mt-8">
@@ -185,7 +160,7 @@ export function HomePage() {
                   to="/events"
                   className="rounded-2xl bg-blue-500 px-5 py-3 text-center font-bold text-white transition hover:bg-blue-600"
                 >
-                  Explore events
+                  {t("home.exploreEvents")}
                 </Link>
 
                 {isAuthenticated ? (
@@ -193,14 +168,14 @@ export function HomePage() {
                     to="/events/create"
                     className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center font-bold text-white transition hover:bg-white/10"
                   >
-                    Create an event
+                    {t("home.createEvent")}
                   </Link>
                 ) : (
                   <Link
                     to="/register"
                     className="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-center font-bold text-white transition hover:bg-white/10"
                   >
-                    Join the app
+                    {t("home.joinApp")}
                   </Link>
                 )}
               </div>
@@ -208,15 +183,15 @@ export function HomePage() {
               <div className="mt-6 grid gap-3 md:mt-8 sm:grid-cols-3">
                 <TrustPill
                   icon={<Volleyball size={16} />}
-                  label="Structured matches"
+                  label={t("home.trustStructuredMatches")}
                 />
                 <TrustPill
                   icon={<Users size={16} />}
-                  label="Open play meetups"
+                  label={t("home.trustOpenPlay")}
                 />
                 <TrustPill
                   icon={<Trophy size={16} />}
-                  label="Validated competition"
+                  label={t("home.trustCompetition")}
                 />
               </div>
             </div>
@@ -225,34 +200,32 @@ export function HomePage() {
           <div className="landing-fade-up-delay-2 grid gap-3 md:gap-4">
             <div className="landing-float-slow rounded-[1.5rem] border border-white/10 bg-white/5 p-5 backdrop-blur md:rounded-[1.75rem] md:p-6">
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-200 md:text-sm md:tracking-[0.2em]">
-                Why this app exists
+                {t("home.whyEyebrow")}
               </p>
               <h2 className="mt-3 text-xl font-black text-white md:text-2xl">
-                Built to make local beach volleyball easier to organize
+                {t("home.whyTitle")}
               </h2>
               <p className="mt-3 text-sm leading-7 text-slate-300">
-                The goal is simple: reduce friction around finding players,
-                filling matches, handling private access, validating results and
-                revisiting recent games without scattered tools.
+                {t("home.whyBody")}
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 md:gap-4">
               <div className="landing-float-fast rounded-[1.5rem] bg-emerald-400 p-5 text-slate-950 md:rounded-[1.75rem] md:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] md:text-xs md:tracking-[0.2em]">
-                  Public discovery
+                  {t("home.publicDiscovery")}
                 </p>
                 <p className="mt-3 text-xl font-black md:text-2xl">
-                  Find nearby matches and open play sessions.
+                  {t("home.publicDiscoveryBody")}
                 </p>
               </div>
 
               <div className="landing-float-slow rounded-[1.5rem] bg-amber-300 p-5 text-slate-950 md:rounded-[1.75rem] md:p-6">
                 <p className="text-[11px] font-black uppercase tracking-[0.16em] md:text-xs md:tracking-[0.2em]">
-                  Private flow
+                  {t("home.privateFlow")}
                 </p>
                 <p className="mt-3 text-xl font-black md:text-2xl">
-                  Share private events with controlled join requests.
+                  {t("home.privateFlowBody")}
                 </p>
               </div>
             </div>
@@ -263,22 +236,22 @@ export function HomePage() {
       <div className="landing-fade-up-delay-1 grid gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
         <HomeStatCard
           icon={<CalendarDays />}
-          label="Public events"
+          label={t("home.statPublicEvents")}
           value={totalEvents}
         />
         <HomeStatCard
           icon={<Volleyball />}
-          label="Upcoming matches"
+          label={t("home.statUpcomingMatches")}
           value={activeMatches}
         />
         <HomeStatCard
           icon={<Users />}
-          label="Players"
+          label={t("home.statPlayers")}
           value={totalPlayers}
         />
         <HomeStatCard
           icon={<Sparkles />}
-          label="Open play sessions"
+          label={t("home.statOpenPlay")}
           value={openPlayCount}
         />
       </div>
@@ -286,16 +259,13 @@ export function HomePage() {
       <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr] md:gap-6">
         <div className="landing-fade-up rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
-            What you can do
+            {t("home.whatEyebrow")}
           </p>
           <h2 className="mt-3 text-2xl font-black text-slate-950 md:text-3xl">
-            A clearer workflow for beach volleyball communities
+            {t("home.whatTitle")}
           </h2>
           <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
-            Beach Volley App combines event discovery, private coordination,
-            player profiles and validated results in one place, so both casual
-            communities and competitive players can manage games with less
-            friction.
+            {t("home.whatBody")}
           </p>
 
           <div className="mt-6 grid gap-3 md:mt-8 md:grid-cols-2 md:gap-4">
@@ -321,30 +291,30 @@ export function HomePage() {
           <div className="landing-fade-up-delay-1 space-y-5 md:space-y-6">
           <div className="rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
-              How it works
+              {t("home.howEyebrow")}
             </p>
             <div className="mt-5 space-y-4">
               <StepCard
                 number="01"
-                title="Browse public events"
-                description="Explore public matches and open play sessions on the events page, map or calendar."
+                title={t("homeContent.step1t")}
+                description={t("homeContent.step1d")}
               />
               <StepCard
                 number="02"
-                title="Join or request access"
-                description="Join open events directly or request access to private matches through their shared link."
+                title={t("homeContent.step2t")}
+                description={t("homeContent.step2d")}
               />
               <StepCard
                 number="03"
-                title="Play and validate"
-                description="For match events, teams, results and validation make the final outcome clearer and more trustworthy."
+                title={t("homeContent.step3t")}
+                description={t("homeContent.step3d")}
               />
             </div>
           </div>
 
           <div className="rounded-[1.75rem] bg-slate-900 p-5 text-white shadow-sm md:rounded-[2rem] md:p-8">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-300 md:text-sm md:tracking-[0.2em]">
-              Best for
+              {t("home.bestForEyebrow")}
             </p>
             <ul className="mt-5 space-y-3 text-sm leading-7 text-slate-300">
               {useCases.map((item) => (
@@ -362,15 +332,13 @@ export function HomePage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
-              Upcoming beach volleyball events
+              {t("home.upcomingEyebrow")}
             </p>
             <h2 className="mt-3 text-2xl font-black text-slate-950 md:text-3xl">
-              Public sessions you can join next
+              {t("home.upcomingTitle")}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 md:text-base">
-              These are the nearest public events currently visible in the app.
-              Use them to discover what the community is playing and how the
-              platform works in practice.
+              {t("home.upcomingBody")}
             </p>
           </div>
 
@@ -378,13 +346,13 @@ export function HomePage() {
             to="/events"
             className="inline-flex items-center gap-2 rounded-2xl bg-blue-100 px-4 py-3 text-sm font-bold text-blue-700 transition hover:bg-blue-600 hover:text-white"
           >
-            View all events
+            {t("home.viewAllEvents")}
             <ChevronRight size={16} />
           </Link>
         </div>
 
         {loading ? (
-          <p className="mt-6 text-sm text-slate-500">Loading public events...</p>
+          <p className="mt-6 text-sm text-slate-500">{t("home.loadingEvents")}</p>
         ) : null}
 
         {error ? (
@@ -395,10 +363,9 @@ export function HomePage() {
 
         {!loading && !error && upcomingEvents.length === 0 ? (
           <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-            <p className="font-black text-slate-950">No public events yet</p>
+            <p className="font-black text-slate-950">{t("home.noPublicEvents")}</p>
             <p className="mt-2 text-sm text-slate-500">
-              As new matches and open play sessions are published, they will
-              appear here.
+              {t("home.noPublicEventsBody")}
             </p>
           </div>
         ) : null}
@@ -415,35 +382,33 @@ export function HomePage() {
       <section className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr] md:gap-6">
         <div className="landing-fade-up rounded-[1.75rem] bg-blue-600 p-5 text-white shadow-sm md:rounded-[2rem] md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-100 md:text-sm md:tracking-[0.2em]">
-            Competitive layer
+            {t("home.competitiveEyebrow")}
           </p>
           <h2 className="mt-3 text-2xl font-black md:text-3xl">
-            More than just event listings
+            {t("home.competitiveTitle")}
           </h2>
           <p className="mt-4 text-sm leading-7 text-blue-50">
-            Beach Volley App is also prepared for competitive play. Match events
-            support team assignment, set-based results, opposing-side validation
-            and competitive rating updates when the final result is accepted.
+            {t("home.competitiveBody")}
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2 md:mt-8">
             <MetricNote
-              title="Validated results"
-              description="Competitive stats only count once the result is accepted."
+              title={t("homeContent.metric1t")}
+              description={t("homeContent.metric1d")}
             />
             <MetricNote
-              title="Player profiles"
-              description="Profiles highlight recent matches, equipment badges and competitive progress."
+              title={t("homeContent.metric2t")}
+              description={t("homeContent.metric2d")}
             />
           </div>
         </div>
 
         <div className="landing-fade-up-delay-1 rounded-[1.75rem] bg-white p-5 shadow-sm md:rounded-[2rem] md:p-8">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-600 md:text-sm md:tracking-[0.2em]">
-            Frequently asked
+            {t("home.faqEyebrow")}
           </p>
           <h2 className="mt-3 text-2xl font-black text-slate-950 md:text-3xl">
-            Quick answers about the platform
+            {t("home.faqTitle")}
           </h2>
 
           <div className="mt-6 space-y-4">

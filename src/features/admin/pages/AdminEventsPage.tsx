@@ -10,6 +10,7 @@ import {
   UserCircle2,
 } from "lucide-react";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { deleteEvent } from "../../events/services/events.service";
 import { isUnlimitedEventCapacity } from "../../events/types/event.types";
@@ -26,6 +27,7 @@ import { useAdminEvents } from "../hooks/useAdminEvents";
 const PAGE_SIZE = 12;
 
 export function AdminEventsPage() {
+  const { t, i18n } = useTranslation();
   const [page, setPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [hideInactive, setHideInactive] = useState(false);
@@ -53,9 +55,9 @@ export function AdminEventsPage() {
       (acc, item) => {
         const status = getEventDisplayStatus(item.event);
 
-        if (status === "Finished") {
+        if (status === t("eventStatus.finished")) {
           acc.finished += 1;
-        } else if (status === "Cancelled") {
+        } else if (status === t("eventStatus.cancelled")) {
           acc.cancelled += 1;
         } else {
           acc.active += 1;
@@ -65,12 +67,10 @@ export function AdminEventsPage() {
       },
       { active: 0, finished: 0, cancelled: 0 }
     );
-  }, [items]);
+  }, [items, t]);
 
   async function handleDelete(eventId: string) {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this event?"
-    );
+    const confirmed = window.confirm(t("adminEvents.deleteConfirm"));
 
     if (!confirmed) {
       return;
@@ -87,7 +87,7 @@ export function AdminEventsPage() {
       );
     } catch (err) {
       console.error(err);
-      setError("Could not delete event");
+      setError(t("adminEvents.deleteError"));
     } finally {
       setDeletingId(null);
     }
@@ -99,30 +99,29 @@ export function AdminEventsPage() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-600">
-              Admin events
+              {t("adminEvents.eyebrow")}
             </p>
             <h1 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
-              Events management
+              {t("adminEvents.title")}
             </h1>
             <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
-              Review published events, inspect creators, and keep large event
-              catalogs under control with search and pagination.
+              {t("adminEvents.body")}
             </p>
           </div>
 
           <Link
             to="/profile"
             className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white"
-          >
-            Back to profile
-          </Link>
-        </div>
+        >
+          {t("adminEvents.backToProfile")}
+        </Link>
+      </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <SummaryCard label="Total results" value={totalCount} accent="blue" />
-          <SummaryCard label="Active" value={summary.active} accent="emerald" />
-          <SummaryCard label="Finished" value={summary.finished} accent="amber" />
-          <SummaryCard label="Cancelled" value={summary.cancelled} accent="rose" />
+      <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
+          <SummaryCard label={t("adminEvents.totalResults")} value={totalCount} accent="blue" />
+          <SummaryCard label={t("adminEvents.active")} value={summary.active} accent="emerald" />
+          <SummaryCard label={t("adminEvents.finished")} value={summary.finished} accent="amber" />
+          <SummaryCard label={t("adminEvents.cancelled")} value={summary.cancelled} accent="rose" />
         </div>
 
         <div className="mt-5 flex flex-col gap-3 rounded-[1.5rem] bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -135,7 +134,7 @@ export function AdminEventsPage() {
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Search by title, location or creator"
+              placeholder={t("adminEvents.searchPlaceholder")}
               className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
             />
           </label>
@@ -148,13 +147,15 @@ export function AdminEventsPage() {
                 onChange={(event) => setHideInactive(event.target.checked)}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
-              Hide cancelled / finished
+              {t("adminEvents.hideInactive")}
             </label>
 
             <span className="text-sm text-slate-500">
-              Showing <strong className="text-slate-900">{visibleFrom}</strong>-
-              <strong className="text-slate-900">{visibleTo}</strong> of{" "}
-              <strong className="text-slate-900">{totalCount}</strong>
+              {t("adminEvents.showingRange", {
+                from: visibleFrom,
+                to: visibleTo,
+                total: totalCount,
+              })}
             </span>
           </div>
         </div>
@@ -177,9 +178,9 @@ export function AdminEventsPage() {
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-[2rem] bg-white p-8 text-center shadow-sm">
-          <p className="font-semibold text-slate-900">No events found</p>
+          <p className="font-semibold text-slate-900">{t("adminEvents.noEventsTitle")}</p>
           <p className="mt-2 text-sm text-slate-500">
-            Try a different search or wait for new events to be created.
+            {t("adminEvents.noEventsBody")}
           </p>
         </div>
       ) : (
@@ -191,6 +192,7 @@ export function AdminEventsPage() {
                 item={item}
                 deleting={deletingId === item.event.id}
                 onDelete={handleDelete}
+                locale={i18n.language}
               />
             ))}
           </div>
@@ -199,12 +201,12 @@ export function AdminEventsPage() {
             <table className="w-full text-left">
               <thead className="bg-slate-50 text-sm text-slate-500">
                 <tr>
-                  <th className="px-6 py-4">Event</th>
-                  <th className="px-6 py-4">Creator</th>
-                  <th className="px-6 py-4">Location</th>
-                  <th className="px-6 py-4">Schedule</th>
-                  <th className="px-6 py-4">Capacity</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4">{t("adminEvents.tableEvent")}</th>
+                  <th className="px-6 py-4">{t("adminEvents.tableCreator")}</th>
+                  <th className="px-6 py-4">{t("adminEvents.tableLocation")}</th>
+                  <th className="px-6 py-4">{t("adminEvents.tableSchedule")}</th>
+                  <th className="px-6 py-4">{t("adminEvents.tableCapacity")}</th>
+                  <th className="px-6 py-4 text-right">{t("adminEvents.tableActions")}</th>
                 </tr>
               </thead>
 
@@ -215,6 +217,7 @@ export function AdminEventsPage() {
                     item={item}
                     deleting={deletingId === item.event.id}
                     onDelete={handleDelete}
+                    locale={i18n.language}
                   />
                 ))}
               </tbody>
@@ -223,8 +226,7 @@ export function AdminEventsPage() {
 
           <div className="flex flex-col gap-3 rounded-[1.75rem] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <p className="text-sm text-slate-500">
-              Page <strong className="text-slate-900">{page}</strong> of{" "}
-              <strong className="text-slate-900">{totalPages}</strong>
+              {t("adminEvents.pageOf", { page, total: totalPages })}
             </p>
 
             <div className="flex items-center gap-2">
@@ -235,7 +237,7 @@ export function AdminEventsPage() {
                 className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ChevronLeft size={16} />
-                Previous
+                {t("adminEvents.previous")}
               </button>
 
               <button
@@ -246,7 +248,7 @@ export function AdminEventsPage() {
                 disabled={page >= totalPages}
                 className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Next
+                {t("adminEvents.next")}
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -261,11 +263,14 @@ function MobileAdminEventCard({
   item,
   deleting,
   onDelete,
+  locale,
 }: {
   item: ReturnType<typeof useAdminEvents>["items"][number];
   deleting: boolean;
   onDelete: (eventId: string) => void;
+  locale: string;
 }) {
+  const { t } = useTranslation();
   const { event, creatorName, creatorAvatarUrl } = item;
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
 
@@ -304,16 +309,16 @@ function MobileAdminEventCard({
           <div className="mt-4 space-y-2 text-sm text-slate-500">
             <InfoRow
               icon={<UserCircle2 size={16} />}
-              label={creatorName ?? "Unknown creator"}
+              label={creatorName ?? t("adminEvents.unknownCreator")}
               avatarUrl={creatorAvatarUrl}
             />
             <InfoRow
               icon={<MapPin size={16} />}
-              label={event.locationName || "Location pending"}
+              label={event.locationName || t("adminEvents.locationPending")}
             />
             <InfoRow
               icon={<CalendarDays size={16} />}
-              label={new Date(event.startDate).toLocaleString()}
+              label={new Date(event.startDate).toLocaleString(locale)}
             />
           </div>
         </div>
@@ -322,29 +327,29 @@ function MobileAdminEventCard({
           onClick={() => onDelete(event.id)}
           disabled={deleting}
           className="rounded-2xl bg-red-50 p-3 text-red-600 disabled:opacity-50"
-          aria-label={`Delete ${event.title}`}
+          aria-label={`${t("adminEvents.delete")} ${event.title}`}
         >
           <Trash2 size={18} />
         </button>
       </div>
 
       <div className="mt-5 grid grid-cols-2 gap-3 rounded-[1.25rem] bg-slate-50 p-3">
-        <MiniStat label="Status" value={getEventDisplayStatus(event)} />
+        <MiniStat label={t("adminEvents.status")} value={getEventDisplayStatus(event)} />
         <MiniStat
-          label="Capacity"
+          label={t("adminEvents.capacity")}
           value={
             isUnlimitedEventCapacity(event.maxParticipants)
-              ? "Unlimited"
+              ? t("adminEvents.unlimited")
               : `${event.maxParticipants}`
           }
         />
       </div>
 
       <div className="mt-5 grid grid-cols-3 gap-3">
-        <ActionLink to={`/events/${event.id}`} label="View" icon={<Eye size={16} />} />
+        <ActionLink to={`/events/${event.id}`} label={t("adminEvents.view")} icon={<Eye size={16} />} />
         <ActionLink
           to={`/events/${event.id}/edit`}
-          label="Edit"
+          label={t("adminEvents.edit")}
           icon={<Pencil size={16} />}
           variant="secondary"
         />
@@ -355,7 +360,7 @@ function MobileAdminEventCard({
           className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 disabled:opacity-50"
         >
           <Trash2 size={16} />
-          {deleting ? "Deleting" : "Delete"}
+          {deleting ? t("adminEvents.deleting") : t("adminEvents.delete")}
         </button>
       </div>
     </article>
@@ -366,11 +371,14 @@ function DesktopAdminEventRow({
   item,
   deleting,
   onDelete,
+  locale,
 }: {
   item: ReturnType<typeof useAdminEvents>["items"][number];
   deleting: boolean;
   onDelete: (eventId: string) => void;
+  locale: string;
 }) {
+  const { t } = useTranslation();
   const { event, creatorName, creatorAvatarUrl } = item;
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
 
@@ -417,7 +425,7 @@ function DesktopAdminEventRow({
           />
           <div className="min-w-0">
             <p className="truncate font-semibold text-slate-900">
-              {creatorName ?? "Unknown creator"}
+              {creatorName ?? t("adminEvents.unknownCreator")}
             </p>
             <p className="text-sm text-slate-500">{event.createdBy}</p>
           </div>
@@ -427,12 +435,12 @@ function DesktopAdminEventRow({
       <td className="px-6 py-5 text-sm text-slate-500">
         <div className="flex items-start gap-2">
           <MapPin size={16} className="mt-0.5 shrink-0 text-slate-400" />
-          <span>{event.locationName || "Location pending"}</span>
+          <span>{event.locationName || t("adminEvents.locationPending")}</span>
         </div>
       </td>
 
       <td className="px-6 py-5 text-sm text-slate-500">
-        <div>{new Date(event.startDate).toLocaleString()}</div>
+        <div>{new Date(event.startDate).toLocaleString(locale)}</div>
         <div className="mt-1 font-semibold text-slate-700">
           {getEventDisplayStatus(event)}
         </div>
@@ -440,7 +448,7 @@ function DesktopAdminEventRow({
 
       <td className="px-6 py-5 text-sm text-slate-500">
         {isUnlimitedEventCapacity(event.maxParticipants)
-          ? "Unlimited"
+          ? t("adminEvents.unlimited")
           : event.maxParticipants}
       </td>
 
@@ -448,13 +456,13 @@ function DesktopAdminEventRow({
         <div className="flex items-center justify-end gap-2">
           <ActionLink
             to={`/events/${event.id}`}
-            label="View"
+            label={t("adminEvents.view")}
             icon={<Eye size={15} />}
             compact
           />
           <ActionLink
             to={`/events/${event.id}/edit`}
-            label="Edit"
+            label={t("adminEvents.edit")}
             icon={<Pencil size={15} />}
             variant="secondary"
             compact
@@ -465,7 +473,7 @@ function DesktopAdminEventRow({
             className="inline-flex items-center gap-2 rounded-2xl bg-red-50 px-3 py-2 text-sm font-bold text-red-600 disabled:opacity-50"
           >
             <Trash2 size={15} />
-            {deleting ? "Deleting" : "Delete"}
+            {deleting ? t("adminEvents.deleting") : t("adminEvents.delete")}
           </button>
         </div>
       </td>

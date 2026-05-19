@@ -1,5 +1,6 @@
 import { CalendarDays, Mail, Shield, User } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getAllUsers } from "../services/adminUsers.service";
 
@@ -12,6 +13,7 @@ interface AdminUser {
 }
 
 export function AdminUsersPage() {
+  const { t, i18n } = useTranslation();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -26,26 +28,26 @@ export function AdminUsersPage() {
         setUsers(data);
       } catch (err) {
         console.error(err);
-        setError("Could not load users");
+        setError(t("adminUsers.loadError"));
       } finally {
         setLoading(false);
       }
     }
 
     loadUsers();
-  }, []);
+  }, [t]);
 
-  if (loading) return <p className="text-slate-500">Loading users...</p>;
+  if (loading) return <p className="text-slate-500">{t("adminUsers.loading")}</p>;
 
   return (
     <section>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Users Management
+            {t("adminUsers.title")}
           </h1>
           <p className="mt-2 text-slate-500">
-            Visual overview of registered platform users.
+            {t("adminUsers.body")}
           </p>
         </div>
 
@@ -53,7 +55,7 @@ export function AdminUsersPage() {
           to="/profile"
           className="rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white"
         >
-          ← Back
+          {t("adminUsers.back")}
         </Link>
       </div>
 
@@ -100,7 +102,7 @@ export function AdminUsersPage() {
                   <div className="rounded-2xl bg-slate-50 p-3">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase text-slate-400">
                       <Shield size={14} />
-                      Role
+                      {t("adminUsers.role")}
                     </p>
                     <p className="mt-1 text-sm font-bold capitalize text-slate-800">
                       {user.role}
@@ -110,10 +112,10 @@ export function AdminUsersPage() {
                   <div className="rounded-2xl bg-slate-50 p-3">
                     <p className="flex items-center gap-2 text-xs font-bold uppercase text-slate-400">
                       <CalendarDays size={14} />
-                      Created
+                      {t("adminUsers.created")}
                     </p>
                     <p className="mt-1 text-sm font-bold text-slate-800">
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {new Date(user.created_at).toLocaleDateString(i18n.language)}
                     </p>
                   </div>
                 </div>
@@ -128,10 +130,10 @@ export function AdminUsersPage() {
         <table className="w-full text-left">
           <thead className="bg-slate-50 text-sm text-slate-500">
             <tr>
-              <th className="p-4">Name</th>
-              <th className="p-4">Email</th>
-              <th className="p-4">Role</th>
-              <th className="p-4">Created</th>
+              <th className="p-4">{t("adminUsers.name")}</th>
+              <th className="p-4">{t("adminUsers.email")}</th>
+              <th className="p-4">{t("adminUsers.role")}</th>
+              <th className="p-4">{t("adminUsers.created")}</th>
             </tr>
           </thead>
 
@@ -164,7 +166,7 @@ export function AdminUsersPage() {
                 </td>
 
                 <td className="p-4 text-sm text-slate-500">
-                  {new Date(user.created_at).toLocaleDateString()}
+                  {new Date(user.created_at).toLocaleDateString(i18n.language)}
                 </td>
               </tr>
             ))}
@@ -175,9 +177,9 @@ export function AdminUsersPage() {
       {users.length === 0 && (
         <div className="mt-6 rounded-3xl bg-white p-8 text-center shadow-sm">
           <User className="mx-auto text-blue-600" />
-          <p className="mt-4 font-semibold text-slate-900">No users found</p>
+          <p className="mt-4 font-semibold text-slate-900">{t("adminUsers.noUsersTitle")}</p>
           <p className="mt-2 text-sm text-slate-500">
-            Registered users will appear here.
+            {t("adminUsers.noUsersBody")}
           </p>
         </div>
       )}

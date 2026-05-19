@@ -1,4 +1,5 @@
 import type { CompetitiveInsightsFilter } from "../types/profileCompetitiveInsights.types";
+import { useTranslation } from "react-i18next";
 
 const filterOptions: Array<{
     value: CompetitiveInsightsFilter;
@@ -19,6 +20,8 @@ export function CompetitiveInsightsFilters({
     selectedFilter,
     onChange,
 }: CompetitiveInsightsFiltersProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="overflow-x-auto pb-1">
             <div className="inline-flex min-w-full gap-2 rounded-full bg-slate-100 p-1 sm:min-w-0">
@@ -36,7 +39,7 @@ export function CompetitiveInsightsFilters({
                                     : "text-slate-600 hover:bg-white"
                             }`}
                         >
-                            {option.label}
+                            {t(`profile.insightFilters.${option.value}`)}
                         </button>
                     );
                 })}

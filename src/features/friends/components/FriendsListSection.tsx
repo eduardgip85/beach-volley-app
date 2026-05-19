@@ -1,4 +1,5 @@
 import { Trophy, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { FriendProfile } from "../types/friends.types";
@@ -12,6 +13,8 @@ export function FriendsListSection({
     friends,
     loading,
 }: FriendsListSectionProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="rounded-[2rem] bg-white p-8 shadow-sm">
             <div className="flex items-center gap-3">
@@ -20,22 +23,22 @@ export function FriendsListSection({
                 </span>
 
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Your friends</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">{t("friends.yourFriends")}</h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Accepted friendships are shown here.
+                        {t("friends.yourFriendsBody")}
                     </p>
                 </div>
             </div>
 
             {loading ? (
-                <p className="mt-6 text-sm text-slate-500">Loading your friends...</p>
+                <p className="mt-6 text-sm text-slate-500">{t("friends.loadingYourFriends")}</p>
             ) : null}
 
             {!loading && friends.length === 0 ? (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No friends yet</p>
+                    <p className="font-bold text-slate-900">{t("friends.noFriends")}</p>
                     <p className="mt-2 text-sm text-slate-500">
-                        Search for players and send your first friend request.
+                        {t("friends.noFriendsBody")}
                     </p>
                 </div>
             ) : null}
@@ -58,7 +61,7 @@ export function FriendsListSection({
                                         {friend.fullName}
                                     </h3>
                                     <p className="truncate text-sm text-slate-500">
-                                        View public profile
+                                        {t("friends.viewPublicProfile")}
                                     </p>
                                 </div>
                             </div>

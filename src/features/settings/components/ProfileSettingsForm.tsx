@@ -1,29 +1,27 @@
 import { ImagePlus, Trash2, UserRound } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { SettingsSectionStatus } from "../types/settings.types";
 import { readAvatarFileAsDataUrl } from "../utils/avatar.utils";
 
 interface ProfileSettingsFormProps {
     fullName: string;
-    username: string;
     avatarUrl: string;
     status: SettingsSectionStatus;
     onFullNameChange: (value: string) => void;
-    onUsernameChange: (value: string) => void;
     onAvatarUrlChange: (value: string) => void;
     onSave: () => void;
 }
 
 export function ProfileSettingsForm({
     fullName,
-    username,
     avatarUrl,
     status,
     onFullNameChange,
-    onUsernameChange,
     onAvatarUrlChange,
     onSave,
 }: ProfileSettingsFormProps) {
+    const { t } = useTranslation();
     const [uploadError, setUploadError] = useState("");
 
     async function handleAvatarFileChange(file?: File) {
@@ -37,17 +35,19 @@ export function ProfileSettingsForm({
             onAvatarUrlChange(dataUrl);
         } catch (error) {
             setUploadError(
-                error instanceof Error ? error.message : "Could not load avatar"
+                error instanceof Error
+                    ? error.message
+                    : t("settings.messages.avatarLoadError")
             );
         }
     }
 
     return (
         <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4">
                 <label className="block">
                     <span className="text-sm font-semibold text-slate-700">
-                        Full name
+                        {t("settings.profile.fullName")}
                     </span>
                     <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                         <UserRound size={18} className="text-slate-400" />
@@ -55,22 +55,7 @@ export function ProfileSettingsForm({
                             value={fullName}
                             onChange={(event) => onFullNameChange(event.target.value)}
                             className="w-full bg-transparent text-sm text-slate-900 outline-none"
-                            placeholder="Beach Volley Player"
-                        />
-                    </div>
-                </label>
-
-                <label className="block">
-                    <span className="text-sm font-semibold text-slate-700">
-                        Username
-                    </span>
-                    <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                        <span className="text-sm font-bold text-slate-400">@</span>
-                        <input
-                            value={username}
-                            onChange={(event) => onUsernameChange(event.target.value)}
-                            className="w-full bg-transparent text-sm text-slate-900 outline-none"
-                            placeholder="ed1"
+                            placeholder={t("settings.profile.fullNamePlaceholder")}
                         />
                     </div>
                 </label>
@@ -79,7 +64,7 @@ export function ProfileSettingsForm({
             <div className="space-y-3">
                 <div className="flex items-center justify-between gap-4">
                     <span className="text-sm font-semibold text-slate-700">
-                        Avatar image
+                        {t("settings.profile.avatarImage")}
                     </span>
 
                     {avatarUrl.trim() ? (
@@ -89,7 +74,7 @@ export function ProfileSettingsForm({
                             className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600"
                         >
                             <Trash2 size={14} />
-                            Remove
+                            {t("settings.profile.remove")}
                         </button>
                     ) : null}
                 </div>
@@ -108,10 +93,10 @@ export function ProfileSettingsForm({
                     )}
 
                     <p className="mt-4 text-sm font-bold text-slate-900">
-                        Upload avatar
+                        {t("settings.profile.uploadAvatar")}
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                        JPG, PNG or WebP up to 2MB
+                        {t("settings.profile.uploadHint")}
                     </p>
 
                     <input
@@ -132,11 +117,11 @@ export function ProfileSettingsForm({
 
                 {avatarUrl.trim() ? (
                     <div className="rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-500">
-                        Your uploaded image will be used across your profile and player cards.
+                        {t("settings.profile.avatarWithImage")}
                     </div>
                 ) : (
                     <div className="rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-500">
-                        If you do not upload an image, we will keep using your initial.
+                        {t("settings.profile.avatarWithoutImage")}
                     </div>
                 )}
             </div>
@@ -150,7 +135,9 @@ export function ProfileSettingsForm({
                     disabled={status.loading}
                     className="w-full rounded-2xl bg-slate-900 px-5 py-4 text-sm font-bold text-white shadow-lg shadow-slate-900/10 disabled:opacity-60 sm:w-auto"
                 >
-                    {status.loading ? "Saving..." : "Save profile"}
+                    {status.loading
+                        ? t("settings.profile.saving")
+                        : t("settings.profile.save")}
                 </button>
             </div>
         </div>

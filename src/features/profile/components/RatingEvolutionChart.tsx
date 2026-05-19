@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
     Area,
     AreaChart,
@@ -45,6 +46,7 @@ export function RatingEvolutionChart({
     points,
     loading = false,
 }: RatingEvolutionChartProps) {
+    const { t, i18n } = useTranslation();
     const chartData = useMemo(
         () =>
             points.map((point) => ({
@@ -68,7 +70,7 @@ export function RatingEvolutionChart({
     if (loading) {
         return (
             <div className="rounded-[2rem] bg-white/70 p-6 text-sm text-slate-500 ring-1 ring-white/80">
-                Loading rating evolution...
+                {t("profile.ratingEvolutionLoading")}
             </div>
         );
     }
@@ -76,9 +78,9 @@ export function RatingEvolutionChart({
     if (points.length === 0) {
         return (
             <div className="rounded-[2rem] bg-white/70 p-6 text-center ring-1 ring-white/80">
-                <p className="font-bold text-slate-900">No competitive rating history yet</p>
+                <p className="font-bold text-slate-900">{t("profile.noCompetitiveRatingHistory")}</p>
                 <p className="mt-2 text-sm text-slate-500">
-                    Once you validate competitive matches, your rating graph will appear here.
+                    {t("profile.noCompetitiveRatingHistoryBody")}
                 </p>
             </div>
         );
@@ -141,10 +143,12 @@ export function RatingEvolutionChart({
                                 return (
                                     <div className="rounded-3xl border border-blue-100 bg-white px-4 py-3 shadow-xl">
                                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-                                            {new Date(point.date).toLocaleDateString()}
+                                            {new Date(point.date).toLocaleDateString(i18n.language)}
                                         </p>
                                         <p className="mt-2 text-xl font-black text-slate-950">
-                                            {formatCompetitiveRating(point.rating)} rating
+                                            {t("profile.ratingTooltip", {
+                                                rating: formatCompetitiveRating(point.rating),
+                                            })}
                                         </p>
                                         <p
                                             className={`mt-1 text-sm font-bold ${
@@ -153,7 +157,9 @@ export function RatingEvolutionChart({
                                                     : "text-red-600"
                                             }`}
                                         >
-                                            {point.deltaLabel} after match
+                                            {t("profile.afterMatch", {
+                                                delta: point.deltaLabel,
+                                            })}
                                         </p>
                                     </div>
                                 );

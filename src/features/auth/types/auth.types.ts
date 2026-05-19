@@ -7,7 +7,17 @@ export type AvailabilityStatus =
     | "offline"
     | null;
 export type PreferredMatchMode = "casual" | "competitive" | null;
-export type PreferredLanguage = "en" | "es" | "ca";
+export type PreferredLanguage = "en" | "es";
+export type PreferredHand = "right" | "left" | "both" | null;
+export type PreferredCourtSide = "right" | "left" | "both" | null;
+export type PreferredPlayDay =
+    | "monday"
+    | "tuesday"
+    | "wednesday"
+    | "thursday"
+    | "friday"
+    | "saturday"
+    | "sunday";
 
 export interface UserProfile {
     id: string;
@@ -36,4 +46,7 @@ export interface UserProfile {
     showStats: boolean;
     preferredLanguage: PreferredLanguage;
     preferredMatchMode: PreferredMatchMode;
+    preferredHand: PreferredHand;
+    preferredCourtSide: PreferredCourtSide;
+    preferredPlayDays: PreferredPlayDay[];
 }

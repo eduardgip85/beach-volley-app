@@ -1,4 +1,5 @@
 import { Suspense, lazy, type ReactNode } from "react";
+import { t } from "i18next";
 import { createBrowserRouter } from "react-router-dom";
 
 import { AuthLayout } from "../layouts/AuthLayout";
@@ -15,6 +16,16 @@ const LoginPage = lazy(() =>
 const RegisterPage = lazy(() =>
   import("../features/auth/pages/RegisterPage").then((module) => ({
     default: module.RegisterPage,
+  }))
+);
+const ForgotPasswordPage = lazy(() =>
+  import("../features/auth/pages/ForgotPasswordPage").then((module) => ({
+    default: module.ForgotPasswordPage,
+  }))
+);
+const ResetPasswordPage = lazy(() =>
+  import("../features/auth/pages/ResetPasswordPage").then((module) => ({
+    default: module.ResetPasswordPage,
   }))
 );
 const AuthCallbackPage = lazy(() =>
@@ -67,6 +78,11 @@ const ProfilePage = lazy(() =>
     default: module.ProfilePage,
   }))
 );
+const ProfileHistoryPage = lazy(() =>
+  import("../features/profile/pages/ProfileHistoryPage").then((module) => ({
+    default: module.ProfileHistoryPage,
+  }))
+);
 const FriendsPage = lazy(() =>
   import("../features/friends/pages/FriendsPage").then((module) => ({
     default: module.FriendsPage,
@@ -102,7 +118,7 @@ function withSuspense(page: ReactNode) {
   return (
     <Suspense
       fallback={
-        <div className="px-4 py-10 text-sm text-slate-500">Loading page...</div>
+        <div className="px-4 py-10 text-sm text-slate-500">{t("common.loadingPage")}</div>
       }
     >
       {page}
@@ -121,6 +137,14 @@ export const router = createBrowserRouter([
       {
         path: "/register",
         element: withSuspense(<RegisterPage />),
+      },
+      {
+        path: "/forgot-password",
+        element: withSuspense(<ForgotPasswordPage />),
+      },
+      {
+        path: "/reset-password",
+        element: withSuspense(<ResetPasswordPage />),
       },
       {
         path: "/auth/callback",
@@ -174,6 +198,10 @@ export const router = createBrowserRouter([
           {
             path: "/profile",
             element: withSuspense(<ProfilePage />),
+          },
+          {
+            path: "/profile/history",
+            element: withSuspense(<ProfileHistoryPage />),
           },
           {
             path: "/friends",

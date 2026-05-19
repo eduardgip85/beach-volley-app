@@ -1,4 +1,5 @@
 import { CalendarDays, Lock, MapPin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { EventJoinRequest } from "../types/eventJoinRequest.types";
 
@@ -21,16 +22,19 @@ function getStatusClasses(status: EventJoinRequest["status"]) {
     }
 }
 
-function getStatusLabel(status: EventJoinRequest["status"]) {
+function getStatusLabel(
+    status: EventJoinRequest["status"],
+    t: (key: string) => string
+) {
     switch (status) {
         case "accepted":
-            return "Accepted";
+            return t("myEventJoinRequests.status.accepted");
         case "rejected":
-            return "Rejected";
+            return t("myEventJoinRequests.status.rejected");
         case "cancelled":
-            return "Cancelled";
+            return t("myEventJoinRequests.status.cancelled");
         default:
-            return "Pending";
+            return t("myEventJoinRequests.status.pending");
     }
 }
 
@@ -39,6 +43,8 @@ export function MyEventJoinRequestsSection({
     loading,
     error,
 }: MyEventJoinRequestsSectionProps) {
+    const { t, i18n } = useTranslation();
+
     return (
         <div className="rounded-[2rem] bg-white p-8 shadow-sm">
             <div className="flex items-center gap-3">
@@ -48,16 +54,18 @@ export function MyEventJoinRequestsSection({
 
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900">
-                        Private event requests
+                        {t("myEventJoinRequests.title")}
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Track the private events you requested to join by direct link.
+                        {t("myEventJoinRequests.body")}
                     </p>
                 </div>
             </div>
 
             {loading ? (
-                <p className="mt-6 text-sm text-slate-500">Loading your requests...</p>
+                <p className="mt-6 text-sm text-slate-500">
+                    {t("myEventJoinRequests.loading")}
+                </p>
             ) : null}
 
             {error ? (
@@ -68,9 +76,11 @@ export function MyEventJoinRequestsSection({
 
             {!loading && !error && requests.length === 0 ? (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No private requests yet</p>
+                    <p className="font-bold text-slate-900">
+                        {t("myEventJoinRequests.emptyTitle")}
+                    </p>
                     <p className="mt-2 text-sm text-slate-500">
-                        When you open a private event link and request access, it will appear here.
+                        {t("myEventJoinRequests.emptyBody")}
                     </p>
                 </div>
             ) : null}
@@ -89,10 +99,10 @@ export function MyEventJoinRequestsSection({
                                         request.status
                                     )}`}
                                 >
-                                    {getStatusLabel(request.status)}
+                                    {getStatusLabel(request.status, t)}
                                 </span>
                                 <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-bold uppercase text-white">
-                                    Private
+                                    {t("eventVisibility.private")}
                                 </span>
                             </div>
 
@@ -103,7 +113,7 @@ export function MyEventJoinRequestsSection({
                             <div className="mt-4 space-y-2 text-sm text-slate-500">
                                 <p className="flex items-center gap-2">
                                     <CalendarDays size={16} />
-                                    {new Date(request.event.startDate).toLocaleString()}
+                                    {new Date(request.event.startDate).toLocaleString(i18n.language)}
                                 </p>
 
                                 <p className="flex items-center gap-2">

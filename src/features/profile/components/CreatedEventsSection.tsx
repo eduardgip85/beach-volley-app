@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
@@ -21,20 +22,24 @@ export function CreatedEventsSection({
     loading,
     error,
 }: CreatedEventsSectionProps) {
+    const { t, i18n } = useTranslation();
+
     return (
         <div className="rounded-[2rem] bg-white p-8 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-2xl font-bold text-slate-900">Your events</h2>
+                        <h2 className="text-2xl font-bold text-slate-900">
+                            {t("createdEvents.title")}
+                        </h2>
                         {!loading && !error ? (
                             <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase text-blue-700">
-                                {events.length} created
+                                {t("createdEvents.createdCount", { count: events.length })}
                             </span>
                         ) : null}
                     </div>
                     <p className="mt-2 text-sm text-slate-500">
-                        Public and private events you organize appear here.
+                        {t("createdEvents.body")}
                     </p>
                 </div>
 
@@ -42,12 +47,12 @@ export function CreatedEventsSection({
                     to="/events/create"
                     className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white"
                 >
-                    Create new
+                    {t("createdEvents.createNew")}
                 </Link>
             </div>
 
             {loading ? (
-                <p className="text-sm text-slate-500">Loading your created events...</p>
+                <p className="text-sm text-slate-500">{t("createdEvents.loading")}</p>
             ) : null}
 
             {error ? (
@@ -58,9 +63,9 @@ export function CreatedEventsSection({
 
             {!loading && !error && events.length === 0 ? (
                 <div className="rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No created events yet</p>
+                    <p className="font-bold text-slate-900">{t("createdEvents.emptyTitle")}</p>
                     <p className="mt-2 text-sm text-slate-500">
-                        Your public and private events will appear here once you create one.
+                        {t("createdEvents.emptyBody")}
                     </p>
                 </div>
             ) : null}
@@ -106,7 +111,7 @@ export function CreatedEventsSection({
                                 <div className="mt-3 space-y-2 text-sm text-slate-500">
                                     <p className="flex items-center gap-2">
                                         <CalendarDays size={16} />
-                                        {new Date(event.startDate).toLocaleString()}
+                                        {new Date(event.startDate).toLocaleString(i18n.language)}
                                     </p>
 
                                     <p className="flex items-center gap-2">

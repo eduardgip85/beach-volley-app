@@ -6,10 +6,11 @@ import type {
     CreateEventPayload,
     Event,
     EventMode,
-    EventStatus,
+    EventResultValidationStatus,
     EventType,
     EventVisibility,
 } from "../types/event.types";
+import { resolveEventStatus } from "../utils/event-status.utils";
 
 function normalizeEventType(type: unknown): EventType {
     if (
@@ -90,23 +91,9 @@ function normalizeNumericValue(value: unknown): number {
     return 0;
 }
 
-function normalizeEventStatus(
-    status: unknown,
-    startDate: string
-): EventStatus {
-    if (status === "cancelled") {
-        return "cancelled";
-    }
-
-    if (status === "completed") {
-        return "completed";
-    }
-
-    if (new Date(startDate) < new Date()) {
-        return "completed";
-    }
-
-    return "active";
+interface MatchResultStatusRow {
+    event_id: string;
+    validation_status: EventResultValidationStatus;
 }
 
 function buildEventWritePayload(payload: CreateEventPayload) {
@@ -198,10 +185,14 @@ async function updateEventWithTypeFallback(
             })
             .eq("id", eventId)
             .select()
-            .single();
+            .maybeSingle();
 
         if (!error) {
-            return data;
+            if (data) {
+                return data;
+            }
+
+            return await getEventById(eventId);
         }
 
         lastError = error;
@@ -214,7 +205,56 @@ async function updateEventWithTypeFallback(
     throw lastError;
 }
 
-function mapEvent(row: any): Event {
+function pickResultValidationStatus(
+    rows: MatchResultStatusRow[]
+): EventResultValidationStatus | null {
+    if (rows.some((row) => row.validation_status === "accepted")) {
+        return "accepted";
+    }
+
+    if (rows.some((row) => row.validation_status === "pending")) {
+        return "pending";
+    }
+
+    if (rows.some((row) => row.validation_status === "rejected")) {
+        return "rejected";
+    }
+
+    return null;
+}
+
+async function getMatchResultStatusByEventIds(eventIds: string[]) {
+    if (eventIds.length === 0) {
+        return new Map<string, EventResultValidationStatus | null>();
+    }
+
+    const { data, error } = await supabase
+        .from("match_results")
+        .select("event_id, validation_status")
+        .in("event_id", eventIds);
+
+    if (error) throw error;
+
+    const groupedRows = new Map<string, MatchResultStatusRow[]>();
+
+    for (const row of (data ?? []) as MatchResultStatusRow[]) {
+        const currentRows = groupedRows.get(row.event_id) ?? [];
+        currentRows.push(row);
+        groupedRows.set(row.event_id, currentRows);
+    }
+
+    return new Map(
+        Array.from(groupedRows.entries()).map(([eventId, rows]) => [
+            eventId,
+            pickResultValidationStatus(rows),
+        ])
+    );
+}
+
+function mapEvent(
+    row: any,
+    resultValidationStatus: EventResultValidationStatus | null = null
+): Event {
     const eventRow = row as Record<string, unknown>;
     const type = normalizeEventType(row.type);
     const startDate =
@@ -235,7 +275,13 @@ function mapEvent(row: any): Event {
         endDate: readRowValue<string | null>(eventRow, "end_date", "endDate") ?? null,
         maxParticipants:
             readRowValue<number>(eventRow, "max_participants", "maxParticipants") ?? 0,
-        status: normalizeEventStatus(row.status, startDate),
+        status: resolveEventStatus({
+            type,
+            status: row.status,
+            startDate,
+            resultValidationStatus,
+        }),
+        resultValidationStatus,
         imageUrl: readRowValue<string | null>(eventRow, "image_url", "imageUrl") ?? null,
         createdBy:
             readRowValue<string>(eventRow, "created_by", "createdBy") ?? "",
@@ -273,7 +319,12 @@ export async function getEvents(): Promise<Event[]> {
 
     if (error) throw error;
 
-    return data.map(mapEvent);
+    const matchEventIds = (data ?? [])
+        .filter((row) => normalizeEventType(row.type) === "match")
+        .map((row) => row.id);
+    const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+
+    return data.map((row) => mapEvent(row, resultStatuses.get(row.id) ?? null));
 }
 
 export async function getPublicEvents(): Promise<Event[]> {
@@ -329,7 +380,9 @@ export async function getEventById(eventId: string): Promise<Event> {
 
     if (error) throw error;
 
-    return mapEvent(data);
+    const resultStatuses = await getMatchResultStatusByEventIds([eventId]);
+
+    return mapEvent(data, resultStatuses.get(eventId) ?? null);
 }
 
 export async function getEventDetailSummary(
@@ -343,9 +396,10 @@ export async function getEventDetailSummary(
 
     const row = data as EventDetailSummaryRow;
     const summaryRow = row as unknown as Record<string, unknown>;
+    const resultStatuses = await getMatchResultStatusByEventIds([eventId]);
 
     return {
-        event: mapEvent(row.event),
+        event: mapEvent(row.event, resultStatuses.get(eventId) ?? null),
         creatorName:
             summaryRow.creatorName?.toString() ??
             summaryRow.creator_name?.toString() ??
@@ -414,7 +468,12 @@ export async function getEventsByIds(eventIds: string[]): Promise<Event[]> {
 
     if (error) throw error;
 
-    return data.map(mapEvent);
+    const matchEventIds = (data ?? [])
+        .filter((row) => normalizeEventType(row.type) === "match")
+        .map((row) => row.id);
+    const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+
+    return data.map((row) => mapEvent(row, resultStatuses.get(row.id) ?? null));
 }
 
 export async function getEventsCreatedByUser(userId: string): Promise<Event[]> {
@@ -426,7 +485,12 @@ export async function getEventsCreatedByUser(userId: string): Promise<Event[]> {
 
     if (error) throw error;
 
-    return data.map(mapEvent);
+    const matchEventIds = (data ?? [])
+        .filter((row) => normalizeEventType(row.type) === "match")
+        .map((row) => row.id);
+    const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+
+    return data.map((row) => mapEvent(row, resultStatuses.get(row.id) ?? null));
 }
 
 export async function getProfileNameById(userId: string): Promise<string | null> {

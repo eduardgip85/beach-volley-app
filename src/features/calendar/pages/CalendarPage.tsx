@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { EventFilters } from "../../../shared/components/EventFilters";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
@@ -7,6 +8,7 @@ import type { Event } from "../../events/types/event.types";
 import { EventsCalendar } from "../components/EventsCalendar";
 
 export function CalendarPage() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<Event[]>([]);
   const [myEventIds, setMyEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +30,7 @@ export function CalendarPage() {
         setMyEventIds(result.myEventIds);
       } catch (err) {
         console.error(err);
-        setError("Could not load calendar events");
+        setError(t("calendar.loadError"));
       } finally {
         setLoading(false);
       }
@@ -47,7 +49,7 @@ export function CalendarPage() {
         onClearFilters={clearFilters}
       />
 
-      {loading && <p className="text-slate-500">Loading calendar...</p>}
+      {loading && <p className="text-slate-500">{t("calendar.loading")}</p>}
 
       {error && (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">

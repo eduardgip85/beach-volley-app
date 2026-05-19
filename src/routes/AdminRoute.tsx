@@ -1,3 +1,4 @@
+import { t } from "i18next";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../features/auth/context/AuthContext";
 
@@ -6,7 +7,7 @@ export function AdminRoute() {
   const location = useLocation();
 
   if (loading && !isAuthenticated) {
-    return <p className="p-6 text-slate-500">Loading...</p>;
+    return <p className="p-6 text-slate-500">{t("common.loading")}</p>;
   }
 
   if (!isAuthenticated) {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import i18n from "../../../i18n";
 import { getPublicEvents } from "../services/events.service";
 import type { Event } from "../types/event.types";
 
@@ -22,7 +23,7 @@ export function useEventsPage() {
             setEvents(upcoming);
         } catch (err) {
             console.error(err);
-            setError("Could not load events");
+            setError(i18n.t("eventsPage.loadError"));
         } finally {
             setLoading(false);
         }

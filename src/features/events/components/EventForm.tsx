@@ -1,5 +1,6 @@
 import { MapPin } from "lucide-react";
-import type { Dispatch, FormEvent, SetStateAction } from "react";
+import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import { LocationPickerMap } from "./LocationPickerMap";
 import type {
     EventMode,
@@ -29,6 +30,7 @@ interface EventFormProps {
     submitLabel: string;
     submittingLabel: string;
     cancelLabel?: string;
+    extraActions?: ReactNode;
 
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onCancel: () => void;
@@ -50,6 +52,20 @@ interface EventFormProps {
     setLocationSearch: Dispatch<SetStateAction<string>>;
 }
 
+const hourOptions = Array.from({ length: 24 }, (_, index) =>
+    index.toString().padStart(2, "0")
+);
+const minuteOptions = ["00", "15", "30", "45"];
+
+function getTimeParts(time: string) {
+    const [rawHours = "", rawMinutes = ""] = time.split(":");
+
+    return {
+        hours: rawHours,
+        minutes: rawMinutes,
+    };
+}
+
 export function EventForm({
     title,
     description,
@@ -69,7 +85,8 @@ export function EventForm({
     searchingLocation,
     submitLabel,
     submittingLabel,
-    cancelLabel = "Cancel",
+    cancelLabel,
+    extraActions,
     onSubmit,
     onCancel,
     onSearchLocation,
@@ -85,31 +102,43 @@ export function EventForm({
     setUnlimitedParticipants,
     setLocationSearch,
 }: EventFormProps) {
+    const { t } = useTranslation();
+
+    const resolvedCancelLabel = cancelLabel ?? t("eventForm.cancel");
+    const timeParts = getTimeParts(time);
     const typeHelperText =
         type === "match"
-            ? "Structured 4-player game"
+            ? t("eventForm.typeHelperMatch")
             : type === "open_play"
-              ? "Flexible meetup with configurable participants"
-              : "Coming soon";
+              ? t("eventForm.typeHelperOpenPlay")
+              : t("eventForm.typeHelperTournament");
+
+    function handleHourChange(nextHours: string) {
+        setTime(`${nextHours}:${timeParts.minutes || "00"}`);
+    }
+
+    function handleMinuteChange(nextMinutes: string) {
+        setTime(`${timeParts.hours || "00"}:${nextMinutes}`);
+    }
 
     return (
         <form
-        onSubmit={onSubmit}
-        className="rounded-4xl bg-white p-6 shadow-sm md:p-8"
+            onSubmit={onSubmit}
+            className="rounded-4xl bg-white p-6 shadow-sm md:p-8"
         >
-        {error && (
-            <p className="mb-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-            </p>
-        )}
+            {error && (
+                <p className="mb-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {error}
+                </p>
+            )}
 
             <div className="space-y-6">
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Title
+                        {t("eventForm.title")}
                     </label>
                     <input
-                        placeholder="e.g. Saturday Sunset Scrimmage"
+                        placeholder={t("eventForm.titlePlaceholder")}
                         value={title}
                         onChange={(event) => setTitle(event.target.value)}
                         className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent placeholder:text-slate-400 focus:ring-blue-500"
@@ -119,47 +148,47 @@ export function EventForm({
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Event type
+                        {t("eventForm.eventType")}
                     </label>
 
                     <div className="mt-2 grid grid-cols-3 rounded-2xl bg-slate-100 p-1">
                         <button
-                        type="button"
-                        onClick={() => setType("match")}
-                        className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                            type === "match"
-                            ? "bg-blue-600 text-white shadow-sm"
-                            : "text-slate-600"
-                        }`}
+                            type="button"
+                            onClick={() => setType("match")}
+                            className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                type === "match"
+                                    ? "bg-blue-600 text-white shadow-sm"
+                                    : "text-slate-600"
+                            }`}
                         >
-                        Match
+                            {t("eventTypes.match")}
                         </button>
 
                         <button
-                        type="button"
-                        onClick={() => setType("open_play")}
-                        className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                            type === "open_play"
-                            ? "bg-blue-600 text-white shadow-sm"
-                            : "text-slate-600"
-                        }`}
+                            type="button"
+                            onClick={() => setType("open_play")}
+                            className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                type === "open_play"
+                                    ? "bg-blue-600 text-white shadow-sm"
+                                    : "text-slate-600"
+                            }`}
                         >
-                        Open Play
+                            {t("eventTypes.open_play")}
                         </button>
 
                         <button
-                        type="button"
-                        disabled
-                        className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
-                            type === "tournament"
-                            ? "bg-slate-300 text-slate-700"
-                            : "text-slate-400"
-                        }`}
+                            type="button"
+                            disabled
+                            className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                type === "tournament"
+                                    ? "bg-slate-300 text-slate-700"
+                                    : "text-slate-400"
+                            }`}
                         >
-                        Tournament
-                        <span className="block text-[11px] font-medium">
-                            Coming soon
-                        </span>
+                            {t("eventTypes.tournament")}
+                            <span className="block text-[11px] font-medium">
+                                {t("eventForm.tournamentComingSoon")}
+                            </span>
                         </button>
                     </div>
 
@@ -169,7 +198,7 @@ export function EventForm({
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                            Visibility
+                            {t("eventForm.visibility")}
                         </label>
 
                         <select
@@ -180,15 +209,15 @@ export function EventForm({
                             className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
                             required
                         >
-                            <option value="public">Public</option>
-                            <option value="private">Private</option>
+                            <option value="public">{t("eventVisibility.public")}</option>
+                            <option value="private">{t("eventVisibility.private")}</option>
                         </select>
                     </div>
 
                     {type === "match" && (
                         <div>
                             <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                                Mode
+                                {t("eventForm.mode")}
                             </label>
 
                             <select
@@ -199,8 +228,8 @@ export function EventForm({
                                 className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
                                 required
                             >
-                                <option value="casual">Casual</option>
-                                <option value="competitive">Competitive</option>
+                                <option value="casual">{t("eventModes.casual")}</option>
+                                <option value="competitive">{t("eventModes.competitive")}</option>
                             </select>
                         </div>
                     )}
@@ -208,10 +237,10 @@ export function EventForm({
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Description
+                        {t("eventForm.description")}
                     </label>
                     <textarea
-                        placeholder="Mention skill level, net height, and what to bring..."
+                        placeholder={t("eventForm.descriptionPlaceholder")}
                         value={description}
                         onChange={(event) => setDescription(event.target.value)}
                         className="mt-2 min-h-32 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent placeholder:text-slate-400 focus:ring-blue-500"
@@ -221,34 +250,64 @@ export function EventForm({
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                         <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Date
+                            {t("eventForm.date")}
                         </label>
                         <input
-                        type="date"
-                        value={date}
-                        onChange={(event) => setDate(event.target.value)}
-                        className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
-                        required
+                            type="date"
+                            value={date}
+                            onChange={(event) => setDate(event.target.value)}
+                            className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
+                            required
                         />
                     </div>
 
                     <div>
                         <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Time
+                            {t("eventForm.time")}
                         </label>
-                        <input
-                        type="time"
-                        value={time}
-                        onChange={(event) => setTime(event.target.value)}
-                        className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
-                        required
-                        />
+                        <div className="mt-2 grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 ring-1 ring-transparent focus-within:ring-blue-500">
+                            <select
+                                value={timeParts.hours}
+                                onChange={(event) => handleHourChange(event.target.value)}
+                                className="rounded-xl border-0 bg-white px-3 py-2 text-slate-900 outline-none"
+                                required
+                            >
+                                <option value="" disabled>
+                                    HH
+                                </option>
+                                {hourOptions.map((hour) => (
+                                    <option key={hour} value={hour}>
+                                        {hour}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <span className="text-sm font-bold text-slate-500">:</span>
+
+                            <select
+                                value={timeParts.minutes}
+                                onChange={(event) => handleMinuteChange(event.target.value)}
+                                className="rounded-xl border-0 bg-white px-3 py-2 text-slate-900 outline-none"
+                                required
+                            >
+                                <option value="" disabled>
+                                    MM
+                                </option>
+                                {minuteOptions.map((minute) => (
+                                    <option key={minute} value={minute}>
+                                        {minute}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        {type === "match" ? "Max participants" : "Participant limit"}
+                        {type === "match"
+                            ? t("eventForm.maxParticipants")
+                            : t("eventForm.participantLimit")}
                     </label>
 
                     {type === "match" ? (
@@ -261,7 +320,7 @@ export function EventForm({
                             />
 
                             <p className="mt-2 text-xs text-slate-500">
-                                Matches are locked to 4 participants.
+                                {t("eventForm.matchesLocked")}
                             </p>
                         </>
                     ) : (
@@ -275,7 +334,7 @@ export function EventForm({
                                     }
                                     className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                                 />
-                                Unlimited spots
+                                {t("eventForm.unlimitedSpots")}
                             </label>
 
                             <input
@@ -287,13 +346,13 @@ export function EventForm({
                                 className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500 disabled:text-slate-400"
                                 min={1}
                                 disabled={unlimitedParticipants}
-                                placeholder="e.g. 12"
+                                placeholder={t("eventForm.participantPlaceholder")}
                             />
 
                             <p className="mt-2 text-xs text-slate-500">
                                 {unlimitedParticipants
-                                    ? "Anyone can join this session."
-                                    : "Set a limit only if you want to cap the group size."}
+                                    ? t("eventForm.unlimitedBody")
+                                    : t("eventForm.limitedBody")}
                             </p>
                         </>
                     )}
@@ -301,75 +360,78 @@ export function EventForm({
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Location name
+                        {t("eventForm.locationName")}
                     </label>
 
                     <div className="mt-2 flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 ring-1 ring-transparent focus-within:ring-blue-500">
                         <MapPin size={18} className="text-slate-400" />
                         <input
-                        placeholder="Search or click on the map to fill this automatically"
-                        value={locationName}
-                        className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
-                        required
-                        readOnly
+                            placeholder={t("eventForm.locationNamePlaceholder")}
+                            value={locationName}
+                            className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
+                            required
+                            readOnly
                         />
                     </div>
 
                     <p className="mt-2 text-xs text-slate-500">
-                        This name now comes from the selected coordinates to keep
-                        locations real and consistent in filters.
+                        {t("eventForm.locationNameBody")}
                     </p>
                 </div>
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Search location
+                        {t("eventForm.searchLocation")}
                     </label>
 
                     <div className="mt-2 flex flex-col gap-3 sm:flex-row">
                         <input
-                        placeholder="Search beach, city or area..."
-                        value={locationSearch}
-                        onChange={(event) => setLocationSearch(event.target.value)}
-                        className="w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent placeholder:text-slate-400 focus:ring-blue-500"
+                            placeholder={t("eventForm.searchLocationPlaceholder")}
+                            value={locationSearch}
+                            onChange={(event) => setLocationSearch(event.target.value)}
+                            className="w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent placeholder:text-slate-400 focus:ring-blue-500"
                         />
 
                         <button
-                        type="button"
-                        onClick={onSearchLocation}
-                        disabled={searchingLocation}
-                        className="rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-60"
+                            type="button"
+                            onClick={onSearchLocation}
+                            disabled={searchingLocation}
+                            className="rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-60"
                         >
-                        {searchingLocation ? "Searching..." : "Search"}
+                            {searchingLocation
+                                ? t("eventForm.searching")
+                                : t("eventForm.search")}
                         </button>
                     </div>
 
                     <p className="mt-2 text-xs text-slate-500">
-                        Search an approximate area first, then click on the map to adjust
-                        the exact meeting point.
+                        {t("eventForm.searchLocationBody")}
                     </p>
                 </div>
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        Pin location
+                        {t("eventForm.pinLocation")}
                     </label>
 
                     <div className="mt-2 h-64 overflow-hidden rounded-2xl bg-slate-100">
                         <LocationPickerMap
-                        latitude={latitude}
-                        longitude={longitude}
-                        onChange={onMapLocationChange}
+                            latitude={latitude}
+                            longitude={longitude}
+                            onChange={onMapLocationChange}
                         />
                     </div>
 
                     <p className="mt-2 text-xs text-slate-500">
-                        Tap the map to adjust the precise meeting point. The exact
-                        coordinates are stored internally.
+                        {t("eventForm.pinLocationBody")}
                     </p>
                 </div>
 
-                <div className="grid gap-3 pt-4 sm:grid-cols-2">
+                <div
+                    className={`grid gap-3 pt-4 ${
+                        extraActions ? "sm:grid-cols-3" : "sm:grid-cols-2"
+                    }`}
+                >
                     <button
                         disabled={submitting}
                         className="rounded-2xl bg-blue-600 px-5 py-4 font-bold text-white shadow-sm disabled:opacity-60"
@@ -382,8 +444,10 @@ export function EventForm({
                         onClick={onCancel}
                         className="rounded-2xl bg-blue-50 px-5 py-4 font-bold text-blue-700"
                     >
-                        {cancelLabel}
+                        {resolvedCancelLabel}
                     </button>
+
+                    {extraActions}
                 </div>
             </div>
         </form>

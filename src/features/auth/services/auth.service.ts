@@ -1,12 +1,41 @@
 import { supabase } from "../../../config/supabase";
 import type { UserProfile } from "../types/auth.types";
-import { buildOAuthRedirectUrl, normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
+import {
+    buildOAuthRedirectUrl,
+    buildPasswordResetUrl,
+    normalizeAuthRedirectPath,
+} from "../utils/authRedirect.utils";
 import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
+import {
+    getPreferredAppLanguage,
+    normalizePreferredLanguage,
+} from "../../../i18n/detection";
+
+const preferredPlayDays = new Set([
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+]);
 
 interface RegisterData {
     email: string;
     password: string;
     fullName: string;
+}
+
+function normalizePreferredPlayDays(value: unknown): UserProfile["preferredPlayDays"] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.filter(
+        (day): day is UserProfile["preferredPlayDays"][number] =>
+            typeof day === "string" && preferredPlayDays.has(day)
+    );
 }
 
 function mapProfile(profile: any): UserProfile {
@@ -35,8 +64,12 @@ function mapProfile(profile: any): UserProfile {
         profileVisibility: profile.profile_visibility ?? "public",
         showRating: profile.show_rating ?? true,
         showStats: profile.show_stats ?? true,
-        preferredLanguage: profile.preferred_language ?? "en",
+        preferredLanguage:
+            normalizePreferredLanguage(profile.preferred_language) ?? "en",
         preferredMatchMode: profile.preferred_match_mode ?? null,
+        preferredHand: profile.preferred_hand ?? null,
+        preferredCourtSide: profile.preferred_court_side ?? null,
+        preferredPlayDays: normalizePreferredPlayDays(profile.preferred_play_days),
     };
 }
 
@@ -80,6 +113,7 @@ async function ensureProfileForUser(user: any) {
             role: "player",
             avatar_url: getProfileAvatarFromUser(user),
             competitive_rating: DEFAULT_COMPETITIVE_RATING,
+            preferred_language: getPreferredAppLanguage(),
         })
         .select("*")
         .single();
@@ -113,6 +147,7 @@ export async function registerUser({
         email,
         role: "player",
         competitive_rating: DEFAULT_COMPETITIVE_RATING,
+        preferred_language: getPreferredAppLanguage(),
     });
 
     if (profileError) throw profileError;
@@ -139,6 +174,26 @@ export async function loginWithGoogle(redirectTo = "/events") {
                 normalizeAuthRedirectPath(redirectTo)
             ),
         },
+    });
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function requestPasswordReset(email: string) {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: buildPasswordResetUrl(),
+    });
+
+    if (error) throw error;
+
+    return data;
+}
+
+export async function updateRecoveredPassword(password: string) {
+    const { data, error } = await supabase.auth.updateUser({
+        password,
     });
 
     if (error) throw error;

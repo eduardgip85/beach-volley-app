@@ -1,4 +1,5 @@
 import { MailPlus, UserRoundX, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { FriendProfile } from "../../friends/types/friends.types";
 import type { EventInvitation } from "../types/eventInvitation.types";
 
@@ -17,6 +18,7 @@ export function InviteFriendsSection({
     onInvite,
     onCancel,
 }: InviteFriendsSectionProps) {
+    const { t } = useTranslation();
     const pendingInvitations = invitations.filter(
         (invitation) => invitation.status === "pending"
     );
@@ -29,18 +31,22 @@ export function InviteFriendsSection({
                 </span>
 
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Invite friends</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">
+                        {t("inviteFriends.title")}
+                    </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Invite friends to this private event.
+                        {t("inviteFriends.body")}
                     </p>
                 </div>
             </div>
 
             {friends.length === 0 ? (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No friends available to invite</p>
+                    <p className="font-bold text-slate-900">
+                        {t("inviteFriends.emptyTitle")}
+                    </p>
                     <p className="mt-2 text-sm text-slate-500">
-                        Build your friends list first to send private event invitations.
+                        {t("inviteFriends.emptyBody")}
                     </p>
                 </div>
             ) : (
@@ -77,7 +83,7 @@ export function InviteFriendsSection({
 
                                         {invitation ? (
                                             <p className="mt-4 text-sm font-medium text-slate-600">
-                                                Current invitation:{" "}
+                                                {t("inviteFriends.currentInvitation")}{" "}
                                                 <span className="capitalize">{invitation.status}</span>
                                             </p>
                                         ) : null}
@@ -94,7 +100,9 @@ export function InviteFriendsSection({
                                         className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-white disabled:opacity-60"
                                     >
                                         <UserRoundX size={18} />
-                                        {isCancelling ? "Cancelling..." : "Cancel invitation"}
+                                        {isCancelling
+                                            ? t("inviteFriends.cancelling")
+                                            : t("inviteFriends.cancelInvitation")}
                                     </button>
                                 ) : (
                                     <button
@@ -105,10 +113,10 @@ export function InviteFriendsSection({
                                     >
                                         <MailPlus size={18} />
                                         {isInviting
-                                            ? "Inviting..."
+                                            ? t("inviteFriends.inviting")
                                             : isAccepted
-                                              ? "Already accepted"
-                                              : "Invite to event"}
+                                              ? t("inviteFriends.alreadyAccepted")
+                                              : t("inviteFriends.inviteToEvent")}
                                     </button>
                                 )}
                             </div>
@@ -119,7 +127,9 @@ export function InviteFriendsSection({
 
             {pendingInvitations.length > 0 ? (
                 <p className="mt-6 text-sm text-slate-500">
-                    Pending invitations: {pendingInvitations.length}
+                    {t("inviteFriends.pendingInvitations", {
+                        count: pendingInvitations.length,
+                    })}
                 </p>
             ) : null}
         </div>

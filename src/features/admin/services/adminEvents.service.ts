@@ -1,5 +1,9 @@
 import { supabase } from "../../../config/supabase";
-import type { Event } from "../../events/types/event.types";
+import type {
+  Event,
+  EventResultValidationStatus,
+} from "../../events/types/event.types";
+import { resolveEventStatus } from "../../events/utils/event-status.utils";
 
 interface AdminEventsRow {
   id: string;
@@ -19,6 +23,11 @@ interface AdminEventsRow {
   created_by: string;
   created_at: string;
   updated_at: string;
+}
+
+interface MatchResultStatusRow {
+  event_id: string;
+  validation_status: EventResultValidationStatus;
 }
 
 interface AdminEventCreatorRow {
@@ -45,23 +54,56 @@ export interface GetAdminEventsResult {
   totalCount: number;
 }
 
-function normalizeEventStatus(status: unknown, startDate: string): Event["status"] {
-  if (status === "cancelled") {
-    return "cancelled";
+function pickResultValidationStatus(
+  rows: MatchResultStatusRow[]
+): EventResultValidationStatus | null {
+  if (rows.some((row) => row.validation_status === "accepted")) {
+    return "accepted";
   }
 
-  if (status === "completed") {
-    return "completed";
+  if (rows.some((row) => row.validation_status === "pending")) {
+    return "pending";
   }
 
-  if (new Date(startDate) < new Date()) {
-    return "completed";
+  if (rows.some((row) => row.validation_status === "rejected")) {
+    return "rejected";
   }
 
-  return "active";
+  return null;
 }
 
-function mapEvent(row: AdminEventsRow): Event {
+async function getMatchResultStatusByEventIds(eventIds: string[]) {
+  if (eventIds.length === 0) {
+    return new Map<string, EventResultValidationStatus | null>();
+  }
+
+  const { data, error } = await supabase
+    .from("match_results")
+    .select("event_id, validation_status")
+    .in("event_id", eventIds);
+
+  if (error) throw error;
+
+  const groupedRows = new Map<string, MatchResultStatusRow[]>();
+
+  for (const row of (data ?? []) as MatchResultStatusRow[]) {
+    const currentRows = groupedRows.get(row.event_id) ?? [];
+    currentRows.push(row);
+    groupedRows.set(row.event_id, currentRows);
+  }
+
+  return new Map(
+    Array.from(groupedRows.entries()).map(([eventId, rows]) => [
+      eventId,
+      pickResultValidationStatus(rows),
+    ])
+  );
+}
+
+function mapEvent(
+  row: AdminEventsRow,
+  resultValidationStatus: EventResultValidationStatus | null = null
+): Event {
   return {
     id: row.id,
     title: row.title,
@@ -75,7 +117,13 @@ function mapEvent(row: AdminEventsRow): Event {
     startDate: row.start_date,
     endDate: row.end_date,
     maxParticipants: row.max_participants,
-    status: normalizeEventStatus(row.status, row.start_date),
+    status: resolveEventStatus({
+      type: row.type,
+      status: row.status,
+      startDate: row.start_date,
+      resultValidationStatus,
+    }),
+    resultValidationStatus,
     imageUrl: row.image_url,
     createdBy: row.created_by,
     createdAt: row.created_at,
@@ -149,7 +197,13 @@ export async function getAdminEvents({
   }
 
   const rows = (data ?? []) as AdminEventsRow[];
-  const events = rows.map(mapEvent);
+  const matchEventIds = rows
+    .filter((row) => row.type === "match")
+    .map((row) => row.id);
+  const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+  const events = rows.map((row) =>
+    mapEvent(row, resultStatuses.get(row.id) ?? null)
+  );
   const creatorIds = Array.from(
     new Set(events.map((event) => event.createdBy).filter(Boolean))
   );

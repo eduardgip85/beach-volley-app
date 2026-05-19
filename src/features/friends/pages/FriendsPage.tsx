@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth/context/AuthContext";
 import { FriendRequestsSection } from "../components/FriendRequestsSection";
 import { FriendsListSection } from "../components/FriendsListSection";
@@ -6,11 +7,12 @@ import { FriendsSearchSection } from "../components/FriendsSearchSection";
 import { useFriends } from "../hooks/useFriends";
 
 export function FriendsPage() {
+    const { t } = useTranslation();
     const { profile } = useAuth();
     const { state, actions, helpers } = useFriends(profile?.id);
 
     if (!profile) {
-        return <p className="text-slate-500">Loading friends...</p>;
+        return <p className="text-slate-500">{t("friends.loading")}</p>;
     }
 
     return (
@@ -23,14 +25,13 @@ export function FriendsPage() {
 
                     <div>
                         <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
-                            Friends
+                            {t("friends.eyebrow")}
                         </p>
                         <h1 className="mt-2 text-3xl font-black text-slate-900">
-                            Build your player network
+                            {t("friends.title")}
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm text-slate-500">
-                            Search players, manage requests and keep your beach volleyball
-                            circle close.
+                            {t("friends.body")}
                         </p>
                     </div>
                 </div>

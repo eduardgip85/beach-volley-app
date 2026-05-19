@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { Search, UserPlus, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { FriendProfile } from "../types/friends.types";
@@ -19,17 +20,18 @@ interface FriendsSearchSectionProps {
 }
 
 function getRelationshipLabel(
-    relationshipStatus: ReturnType<FriendsSearchSectionProps["getRelationshipStatus"]>
+    relationshipStatus: ReturnType<FriendsSearchSectionProps["getRelationshipStatus"]>,
+    t: (key: string) => string
 ) {
     switch (relationshipStatus) {
         case "friend":
-            return "Already friends";
+            return t("friends.alreadyFriends");
         case "incoming_pending":
-            return "Incoming request";
+            return t("friends.incomingRequest");
         case "outgoing_pending":
-            return "Request sent";
+            return t("friends.requestSent");
         default:
-            return "Send request";
+            return t("friends.sendRequest");
     }
 }
 
@@ -44,6 +46,8 @@ export function FriendsSearchSection({
     getRelationshipStatus,
     onSendRequest,
 }: FriendsSearchSectionProps) {
+    const { t } = useTranslation();
+
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
         await onSearch();
@@ -57,9 +61,9 @@ export function FriendsSearchSection({
                 </span>
 
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Find players</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">{t("friends.findPlayers")}</h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Search by player name and send a friend request.
+                        {t("friends.findPlayersBody")}
                     </p>
                 </div>
             </div>
@@ -69,7 +73,7 @@ export function FriendsSearchSection({
                     type="text"
                     value={query}
                     onChange={(event) => onQueryChange(event.target.value)}
-                    placeholder="Search players by name"
+                    placeholder={t("friends.searchPlaceholder")}
                     className="flex-1 rounded-2xl border border-slate-200 px-4 py-3"
                 />
 
@@ -78,7 +82,7 @@ export function FriendsSearchSection({
                     disabled={searchLoading}
                     className="rounded-2xl bg-blue-600 px-5 py-3 font-semibold text-white disabled:opacity-60"
                 >
-                    {searchLoading ? "Searching..." : "Search"}
+                    {searchLoading ? t("friends.searching") : t("friends.search")}
                 </button>
             </form>
 
@@ -90,9 +94,9 @@ export function FriendsSearchSection({
 
             {!searchLoading && query.trim() && searchResults.length === 0 && !searchError ? (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No users found</p>
+                    <p className="font-bold text-slate-900">{t("friends.noUsersFound")}</p>
                     <p className="mt-2 text-sm text-slate-500">
-                        Try a different player name.
+                        {t("friends.noUsersFoundBody")}
                     </p>
                 </div>
             ) : null}
@@ -124,7 +128,7 @@ export function FriendsSearchSection({
                                                     {profile.fullName}
                                                 </h3>
                                                 <p className="truncate text-sm text-slate-500">
-                                                    View public profile
+                                                    {t("friends.viewPublicProfile")}
                                                 </p>
                                             </div>
                                         </Link>
@@ -136,7 +140,9 @@ export function FriendsSearchSection({
                                                 </span>
                                             ) : null}
                                             <span className="rounded-full bg-blue-100 px-3 py-1 text-blue-700">
-                                                Rating {formatCompetitiveRating(profile.competitiveRating)}
+                                                {t("friends.rating", {
+                                                    rating: formatCompetitiveRating(profile.competitiveRating),
+                                                })}
                                             </span>
                                         </div>
                                     </div>
@@ -152,8 +158,8 @@ export function FriendsSearchSection({
                                 >
                                     <UserPlus size={18} />
                                     {isLoading
-                                        ? "Sending..."
-                                        : getRelationshipLabel(relationshipStatus)}
+                                        ? t("friends.sending")
+                                        : getRelationshipLabel(relationshipStatus, t)}
                                 </button>
                             </div>
                         );

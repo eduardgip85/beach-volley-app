@@ -1,4 +1,5 @@
 import type { Event } from "../../events/types/event.types";
+import { useTranslation } from "react-i18next";
 import { CalendarEventCard } from "./CalendarEventCard";
 
 interface CalendarEventsSectionProps {
@@ -12,12 +13,13 @@ export function CalendarEventsSection({
     selectedDayEvents,
     monthEvents,
 }: CalendarEventsSectionProps) {
+    const { t, i18n } = useTranslation();
     return (
         <>
         <section className="md:hidden">
             <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-black text-slate-950">
-                {selectedDate.toLocaleString("en", {
+                {selectedDate.toLocaleString(i18n.language, {
                 weekday: "short",
                 month: "short",
                 day: "numeric",
@@ -25,13 +27,13 @@ export function CalendarEventsSection({
             </h2>
 
             <span className="text-sm font-bold uppercase text-slate-400">
-                {selectedDayEvents.length} events
+                {t("calendar.eventsCount", { count: selectedDayEvents.length })}
             </span>
             </div>
 
             <div className="space-y-4">
             {selectedDayEvents.length === 0 ? (
-                <EmptyCalendarMessage message="No active events this day" />
+                <EmptyCalendarMessage message={t("calendar.noEventsThisDay")} />
             ) : (
                 selectedDayEvents.map((event) => (
                 <CalendarEventCard key={event.id} event={event} compact />
@@ -43,17 +45,17 @@ export function CalendarEventsSection({
         <section className="hidden md:block">
             <div className="mb-4 flex items-center justify-between">
             <h2 className="text-2xl font-black text-slate-950">
-                Events this month
+                {t("calendar.eventsThisMonth")}
             </h2>
 
             <span className="text-sm font-bold uppercase text-slate-400">
-                {monthEvents.length} events
+                {t("calendar.eventsCount", { count: monthEvents.length })}
             </span>
             </div>
 
             <div className="grid gap-4">
             {monthEvents.length === 0 ? (
-                <EmptyCalendarMessage message="No active events this month" />
+                <EmptyCalendarMessage message={t("calendar.noEventsThisMonth")} />
             ) : (
                 monthEvents.map((event) => (
                 <CalendarEventCard key={event.id} event={event} />

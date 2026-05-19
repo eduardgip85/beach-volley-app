@@ -1,4 +1,5 @@
 import { Check, Mail, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { EventJoinRequest } from "../types/eventJoinRequest.types";
 
 interface EventJoinRequestSectionProps {
@@ -14,6 +15,8 @@ export function EventJoinRequestSection({
     onAccept,
     onReject,
 }: EventJoinRequestSectionProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
             <div className="flex items-center gap-3">
@@ -23,19 +26,19 @@ export function EventJoinRequestSection({
 
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900">
-                        Join requests
+                        {t("eventJoinRequests.title")}
                     </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Share your private link, then review who asks to join here.
+                        {t("eventJoinRequests.body")}
                     </p>
                 </div>
             </div>
 
             {requests.length === 0 ? (
                 <div className="mt-6 rounded-3xl bg-slate-50 p-6 text-center">
-                    <p className="font-bold text-slate-900">No pending requests</p>
+                    <p className="font-bold text-slate-900">{t("eventJoinRequests.emptyTitle")}</p>
                     <p className="mt-2 text-sm text-slate-500">
-                        New private access requests will appear here.
+                        {t("eventJoinRequests.emptyBody")}
                     </p>
                 </div>
             ) : (
@@ -66,7 +69,9 @@ export function EventJoinRequestSection({
                                         className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 font-semibold text-white disabled:opacity-60"
                                     >
                                         <Check size={18} />
-                                        {isAccepting ? "Accepting..." : "Accept request"}
+                                        {isAccepting
+                                            ? t("eventJoinRequests.accepting")
+                                            : t("eventJoinRequests.acceptRequest")}
                                     </button>
 
                                     <button
@@ -76,7 +81,9 @@ export function EventJoinRequestSection({
                                         className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 font-semibold text-red-600 disabled:opacity-60"
                                     >
                                         <X size={18} />
-                                        {isRejecting ? "Rejecting..." : "Reject request"}
+                                        {isRejecting
+                                            ? t("eventJoinRequests.rejecting")
+                                            : t("eventJoinRequests.rejectRequest")}
                                     </button>
                                 </div>
                             </div>

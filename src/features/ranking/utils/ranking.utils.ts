@@ -1,13 +1,14 @@
 import type { RankingScope } from "../types/ranking.types";
+import i18n from "../../../i18n";
 
 export function getRankingScopeLabel(scope: RankingScope) {
     switch (scope) {
         case "country":
-            return "Country";
+            return i18n.t("ranking.tabs.country");
         case "friends":
-            return "Friends";
+            return i18n.t("ranking.tabs.friends");
         default:
-            return "Global";
+            return i18n.t("ranking.tabs.global");
     }
 }
 
@@ -29,20 +30,20 @@ export function getRankingEmptyStateMessage(
     }
 ) {
     if (scope === "country" && !options.hasCountry) {
-        return "Add a country to your profile to unlock local ranking.";
+        return i18n.t("ranking.emptyCountryUnlock");
     }
 
     if (scope === "friends" && !options.isAuthenticated) {
-        return "Log in to compare your rating with accepted friends.";
+        return i18n.t("ranking.emptyFriendsLogin");
     }
 
     if (scope === "friends") {
-        return "No ranked friends yet. Play competitive matches and grow your network.";
+        return i18n.t("ranking.emptyFriends");
     }
 
     if (scope === "country") {
-        return "No ranked players found for this country yet.";
+        return i18n.t("ranking.emptyCountry");
     }
 
-    return "No competitive ranking data yet. Validate a competitive match to appear here.";
+    return i18n.t("ranking.emptyGlobal");
 }

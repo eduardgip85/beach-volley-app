@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin, Trophy, Users, Volleyball } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
@@ -21,6 +22,7 @@ export function CalendarEventCard({
     event,
     compact = false,
 }: CalendarEventCardProps) {
+    const { t, i18n } = useTranslation();
     const isFinished = isFinishedEvent(event);
     const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
     const cardClasses = `block rounded-3xl shadow-sm transition ${
@@ -45,7 +47,7 @@ export function CalendarEventCard({
                 </h3>
 
                 <span className="text-sm font-bold text-slate-400">
-                {new Date(event.startDate).toLocaleTimeString([], {
+                {new Date(event.startDate).toLocaleTimeString(i18n.language, {
                     hour: "2-digit",
                     minute: "2-digit",
                 })}
@@ -64,7 +66,7 @@ export function CalendarEventCard({
                 )}`}
                 >
                 <Trophy size={15} />
-                {isFinished ? "Finished" : getEventTypeLabel(event.type)}
+                {isFinished ? t("eventStatus.finished") : getEventTypeLabel(event.type)}
                 </span>
 
                 {modeLabel && (
@@ -79,13 +81,13 @@ export function CalendarEventCard({
 
                 {isFinished && (
                 <span className="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-700">
-                    Not available in details
+                    {t("calendar.notAvailableInDetails")}
                 </span>
                 )}
 
                 <span className="inline-flex items-center gap-2 capitalize">
                 <CalendarDays size={15} />
-                {new Date(event.startDate).toLocaleDateString([], {
+                {new Date(event.startDate).toLocaleDateString(i18n.language, {
                     day: "numeric",
                     month: "short",
                 })}

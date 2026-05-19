@@ -1,4 +1,5 @@
 import { MinusCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { CreateMatchSetPayload } from "../types/matchResult.types";
 
 interface MatchSetEditorProps {
@@ -23,11 +24,13 @@ export function MatchSetEditor({
     onChange,
     onRemove,
 }: MatchSetEditorProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex items-center justify-between gap-4">
                 <p className="text-sm font-bold uppercase tracking-widest text-slate-500">
-                    Set {set.setNumber}
+                    {t("matchResult.setLabel", { number: set.setNumber })}
                 </p>
 
                 {canRemove && (
@@ -38,21 +41,21 @@ export function MatchSetEditor({
                         className="inline-flex items-center gap-2 text-sm font-semibold text-red-600 disabled:opacity-50"
                     >
                         <MinusCircle size={16} />
-                        Remove
+                        {t("matchResult.remove")}
                     </button>
                 )}
             </div>
 
             {(targetScore || helperText) && (
                 <p className="mt-2 text-xs font-semibold text-slate-500">
-                    {helperText ?? `Target score: ${targetScore}`}
+                    {helperText ?? t("matchResult.targetScore", { score: targetScore })}
                 </p>
             )}
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <label className="block">
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                        Team A Score
+                        {t("matchResult.teamAScore")}
                     </span>
                     <input
                         type="number"
@@ -68,7 +71,7 @@ export function MatchSetEditor({
 
                 <label className="block">
                     <span className="text-xs font-bold uppercase tracking-widest text-slate-500">
-                        Team B Score
+                        {t("matchResult.teamBScore")}
                     </span>
                     <input
                         type="number"

@@ -9,6 +9,7 @@ import {
     UserPlus,
     Volleyball,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
@@ -25,19 +26,20 @@ function getFriendActionLabel(
 ) {
     switch (relationshipStatus) {
         case "self":
-            return "This is your profile";
+            return "self";
         case "friend":
-            return "Already friends";
+            return "friend";
         case "incoming_pending":
-            return "Incoming friend request";
+            return "incoming_pending";
         case "outgoing_pending":
-            return "Friend request sent";
+            return "outgoing_pending";
         default:
-            return "Send friend request";
+            return "none";
     }
 }
 
 export function PublicProfilePage() {
+    const { t } = useTranslation();
     const { userId } = useParams<{ userId: string }>();
     const { profile } = useAuth();
     const {
@@ -51,7 +53,7 @@ export function PublicProfilePage() {
     } = usePublicProfile(userId);
 
     if (loading) {
-        return <p className="text-slate-500">Loading player profile...</p>;
+        return <p className="text-slate-500">{t("publicProfile.loading")}</p>;
     }
 
     if (error) {
@@ -65,7 +67,7 @@ export function PublicProfilePage() {
     if (!publicProfile) {
         return (
             <div className="rounded-3xl bg-slate-50 px-5 py-4 text-sm text-slate-600">
-                Player profile not found.
+                {t("publicProfile.notFound")}
             </div>
         );
     }
@@ -89,7 +91,7 @@ export function PublicProfilePage() {
 
                         <div>
                             <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
-                                Player profile
+                                {t("publicProfile.eyebrow")}
                             </p>
                             <h1 className="mt-2 text-3xl font-black text-slate-900">
                                 {publicProfile.fullName}
@@ -104,7 +106,9 @@ export function PublicProfilePage() {
                                 {publicProfile.showRating ? (
                                     <span className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
                                         <Trophy size={14} />
-                                        Rating {formatCompetitiveRating(publicProfile.competitiveRating)}
+                                        {t("publicProfile.rating", {
+                                            rating: formatCompetitiveRating(publicProfile.competitiveRating),
+                                        })}
                                     </span>
                                 ) : null}
 
@@ -118,14 +122,14 @@ export function PublicProfilePage() {
                                 {publicProfile.hasBall ? (
                                     <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
                                         <Volleyball size={14} />
-                                        Ball verified
+                                        {t("profile.ballVerified")}
                                     </span>
                                 ) : null}
 
                                 {publicProfile.hasNet ? (
                                     <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
                                         <Rows2 size={14} />
-                                        Net verified
+                                        {t("profile.netVerified")}
                                     </span>
                                 ) : null}
                             </div>
@@ -138,7 +142,7 @@ export function PublicProfilePage() {
                                 to="/profile"
                                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white"
                             >
-                                Go to my profile
+                                {t("publicProfile.goToMyProfile")}
                                 <ArrowRight size={18} />
                             </Link>
                         ) : profile ? (
@@ -151,8 +155,8 @@ export function PublicProfilePage() {
                                 >
                                     <UserMinus size={18} />
                                     {friendActionLoading
-                                        ? "Removing..."
-                                        : "Remove friend"}
+                                        ? t("publicProfile.removing")
+                                        : t("publicProfile.removeFriend")}
                                 </button>
                             ) : (
                                 <button
@@ -163,8 +167,8 @@ export function PublicProfilePage() {
                                 >
                                     <UserPlus size={18} />
                                     {friendActionLoading
-                                        ? "Sending..."
-                                        : getFriendActionLabel(relationshipStatus)}
+                                        ? t("publicProfile.sending")
+                                        : t(`publicProfile.friendAction.${getFriendActionLabel(relationshipStatus)}`)}
                                 </button>
                             )
                         ) : (
@@ -173,7 +177,7 @@ export function PublicProfilePage() {
                                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-5 py-3 font-semibold text-white"
                             >
                                 <LinkIcon size={18} />
-                                Log in to add friend
+                                {t("publicProfile.loginToAddFriend")}
                             </Link>
                         )}
 
@@ -182,7 +186,7 @@ export function PublicProfilePage() {
                                 to="/friends"
                                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700"
                             >
-                                Manage request
+                                {t("publicProfile.manageRequest")}
                                 <ArrowRight size={18} />
                             </Link>
                         ) : null}
@@ -195,14 +199,13 @@ export function PublicProfilePage() {
             ) : (
                 <div className="rounded-[2rem] bg-white p-8 shadow-sm">
                     <p className="text-sm font-bold uppercase tracking-[0.2em] text-slate-400">
-                        Statistics hidden
+                        {t("publicProfile.statsHidden")}
                     </p>
                     <h2 className="mt-3 text-2xl font-bold text-slate-900">
-                        This player keeps match stats private
+                        {t("publicProfile.statsPrivateTitle")}
                     </h2>
                     <p className="mt-2 text-sm text-slate-500">
-                        Public rating and recent match summaries are hidden in their
-                        privacy settings.
+                        {t("publicProfile.statsPrivateBody")}
                     </p>
                 </div>
             )}
@@ -213,10 +216,9 @@ export function PublicProfilePage() {
                         <CalendarDays size={28} />
                     </span>
                     <div>
-                        <h2 className="text-2xl font-bold">Safe profile view</h2>
+                        <h2 className="text-2xl font-bold">{t("publicProfile.safeViewTitle")}</h2>
                         <p className="mt-2 max-w-2xl text-slate-300">
-                            Contact details stay hidden. Match history is shown only as a
-                            safe summary, without opening private event details.
+                            {t("publicProfile.safeViewBody")}
                         </p>
                     </div>
                 </div>

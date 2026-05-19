@@ -1,159 +1,167 @@
 # Beach Volley App
 
-Beach Volley App is a personal project built with React, TypeScript and Supabase to organize beach volleyball matches, open play sessions and player connections.
-
-It currently includes:
-
-- Public and private events
-- Match and open play flows
-- Match team assignment
-- Match results with validation
-- Competitive Elo rating
-- Friends and public player profiles
-- AI equipment verification
-- Admin and stats tooling
+Beach Volley App is a React + TypeScript + Supabase project for organizing beach volleyball matches, open play sessions, player profiles, private access flows, and competitive tracking.
 
 Live app:
 
 - https://beach-volley-app-blush.vercel.app/
 
-## Product Overview
+## What The App Does
 
-The app is designed around two active event types:
+The current product focuses on two active event types:
 
-- `match`: structured 4-player match with teams, result validation and optional competitive rating
-- `open_play`: flexible meetup with configurable participants
+- `match`: structured match flow with teams, results and validation
+- `open_play`: flexible meetup flow with optional unlimited capacity
 
 There is also future-facing support for:
 
-- `tournament`: kept in the data model, not active in the product flow yet
+- `tournament`: present in product planning and UI direction, but not fully active yet
 
 ## Current Features
 
 ### Events
 
 - Create, edit and delete events
-- Public or private visibility
+- Public and private visibility
 - Match mode selection: `casual` or `competitive`
-- Open play sessions with flexible capacity
-- Direct private event links
-- Private event join requests
-- Private event invitations
+- Open play with flexible or unlimited spots
+- Location picking from map search + map pinning
+- Private event link sharing
+- Private join requests
+- Private invitations
 
 ### Match Flow
 
-- Auto-assigned teams for matches
-- Team A / Team B roster management
-- Match result entry by creator
-- Result validation by opposing team
-- Locked match state after accepted result
-- Finished/completed event display
+- Match creator joins automatically
+- Team A / Team B assignment
+- Result entry by sets
+- Competitive matches fixed to best-of-3:
+  - sets 1 and 2 to 21
+  - set 3 to 15
+  - win by 2
+- Result validation by the opposing side
+- Accepted results only count for rating and stats
+- Stale unvalidated matches can be cancelled by SQL maintenance rule
 
 ### Competitive Rating
 
-- Competitive Elo rating for accepted competitive matches
-- Team rating based on average player rating
-- Rating applied once per accepted result
-- Rating games tracked separately from general matches played
+- Competitive rating on a `0.00 - 10.00` scale
+- Individual per-player gain/loss logic
+- Accepted competitive results only
+- Rating history and backfill support
+- Ranking views:
+  - global
+  - country
+  - friends
+- Competitive insights and rating evolution chart
 
 ### Profile
 
-- Personal profile with created events
-- Upcoming joined events
+- Public profile with safe sharing
+- Player preferences:
+  - preferred hand
+  - preferred court side
+  - preferred match type
+  - availability
+  - preferred play days
+- Recent match history
+- Premium-history style section:
+  - competitive / casual toggle
+  - filters
+  - full history page
 - Equipment badges
-- Competitive/casual performance toggle
-- Last 5 matches
-- Pending private event requests and invitations
-
-### Friends and Players
-
-- Player search
-- Friend requests
-- Friends list
-- Public player profiles at `/players/:userId`
-- Public/private-safe match summaries on player profiles
+- Private event invitations and join requests overview
 
 ### Discovery
 
 - Events page
-- Map page
 - Calendar page
-- Shared filtering system
-
-### AI Equipment Verification
-
-- Ball verification
-- Net verification
-- Supabase Edge Function based flow
+- Map page
+- Shared filters
+- "My events" filtering
+- Private events visible only to the right user contexts
 
 ### Admin
 
 - User management
 - Event management
-- Stats dashboard
+- Search and pagination in admin events
+- Admin analytics dashboard
+- Mobile-friendly stats UI
+
+### Auth And Account
+
+- Email/password auth
+- Google OAuth
+- Forgot password flow
+- Reset password flow
+- Account settings and delete-account flow
+
+### Localization
+
+- English and Spanish
+- Automatic defaulting based on browser/timezone heuristics
+- User preference persisted in profile/settings
+
+### Observability
+
+- Vercel Analytics
+- Vercel Speed Insights
 
 ## Tech Stack
 
 ### Frontend
 
-- React
+- React 19
 - TypeScript
 - Vite
 - Tailwind CSS
-- React Router DOM
-- Lucide React
+- React Router
+- React i18next
+- Recharts
+- Leaflet / React Leaflet
+- FullCalendar
 
-### Backend
+### Backend / Platform
 
 - Supabase Auth
 - Supabase Postgres
-- Supabase Edge Functions
 - Supabase RLS
 
-### Other
+### Testing
 
-- Leaflet / React Leaflet
-- FullCalendar
 - Vitest
-- React Testing Library
+- Testing Library
 
 ## Project Structure
 
-The codebase follows a feature-based structure.
+The app uses a feature-based structure:
 
-```bash
+```text
 src/
-├── app/
-├── features/
-│   ├── admin/
-│   ├── auth/
-│   ├── calendar/
-│   ├── event-invitations/
-│   ├── event-join-requests/
-│   ├── events/
-│   ├── friends/
-│   ├── home/
-│   ├── map/
-│   ├── match-players/
-│   ├── match-results/
-│   ├── players/
-│   ├── profile/
-│   ├── ratings/
-│   ├── registrations/
-│   └── stats/
-├── config/
-├── layouts/
-├── routes/
-└── tests/
+  app/
+  config/
+  features/
+    admin/
+    auth/
+    calendar/
+    event-invitations/
+    event-join-requests/
+    events/
+    friends/
+    home/
+    map/
+    match-players/
+    match-results/
+    players/
+    profile/
+    ratings/
+    registrations/
+    settings/
+    stats/
+  layouts/
+  routes/
 ```
-
-Each feature keeps:
-
-- components
-- hooks
-- services
-- types
-- utilities when needed
 
 ## Local Development
 
@@ -165,7 +173,7 @@ npm install
 
 ### 2. Configure environment variables
 
-Create a `.env` file in `beach-volley-app/`:
+Create a `.env` file in the project root:
 
 ```env
 VITE_SUPABASE_URL=your_supabase_url
@@ -181,7 +189,7 @@ npm run dev
 ### 4. Run tests
 
 ```bash
-npm run test
+npm run test -- --run
 ```
 
 ### 5. Build
@@ -190,92 +198,55 @@ npm run test
 npm run build
 ```
 
-## Supabase Notes
+## SQL Notes
 
-This project relies on manual SQL migrations stored in:
+This repo keeps project SQL that still needs to be applied manually in Supabase inside:
 
-```bash
-supabase/migrations/
+```text
+sql/
 ```
 
-Key migrations already added in the project include:
+Current SQL files include:
 
-- event visibility and mode support
-- friends MVP
-- private event invitations
-- private event join requests
-- match players
-- match results and validation
-- pending match result maintenance
-- public player match summaries
-- public profile mode stats and unfriend policy
-- competitive Elo rating
+- `2026-05-19_profile_player_preferences.sql`
+- `2026-05-19_stale_match_cancellation_rule.sql`
 
-If you are applying them manually in Supabase SQL Editor, use them in chronological order and make sure the later `create or replace function ...` migrations are also executed, because some functions were intentionally refined over time.
+Use these for:
 
-## Supabase Auth Notes
+- player preference columns on `profiles`
+- stale unvalidated match cancellation helper
 
-The app supports:
+There is also a short note in:
 
-- email/password auth
-- Google OAuth
+- [sql/README.md](./sql/README.md)
 
-For Google OAuth you need to configure:
+## Product Rules Worth Remembering
 
-- Google provider in Supabase Auth
-- Client ID / Client Secret in Supabase dashboard
-- redirect URLs for local and production environments
+- Private events are not public browseable by default
+- Accepted competitive results are the source of truth for rating/stats
+- A past match without an accepted result should not count as completed competitive history
+- Open play is social/participation oriented, not rating oriented
+- Country is intended to be public for ranking/local discovery
 
-## Edge Functions
+## Recommended QA Before Big New Features
 
-Current Supabase function in the project:
+Before adding chat or tournaments, it is worth re-checking:
 
-- `check-pending-match-results`
+- auth and password recovery
+- private event access via shared links
+- edit/delete flows
+- competitive rating and accepted-result rules
+- profile history and filters
+- mobile UI for calendar, profile and admin stats
+- all SQL applied in Supabase
 
-Related docs live here:
+## Near-Future Ideas
 
-- [supabase/functions/check-pending-match-results/README.md](./supabase/functions/check-pending-match-results/README.md)
-
-## Privacy Model
-
-The app intentionally separates:
-
-- full private event detail access
-- safe public player profile access
-- public browsing of events
-
-Current privacy behavior includes:
-
-- private events hidden from public listings
-- direct private event URLs still supported
-- public player profiles do not show email
-- public player profiles only show safe match summaries, not private event detail pages
-
-## Testing
-
-Current automated coverage includes service, hook and utility tests for:
-
-- auth
-- events
-- event invitations
-- event join requests
-- friends
-- match players
-- match results
-- player public profiles
-- profile stats
-- ratings
-
-## Roadmap Ideas
-
-Possible future directions:
-
-- tighter public/private privacy rules for player history
-- richer notifications
-- real-time chat
+- friend chat with short retention
 - tournament activation
-- deeper match analytics
-- code-splitting and bundle optimization
+- richer premium gating
+- deeper competitive analytics
+- stronger notifications / realtime
 
 ## Author
 

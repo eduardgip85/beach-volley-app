@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 
 interface ConfirmModalProps {
     title: string;
@@ -17,12 +18,14 @@ export function ConfirmModal({
     description,
     children,
     confirmLabel,
-    cancelLabel = "Cancel",
+    cancelLabel,
     confirmDisabled = false,
     loading = false,
     onCancel,
     onConfirm,
 }: ConfirmModalProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="fixed inset-0 z-[2400] flex items-end justify-center bg-slate-950/50 p-4 backdrop-blur-[2px] sm:items-center">
             <div className="w-full max-w-lg rounded-[2rem] bg-white p-6 shadow-2xl">
@@ -37,7 +40,7 @@ export function ConfirmModal({
                         onClick={onCancel}
                         className="rounded-2xl border border-slate-200 px-5 py-3 font-semibold text-slate-700"
                     >
-                        {cancelLabel}
+                        {cancelLabel ?? t("common.cancel")}
                     </button>
 
                     <button
@@ -46,7 +49,7 @@ export function ConfirmModal({
                         onClick={onConfirm}
                         className="rounded-2xl bg-red-600 px-5 py-3 font-semibold text-white disabled:opacity-60"
                     >
-                        {loading ? "Working..." : confirmLabel}
+                        {loading ? t("settings.account.working") : confirmLabel}
                     </button>
                 </div>
             </div>

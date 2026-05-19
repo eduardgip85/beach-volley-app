@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CalendarHeaderProps {
     currentMonth: Date;
@@ -11,10 +12,11 @@ export function CalendarHeader({
     onPreviousMonth,
     onNextMonth,
 }: CalendarHeaderProps) {
+    const { i18n } = useTranslation();
     return (
         <div className="flex items-center justify-between gap-3 rounded-3xl bg-white px-4 py-4 shadow-sm sm:px-5">
             <h1 className="min-w-0 text-xl font-black text-slate-950 sm:text-2xl md:text-3xl">
-                {currentMonth.toLocaleString("en", {
+                {currentMonth.toLocaleString(i18n.language, {
                     month: "long",
                     year: "numeric",
                 })}

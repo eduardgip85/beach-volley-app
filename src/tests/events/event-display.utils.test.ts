@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Event } from "../../features/events/types/event.types";
+import { setAppLanguage } from "../../i18n";
 import {
     getEventBadgeClasses,
     getEventDisplayStatus,
@@ -34,6 +35,10 @@ function createEvent(overrides: Partial<Event> = {}): Event {
 }
 
 describe("event-display.utils", () => {
+    beforeEach(async () => {
+        await setAppLanguage("en");
+    });
+
     it("returns human labels for type, mode, and visibility", () => {
         expect(getEventTypeLabel("match")).toBe("Match");
         expect(getEventTypeLabel("open_play")).toBe("Open Play");
@@ -57,6 +62,40 @@ describe("event-display.utils", () => {
 
         expect(getEventDisplayStatus(pastEvent)).toBe("Finished");
         expect(getEventBadgeClasses(pastEvent)).toBe("bg-red-100 text-red-700");
+
+        vi.useRealTimers();
+    });
+
+    it("returns pending result for recent past matches without an accepted result", () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-06-01T23:00:00.000Z"));
+
+        const pendingMatch = createEvent({
+            startDate: "2026-06-01T10:00:00.000Z",
+            type: "match",
+            mode: "competitive",
+            resultValidationStatus: "pending",
+        });
+
+        expect(getEventDisplayStatus(pendingMatch)).toBe("Pending result");
+        expect(getEventBadgeClasses(pendingMatch)).toBe("bg-amber-100 text-amber-700");
+
+        vi.useRealTimers();
+    });
+
+    it("returns cancelled for stale matches without an accepted result after one day", () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date("2026-06-03T12:00:00.000Z"));
+
+        const staleMatch = createEvent({
+            startDate: "2026-06-01T10:00:00.000Z",
+            type: "match",
+            mode: "competitive",
+            status: "cancelled",
+            resultValidationStatus: "rejected",
+        });
+
+        expect(getEventDisplayStatus(staleMatch)).toBe("Cancelled");
 
         vi.useRealTimers();
     });

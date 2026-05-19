@@ -10,6 +10,8 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase } from "../../../config/supabase";
 import { getCurrentProfile, logoutUser } from "../services/auth.service";
 import type { UserProfile } from "../types/auth.types";
+import { getPreferredAppLanguage } from "../../../i18n/detection";
+import { setAppLanguage } from "../../../i18n";
 
 interface AuthContextValue {
     session: Session | null;
@@ -50,6 +52,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } finally {
         setSession(null);
         setProfile(null);
+        void setAppLanguage(getPreferredAppLanguage(), { persist: false });
         setLoading(false);
         }
     }
@@ -71,6 +74,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             await refreshProfile();
             } else {
             setProfile(null);
+            await setAppLanguage(getPreferredAppLanguage(), { persist: false });
             }
         } catch (error) {
             console.error("Error loading session:", error);
@@ -104,6 +108,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         subscription.unsubscribe();
         };
     }, []);
+
+    useEffect(() => {
+        void setAppLanguage(getPreferredAppLanguage(profile?.preferredLanguage), {
+            persist: false,
+        });
+    }, [profile?.preferredLanguage]);
 
     const value = useMemo<AuthContextValue>(
         () => ({

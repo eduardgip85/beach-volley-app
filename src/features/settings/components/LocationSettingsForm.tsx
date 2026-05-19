@@ -1,5 +1,6 @@
 import { Globe2, MapPin, Search } from "lucide-react";
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocationSuggestions } from "../hooks/useLocationSuggestions";
 import type { SettingsSectionStatus } from "../types/settings.types";
 
@@ -20,6 +21,7 @@ export function LocationSettingsForm({
     onCityChange,
     onSave,
 }: LocationSettingsFormProps) {
+    const { t } = useTranslation();
     const [countryFocused, setCountryFocused] = useState(false);
     const [cityFocused, setCityFocused] = useState(false);
     const {
@@ -42,7 +44,7 @@ export function LocationSettingsForm({
                 <div className="relative">
                     <label className="block">
                         <span className="text-sm font-semibold text-slate-700">
-                            Country
+                            {t("settings.location.country")}
                         </span>
                         <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                             <Globe2 size={18} className="text-slate-400" />
@@ -57,7 +59,7 @@ export function LocationSettingsForm({
                                     onCityChange("");
                                 }}
                                 className="w-full bg-transparent text-sm text-slate-900 outline-none"
-                                placeholder="Start typing a country"
+                                placeholder={t("settings.location.countryPlaceholder")}
                             />
                         </div>
                     </label>
@@ -66,6 +68,7 @@ export function LocationSettingsForm({
                         <SuggestionList
                             icon={<Search size={14} className="text-slate-400" />}
                             items={countrySuggestions}
+                            title={t("settings.location.suggestions")}
                             onSelect={(value) => {
                                 onCountryChange(value);
                                 onCityChange("");
@@ -77,7 +80,9 @@ export function LocationSettingsForm({
 
                 <div className="relative">
                     <label className="block">
-                        <span className="text-sm font-semibold text-slate-700">City</span>
+                        <span className="text-sm font-semibold text-slate-700">
+                            {t("settings.location.city")}
+                        </span>
                         <div className="mt-2 flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                             <MapPin size={18} className="text-slate-400" />
                             <input
@@ -91,8 +96,8 @@ export function LocationSettingsForm({
                                 className="w-full bg-transparent text-sm text-slate-900 outline-none disabled:cursor-not-allowed disabled:text-slate-400"
                                 placeholder={
                                     country.trim()
-                                        ? "Start typing a city"
-                                        : "Choose a country first"
+                                        ? t("settings.location.cityPlaceholder")
+                                        : t("settings.location.cityDisabledPlaceholder")
                                 }
                             />
                         </div>
@@ -102,7 +107,7 @@ export function LocationSettingsForm({
                         <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
                             {citySuggestionsLoading ? (
                                 <p className="px-4 py-3 text-sm text-slate-500">
-                                    Searching cities...
+                                    {t("settings.location.searchingCities")}
                                 </p>
                             ) : null}
 
@@ -116,7 +121,7 @@ export function LocationSettingsForm({
                             !citySuggestionsError &&
                             citySuggestions.length === 0 ? (
                                 <p className="px-4 py-3 text-sm text-slate-500">
-                                    No city suggestions found yet
+                                    {t("settings.location.noCities")}
                                 </p>
                             ) : null}
 
@@ -135,8 +140,10 @@ export function LocationSettingsForm({
             </div>
 
             <div className="rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-500">
-                Use the suggestions so country ranking and future local discovery stay
-                consistent across real places only.
+                <p>{t("settings.location.consistencyHint")}</p>
+                <p className="mt-2 font-semibold text-slate-600">
+                    {t("settings.location.publicCountryHint")}
+                </p>
             </div>
 
             <SectionFeedback status={status} />
@@ -147,7 +154,9 @@ export function LocationSettingsForm({
                 disabled={status.loading}
                 className="w-full rounded-2xl bg-slate-900 px-5 py-4 text-sm font-bold text-white disabled:opacity-60 sm:w-auto"
             >
-                {status.loading ? "Saving..." : "Save location"}
+                {status.loading
+                    ? t("settings.location.saving")
+                    : t("settings.location.save")}
             </button>
         </div>
     );
@@ -157,16 +166,18 @@ function SuggestionList({
     items,
     onSelect,
     icon,
+    title,
 }: {
     items: string[];
     onSelect: (value: string) => void;
     icon: ReactNode;
+    title: string;
 }) {
     return (
         <div className="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
             <div className="flex items-center gap-2 border-b border-slate-100 px-4 py-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
                 {icon}
-                Suggestions
+                {title}
             </div>
             <SuggestionItems items={items} onSelect={onSelect} />
         </div>

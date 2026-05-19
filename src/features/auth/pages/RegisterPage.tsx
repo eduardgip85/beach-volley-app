@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { loginWithGoogle, registerUser } from "../services/auth.service";
 import { normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
 
 export function RegisterPage() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -31,7 +33,7 @@ export function RegisterPage() {
 
             navigate(redirectTo);
         } catch {
-            setError("Could not create account");
+            setError(t("auth.registerError"));
         } finally {
             setLoading(false);
         }
@@ -44,17 +46,17 @@ export function RegisterPage() {
 
             await loginWithGoogle(redirectTo);
         } catch {
-            setError("Could not continue with Google");
+            setError(t("auth.googleError"));
             setLoading(false);
         }
     }
 
     return (
         <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-slate-900">Create account</h1>
+        <h1 className="text-2xl font-bold text-slate-900">{t("auth.registerTitle")}</h1>
 
         <p className="mt-2 text-sm text-slate-500">
-            Register to create events and join tournaments.
+            {t("auth.registerBody")}
         </p>
 
         {error && (
@@ -69,19 +71,19 @@ export function RegisterPage() {
             disabled={loading}
             className="mt-6 flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
         >
-            Sign up with Google
+            {t("auth.signUpWithGoogle")}
         </button>
 
         <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-slate-400">
             <span className="h-px flex-1 bg-slate-200" />
-            Or
+            {t("auth.or")}
             <span className="h-px flex-1 bg-slate-200" />
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <input
             type="text"
-            placeholder="Full name"
+            placeholder={t("auth.fullNamePlaceholder")}
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
             className="w-full rounded-xl border px-4 py-3"
@@ -90,7 +92,7 @@ export function RegisterPage() {
 
             <input
             type="email"
-            placeholder="Email"
+            placeholder={t("auth.emailPlaceholder")}
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             className="w-full rounded-xl border px-4 py-3"
@@ -99,7 +101,7 @@ export function RegisterPage() {
 
             <input
             type="password"
-            placeholder="Password"
+            placeholder={t("auth.passwordPlaceholder")}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             className="w-full rounded-xl border px-4 py-3"
@@ -111,17 +113,17 @@ export function RegisterPage() {
             disabled={loading}
             className="w-full rounded-xl bg-blue-600 px-4 py-3 font-medium text-white disabled:opacity-60"
             >
-            {loading ? "Creating account..." : "Register"}
+            {loading ? t("auth.registerLoading") : t("auth.registerCta")}
             </button>
         </form>
 
         <p className="mt-6 text-center text-sm text-slate-500">
-            Already have an account?{" "}
+            {t("auth.alreadyHaveAccount")}{" "}
             <Link
             to={`/login?redirect=${encodeURIComponent(redirectTo)}`}
             className="font-medium text-blue-600"
             >
-                Login
+                {t("auth.loginCta")}
             </Link>
         </p>
         </section>

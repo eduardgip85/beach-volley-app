@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import i18n from "../../../i18n";
 import {
     reverseGeocodeLocation,
     searchLocation,
@@ -143,7 +144,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
 
     async function handleSearchLocation() {
         if (!locationSearch.trim()) {
-        setError("Write a location to search");
+        setError(i18n.t("eventForm.errors.writeLocation"));
         return;
         }
 
@@ -154,7 +155,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         const result = await searchLocation(locationSearch);
 
         if (!result) {
-            setError("Location not found");
+            setError(i18n.t("eventForm.errors.locationNotFound"));
             return;
         }
 
@@ -163,7 +164,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         setLocationName(result.displayName);
         } catch (err) {
         console.error(err);
-        setError("Could not search location");
+        setError(i18n.t("eventForm.errors.searchFailed"));
         } finally {
         setSearchingLocation(false);
         }
@@ -204,22 +205,22 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
                   : Number(maxParticipants);
 
         if (!trimmedTitle || !date || !time || !trimmedLocationName) {
-        setError("Title, date, time, and location are required");
+        setError(i18n.t("eventForm.errors.requiredFields"));
         return;
         }
 
         if (type === "tournament") {
-        setError("Tournament events are coming soon");
+        setError(i18n.t("eventForm.errors.tournamentSoon"));
         return;
         }
 
         if (type === "match" && !resolvedMode) {
-        setError("Mode is required for match events");
+        setError(i18n.t("eventForm.errors.modeRequired"));
         return;
         }
 
         if (visibility !== "public" && visibility !== "private") {
-        setError("Visibility is required");
+        setError(i18n.t("eventForm.errors.visibilityRequired"));
         return;
         }
 
@@ -228,7 +229,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
             !unlimitedParticipants &&
             (!Number.isFinite(resolvedMaxParticipants) || resolvedMaxParticipants < 1)
         ) {
-        setError("Max participants must be at least 1");
+        setError(i18n.t("eventForm.errors.maxParticipantsMin"));
         return;
         }
 
@@ -253,7 +254,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         });
         } catch (err) {
         console.error(err);
-        setError(getErrorMessage(err, "Could not save event"));
+        setError(getErrorMessage(err, i18n.t("eventForm.errors.saveFailed")));
         } finally {
         setSubmitting(false);
         }

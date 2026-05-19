@@ -1,4 +1,5 @@
 import { Clock3, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { EventJoinRequest } from "../types/eventJoinRequest.types";
 
 interface PrivateEventAccessCardProps {
@@ -7,20 +8,23 @@ interface PrivateEventAccessCardProps {
     onRequestAccess: () => Promise<void>;
 }
 
-function getStatusMessage(request: EventJoinRequest | null) {
+function getStatusMessage(
+    request: EventJoinRequest | null,
+    t: (key: string) => string
+) {
     if (!request) {
-        return "This private event requires approval before joining.";
+        return t("privateAccess.noRequest");
     }
 
     switch (request.status) {
         case "accepted":
-            return "Your access request was accepted.";
+            return t("privateAccess.accepted");
         case "rejected":
-            return "Your previous request was rejected. You can send a new request when you want.";
+            return t("privateAccess.rejected");
         case "cancelled":
-            return "Your previous request was cancelled. You can send a new one at any time.";
+            return t("privateAccess.cancelled");
         default:
-            return "Your access request is pending review.";
+            return t("privateAccess.pending");
     }
 }
 
@@ -29,6 +33,7 @@ export function PrivateEventAccessCard({
     actionLoadingId,
     onRequestAccess,
 }: PrivateEventAccessCardProps) {
+    const { t } = useTranslation();
     const isPending = request?.status === "pending";
     const isAccepted = request?.status === "accepted";
     const isRequesting = actionLoadingId === "request:undefined" || Boolean(actionLoadingId?.startsWith("request:"));
@@ -41,9 +46,9 @@ export function PrivateEventAccessCard({
                 </span>
 
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900">Private access</h2>
+                    <h2 className="text-xl font-bold text-slate-900">{t("privateAccess.title")}</h2>
                     <p className="mt-1 text-sm text-slate-600">
-                        {getStatusMessage(request)}
+                        {getStatusMessage(request, t)}
                     </p>
                 </div>
             </div>
@@ -55,7 +60,7 @@ export function PrivateEventAccessCard({
                     disabled={isRequesting}
                     className="mt-5 rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white disabled:opacity-60"
                 >
-                    {isRequesting ? "Sending request..." : "Request to Join"}
+                    {isRequesting ? t("privateAccess.sending") : t("privateAccess.requestToJoin")}
                 </button>
             ) : null}
         </div>

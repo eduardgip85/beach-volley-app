@@ -1,3 +1,5 @@
+import i18n from "../../../i18n";
+
 export const DEFAULT_COMPETITIVE_RATING = 2;
 export const MIN_COMPETITIVE_RATING = 0;
 export const MAX_COMPETITIVE_RATING = 10;
@@ -43,12 +45,12 @@ export function formatCompetitiveRatingDelta(value: number | null | undefined) {
 
 export function getCompetitiveRatingLegend() {
     return [
-        { range: "0.00 - 1.99", label: "Starter" },
-        { range: "2.00 - 3.99", label: "Beginner" },
-        { range: "4.00 - 5.99", label: "Intermediate" },
-        { range: "6.00 - 7.49", label: "Advanced" },
-        { range: "7.50 - 8.99", label: "Expert" },
-        { range: "9.00 - 10.00", label: "Elite" },
+        { range: "0.00 - 1.99", label: i18n.t("ratingGuide.bandStarter") },
+        { range: "2.00 - 3.99", label: i18n.t("ratingGuide.bandBeginner") },
+        { range: "4.00 - 5.99", label: i18n.t("ratingGuide.bandIntermediate") },
+        { range: "6.00 - 7.49", label: i18n.t("ratingGuide.bandAdvanced") },
+        { range: "7.50 - 8.99", label: i18n.t("ratingGuide.bandExpert") },
+        { range: "9.00 - 10.00", label: i18n.t("ratingGuide.bandElite") },
     ] satisfies CompetitiveRatingLegendBand[];
 }
 
@@ -56,150 +58,129 @@ export function getCompetitiveRatingDetailedLegend() {
     return [
         {
             rating: "0.0",
-            title: "New to the game",
-            tier: "Initiation",
-            description:
-                "Has never really played beach volleyball or is just starting to understand the basics.",
+            title: i18n.t("ratingGuide.newToTheGameTitle"),
+            tier: i18n.t("ratingGuide.initiation"),
+            description: i18n.t("ratingGuide.newToTheGameDescription"),
         },
         {
             rating: "0.5",
-            title: "First contacts",
-            tier: "Initiation",
-            description:
-                "Very early stage. Limited ball control, no real match rhythm yet, and still learning the movement patterns.",
+            title: i18n.t("ratingGuide.firstContactsTitle"),
+            tier: i18n.t("ratingGuide.initiation"),
+            description: i18n.t("ratingGuide.firstContactsDescription"),
         },
         {
             rating: "1.0",
-            title: "Beginner basics",
-            tier: "Initiation",
-            description:
-                "Can keep a few easy touches alive but still struggles with serve receive, positioning, and consistency.",
+            title: i18n.t("ratingGuide.beginnerBasicsTitle"),
+            tier: i18n.t("ratingGuide.initiation"),
+            description: i18n.t("ratingGuide.beginnerBasicsDescription"),
         },
         {
             rating: "1.5",
-            title: "Learning rallies",
-            tier: "Initiation / Intermediate",
-            description:
-                "Starts to pass and send free balls with intention. Can play occasional points but with frequent unforced mistakes.",
+            title: i18n.t("ratingGuide.learningRalliesTitle"),
+            tier: i18n.t("ratingGuide.initiationIntermediate"),
+            description: i18n.t("ratingGuide.learningRalliesDescription"),
         },
         {
             rating: "2.0",
-            title: "Casual starter",
-            tier: "Initiation / Intermediate",
-            description:
-                "Can join casual games, return manageable serves, and hold basic rallies at a low pace.",
+            title: i18n.t("ratingGuide.casualStarterTitle"),
+            tier: i18n.t("ratingGuide.initiationIntermediate"),
+            description: i18n.t("ratingGuide.casualStarterDescription"),
         },
         {
             rating: "2.5",
-            title: "Basic control",
-            tier: "Intermediate",
-            description:
-                "Controls the main contacts better and can direct simple plays, but still loses consistency under pressure.",
+            title: i18n.t("ratingGuide.basicControlTitle"),
+            tier: i18n.t("ratingGuide.intermediate"),
+            description: i18n.t("ratingGuide.basicControlDescription"),
         },
         {
             rating: "3.0",
-            title: "Reliable casual player",
-            tier: "Intermediate",
-            description:
-                "Moves with more structure, passes playable balls, and understands the flow of a normal casual match.",
+            title: i18n.t("ratingGuide.reliableCasualTitle"),
+            tier: i18n.t("ratingGuide.intermediate"),
+            description: i18n.t("ratingGuide.reliableCasualDescription"),
         },
         {
             rating: "3.5",
-            title: "Structured game",
-            tier: "Intermediate",
-            description:
-                "Can pass, set, and attack easier balls with purpose. Reads the rally better but still makes errors in fast exchanges.",
+            title: i18n.t("ratingGuide.structuredGameTitle"),
+            tier: i18n.t("ratingGuide.intermediate"),
+            description: i18n.t("ratingGuide.structuredGameDescription"),
         },
         {
             rating: "4.0",
-            title: "Strong intermediate",
-            tier: "Intermediate / High",
-            description:
-                "Controls most core actions and can sustain real match rhythm with decent serving, positioning, and transitions.",
+            title: i18n.t("ratingGuide.strongIntermediateTitle"),
+            tier: i18n.t("ratingGuide.intermediateHigh"),
+            description: i18n.t("ratingGuide.strongIntermediateDescription"),
         },
         {
             rating: "4.5",
-            title: "Competitive-ready base",
-            tier: "Intermediate / High",
-            description:
-                "Comfortable in stronger games. Can side out, defend, and convert easier attacks with good repeatability.",
+            title: i18n.t("ratingGuide.competitiveBaseTitle"),
+            tier: i18n.t("ratingGuide.intermediateHigh"),
+            description: i18n.t("ratingGuide.competitiveBaseDescription"),
         },
         {
             rating: "5.0",
-            title: "Solid all-round player",
-            tier: "High / Advanced",
-            description:
-                "Balanced technique and tactics. Ready for competitive matches at a good pace with stable fundamentals.",
+            title: i18n.t("ratingGuide.solidAllRoundTitle"),
+            tier: i18n.t("ratingGuide.highAdvanced"),
+            description: i18n.t("ratingGuide.solidAllRoundDescription"),
         },
         {
             rating: "5.5",
-            title: "Advanced club level",
-            tier: "Advanced",
-            description:
-                "Good technical control, stronger decision-making, and the ability to play faster rallies with intent.",
+            title: i18n.t("ratingGuide.advancedClubTitle"),
+            tier: i18n.t("ratingGuide.advanced"),
+            description: i18n.t("ratingGuide.advancedClubDescription"),
         },
         {
             rating: "6.0",
-            title: "Advanced competitor",
-            tier: "Advanced",
-            description:
-                "Understands shot selection, defensive reads, and tempo changes. Can perform well in serious competitive games.",
+            title: i18n.t("ratingGuide.advancedCompetitorTitle"),
+            tier: i18n.t("ratingGuide.advanced"),
+            description: i18n.t("ratingGuide.advancedCompetitorDescription"),
         },
         {
             rating: "6.5",
-            title: "Top local competitor",
-            tier: "Advanced / Elite",
-            description:
-                "Strong side-out game, better physical coverage, and more reliable execution under pressure than most local players.",
+            title: i18n.t("ratingGuide.topLocalTitle"),
+            tier: i18n.t("ratingGuide.advancedElite"),
+            description: i18n.t("ratingGuide.topLocalDescription"),
         },
         {
             rating: "7.0",
-            title: "Elite amateur",
-            tier: "Elite",
-            description:
-                "High-level amateur player with strong tactical awareness and consistent performance in demanding matches.",
+            title: i18n.t("ratingGuide.eliteAmateurTitle"),
+            tier: i18n.t("ratingGuide.elite"),
+            description: i18n.t("ratingGuide.eliteAmateurDescription"),
         },
         {
             rating: "7.5",
-            title: "Regional standout",
-            tier: "Elite",
-            description:
-                "One of the strongest players in regular competitive circuits, with real weapons in serve, attack, and defense.",
+            title: i18n.t("ratingGuide.regionalStandoutTitle"),
+            tier: i18n.t("ratingGuide.elite"),
+            description: i18n.t("ratingGuide.regionalStandoutDescription"),
         },
         {
             rating: "8.0",
-            title: "National competitive",
-            tier: "Elite / Pro",
-            description:
-                "Very high-level player able to compete consistently in strong national-level environments.",
+            title: i18n.t("ratingGuide.nationalCompetitiveTitle"),
+            tier: i18n.t("ratingGuide.elitePro"),
+            description: i18n.t("ratingGuide.nationalCompetitiveDescription"),
         },
         {
             rating: "8.5",
-            title: "National elite",
-            tier: "Elite / Pro",
-            description:
-                "Highly refined technical and tactical game, with very few weak points and strong physical consistency.",
+            title: i18n.t("ratingGuide.nationalEliteTitle"),
+            tier: i18n.t("ratingGuide.elitePro"),
+            description: i18n.t("ratingGuide.nationalEliteDescription"),
         },
         {
             rating: "9.0",
-            title: "Professional pathway",
-            tier: "Pro",
-            description:
-                "Professional-caliber player with advanced shot quality, high consistency, and strong competitive resilience.",
+            title: i18n.t("ratingGuide.professionalPathTitle"),
+            tier: i18n.t("ratingGuide.pro"),
+            description: i18n.t("ratingGuide.professionalPathDescription"),
         },
         {
             rating: "9.5",
-            title: "Top professional",
-            tier: "Pro",
-            description:
-                "Exceptional execution and decision-making. Performs at the top end of the competitive spectrum.",
+            title: i18n.t("ratingGuide.topProfessionalTitle"),
+            tier: i18n.t("ratingGuide.pro"),
+            description: i18n.t("ratingGuide.topProfessionalDescription"),
         },
         {
             rating: "10.0",
-            title: "World class",
-            tier: "Pro / Elite",
-            description:
-                "Reference-level player. Outstanding technical, tactical, physical, and mental performance.",
+            title: i18n.t("ratingGuide.worldClassTitle"),
+            tier: i18n.t("ratingGuide.proElite"),
+            description: i18n.t("ratingGuide.worldClassDescription"),
         },
     ] satisfies CompetitiveRatingLegendLevel[];
 }

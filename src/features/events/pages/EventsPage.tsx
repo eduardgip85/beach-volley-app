@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { EventFilters } from "../../../shared/components/EventFilters";
 import { EventCard } from "../components/EventCard";
@@ -6,6 +7,7 @@ import { useEventFilters } from "../hooks/useEventFilters";
 import { useEventsPage } from "../hooks/useEventsPage";
 
 export function EventsPage() {
+  const { t } = useTranslation();
   const { events, loading, error } = useEventsPage();
 
   const {
@@ -20,14 +22,14 @@ export function EventsPage() {
     <section>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between py-2 px-4 bg-white rounded-xl">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Events</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{t("eventsPage.title")}</h1>
         </div>
 
         <Link
           to="/events/create"
           className="hidden rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white hover:bg-blue-700 md:inline-flex"
         >
-          Create Event
+          {t("eventsPage.createEvent")}
         </Link>
 
         <Link
@@ -46,7 +48,7 @@ export function EventsPage() {
       />
 
       {loading && (
-        <p className="mt-8 text-sm text-slate-500">Loading events...</p>
+        <p className="mt-8 text-sm text-slate-500">{t("eventsPage.loading")}</p>
       )}
 
       {error && (
@@ -57,9 +59,9 @@ export function EventsPage() {
 
       {!loading && !error && filteredEvents.length === 0 && (
         <div className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
-          <p className="font-medium text-slate-900">No events found</p>
+          <p className="font-medium text-slate-900">{t("eventsPage.emptyTitle")}</p>
           <p className="mt-2 text-sm text-slate-500">
-            Try changing your filters or create a new event.
+            {t("eventsPage.emptyBody")}
           </p>
         </div>
       )}

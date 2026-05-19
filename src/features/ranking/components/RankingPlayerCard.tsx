@@ -1,4 +1,5 @@
 import { Flame, Globe, TrendingUp, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import type { RankingPlayer } from "../types/ranking.types";
@@ -28,6 +29,8 @@ export function RankingPlayerCard({
     player,
     canOpenProfile = true,
 }: RankingPlayerCardProps) {
+    const { t } = useTranslation();
+
     const content = (
         <>
             <div className="flex items-start gap-3">
@@ -74,17 +77,19 @@ export function RankingPlayerCard({
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                         <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
                             <Trophy size={13} />
-                            {formatCompetitiveRating(player.competitiveRating)} rating
+                            {t("profile.ratingTooltip", {
+                                rating: formatCompetitiveRating(player.competitiveRating),
+                            })}
                         </span>
 
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
                             <TrendingUp size={13} />
-                            {player.winRate}% win rate
+                            {t("profile.winRate")}: {player.winRate}%
                         </span>
 
                         <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-3 py-1 text-xs font-bold text-orange-700">
                             <Flame size={13} />
-                            Streak {player.currentStreak}
+                            {t("profile.currentStreak")} {player.currentStreak}
                         </span>
                     </div>
                 </div>
@@ -93,7 +98,7 @@ export function RankingPlayerCard({
             <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                 <div className="rounded-2xl bg-slate-50 px-3 py-3">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
-                        Games
+                        {t("profile.matchesPlayed")}
                     </p>
                     <p className="mt-1 text-lg font-black text-slate-900">
                         {player.matchesPlayed}
@@ -111,7 +116,7 @@ export function RankingPlayerCard({
 
                 <div className="rounded-2xl bg-slate-50 px-3 py-3">
                     <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
-                        Best streak
+                        {t("profile.bestStreak")}
                     </p>
                     <p className="mt-1 text-lg font-black text-slate-900">
                         {player.bestStreak}

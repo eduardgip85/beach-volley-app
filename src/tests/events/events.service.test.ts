@@ -22,7 +22,9 @@ vi.mock("../../features/match-players/services/matchPlayers.service", () => ({
 const mockOrder = vi.fn();
 const mockSelect = vi.fn();
 const mockEq = vi.fn();
+const mockIn = vi.fn();
 const mockSingle = vi.fn();
+const mockMaybeSingle = vi.fn();
 const mockInsert = vi.fn();
 const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
@@ -78,6 +80,8 @@ describe("events.service", () => {
             order: mockOrder,
             eq: mockEq,
             single: mockSingle,
+            maybeSingle: mockMaybeSingle,
+            in: mockIn,
         });
 
         mockInsert.mockReturnValue({
@@ -94,8 +98,14 @@ describe("events.service", () => {
 
         mockEq.mockReturnValue({
             single: mockSingle,
+            maybeSingle: mockMaybeSingle,
             select: mockSelect,
             order: mockOrder,
+        });
+
+        mockIn.mockResolvedValue({
+            data: [],
+            error: null,
         });
     });
 
@@ -122,7 +132,8 @@ describe("events.service", () => {
                 startDate: "2026-05-01T10:00:00.000Z",
                 endDate: null,
                 maxParticipants: 4,
-                status: "completed",
+                status: "cancelled",
+                resultValidationStatus: null,
                 imageUrl: null,
                 createdBy: "user-1",
                 createdAt: "2026-04-30T10:00:00.000Z",
@@ -174,6 +185,7 @@ describe("events.service", () => {
             expect(result.locationName).toBe("Barceloneta Beach");
             expect(result.latitude).toBe(41.3851);
             expect(result.longitude).toBe(2.1734);
+            expect(result.status).toBe("cancelled");
 
             expect(mockEq).toHaveBeenCalledWith("id", "event-1");
         });
@@ -342,7 +354,7 @@ describe("events.service", () => {
 
     describe("updateEvent", () => {
         it("should update an event and return the mapped event", async () => {
-            mockSingle.mockResolvedValue({
+            mockMaybeSingle.mockResolvedValue({
                 data: {
                 ...eventRow,
                 title: "Updated Beach Match",
@@ -384,7 +396,7 @@ describe("events.service", () => {
         });
 
         it("should throw when update fails", async () => {
-            mockSingle.mockResolvedValue({
+            mockMaybeSingle.mockResolvedValue({
                 data: null,
                 error: new Error("Update failed"),
             });
@@ -405,6 +417,37 @@ describe("events.service", () => {
                 imageUrl: null,
                 })
             ).rejects.toThrow("Update failed");
+        });
+
+        it("should refetch the event when Supabase returns no updated row", async () => {
+            mockMaybeSingle.mockResolvedValue({
+                data: null,
+                error: null,
+            });
+            mockSingle.mockResolvedValue({
+                data: {
+                    ...eventRow,
+                    title: "Refetched Beach Match",
+                },
+                error: null,
+            });
+
+            const result = await updateEvent("event-1", {
+                title: "Refetched Beach Match",
+                description: "Updated description",
+                type: "match",
+                visibility: "public",
+                mode: null,
+                locationName: "Barceloneta Beach",
+                latitude: 41.3851,
+                longitude: 2.1734,
+                startDate: "2026-05-01T10:00:00.000Z",
+                endDate: null,
+                maxParticipants: 10,
+                imageUrl: null,
+            });
+
+            expect(result.title).toBe("Refetched Beach Match");
         });
     });
 

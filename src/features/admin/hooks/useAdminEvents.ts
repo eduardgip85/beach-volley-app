@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import i18n from "../../../i18n";
 import {
   getAdminEvents,
   type AdminEventListItem,
@@ -49,7 +50,7 @@ export function useAdminEvents({
         }
 
         console.error(err);
-        setError("Could not load events");
+        setError(i18n.t("adminEvents.loadError"));
       } finally {
         if (!ignore) {
           setLoading(false);
