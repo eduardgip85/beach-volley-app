@@ -49,4 +49,8 @@ export interface UserProfile {
     preferredHand: PreferredHand;
     preferredCourtSide: PreferredCourtSide;
     preferredPlayDays: PreferredPlayDay[];
+    ratingPlacementCompletedAt: string | null;
+    ratingPlacementEstimate: number | null;
+    ratingPlacementScore: number | null;
+    provisionalRatingMatchesRemaining: number;
 }

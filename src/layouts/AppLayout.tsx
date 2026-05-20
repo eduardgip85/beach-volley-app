@@ -46,10 +46,11 @@ function getMobileNavClasses(isActive: boolean) {
 
 export function AppLayout() {
   const { t } = useTranslation();
-  const { isAuthenticated, isAdmin, profile, logout } = useAuth();
+  const { isAuthenticated, isAdmin, loading, profile, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isOnboardingRoute = location.pathname === "/onboarding/competitive-rating";
 
   async function handleLogout() {
     try {
@@ -64,6 +65,43 @@ export function AppLayout() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (loading || !isAuthenticated || !profile) {
+      return;
+    }
+
+    if (!profile.ratingPlacementCompletedAt && !isOnboardingRoute) {
+      const redirectTarget = `${location.pathname}${location.search}`;
+      navigate(
+        `/onboarding/competitive-rating?redirect=${encodeURIComponent(
+          redirectTarget
+        )}`,
+        { replace: true }
+      );
+      return;
+    }
+
+    if (profile.ratingPlacementCompletedAt && isOnboardingRoute) {
+      const params = new URLSearchParams(location.search);
+      const redirectTarget = params.get("redirect");
+
+      navigate(
+        redirectTarget && redirectTarget !== "/onboarding/competitive-rating"
+          ? redirectTarget
+          : "/profile",
+        { replace: true }
+      );
+    }
+  }, [
+    isAuthenticated,
+    isOnboardingRoute,
+    loading,
+    location.pathname,
+    location.search,
+    navigate,
+    profile,
+  ]);
 
   const publicNavItems: NavItem[] = [
     { label: t("nav.home"), path: "/", icon: Home, end: true },
@@ -81,6 +119,8 @@ export function AppLayout() {
 
   const adminNavItems: NavItem[] = [
     { label: t("nav.stats"), path: "/stats", icon: LayoutDashboard },
+    { label: t("Admin Users"), path: "/admin/users", icon: UserPlus },
+    { label: t("Admin Events"), path: "/admin/events", icon: User },
   ];
 
   const desktopNavItems = [

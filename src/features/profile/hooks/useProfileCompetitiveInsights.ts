@@ -8,7 +8,10 @@ import type {
     CompetitiveProfileInsights,
 } from "../types/profileCompetitiveInsights.types";
 
-export function useProfileCompetitiveInsights(userId?: string) {
+export function useProfileCompetitiveInsights(
+    userId?: string,
+    fallbackRating?: number
+) {
     const [selectedFilter, setSelectedFilter] =
         useState<CompetitiveInsightsFilter>("last_10_matches");
     const [insights, setInsights] = useState<CompetitiveProfileInsights>(
@@ -34,7 +37,8 @@ export function useProfileCompetitiveInsights(userId?: string) {
 
                 const data = await getProfileCompetitiveInsights(
                     userId,
-                    selectedFilter
+                    selectedFilter,
+                    fallbackRating
                 );
 
                 if (!isCancelled) {
@@ -59,7 +63,7 @@ export function useProfileCompetitiveInsights(userId?: string) {
         return () => {
             isCancelled = true;
         };
-    }, [selectedFilter, userId]);
+    }, [fallbackRating, selectedFilter, userId]);
 
     return {
         selectedFilter,

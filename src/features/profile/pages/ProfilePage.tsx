@@ -36,7 +36,7 @@ export function ProfilePage() {
     error: insightsError,
     selectedFilter,
     setSelectedFilter,
-  } = useProfileCompetitiveInsights(profile?.id);
+  } = useProfileCompetitiveInsights(profile?.id, profile?.competitiveRating);
   const {
     pendingInvitations,
     loading: invitationsLoading,
@@ -83,7 +83,7 @@ export function ProfilePage() {
               <div className="mt-4 flex flex-wrap justify-center gap-2.5 sm:justify-start">
                 <ProfileBadge className="border-blue-200 bg-blue-50 text-blue-700">
                   <Trophy size={15} />
-                  {formatCompetitiveRating(insights.currentRating)}
+                  {formatCompetitiveRating(profile.competitiveRating)}
                 </ProfileBadge>
 
                 <ProfileBadge className="border-slate-200 bg-white text-slate-700">

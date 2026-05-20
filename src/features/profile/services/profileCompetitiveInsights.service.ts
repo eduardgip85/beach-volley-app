@@ -143,13 +143,22 @@ function mapHistoryMatch(row: CompetitiveHistoryMatchRow): CompetitiveHistoryMat
 }
 
 function mapCompetitiveInsights(
-    data: CompetitiveInsightsRpcResponse | null
+    data: CompetitiveInsightsRpcResponse | null,
+    fallbackRating?: number
 ): CompetitiveProfileInsights {
+    const safeFallbackRating =
+        typeof fallbackRating === "number" && Number.isFinite(fallbackRating)
+            ? fallbackRating
+            : DEFAULT_COMPETITIVE_RATING;
+
     if (!data) {
-        return emptyCompetitiveInsights;
+        return {
+            ...emptyCompetitiveInsights,
+            currentRating: safeFallbackRating,
+            averageRating: safeFallbackRating,
+        };
     }
 
-    const currentRating = data.currentRating ?? DEFAULT_COMPETITIVE_RATING;
     const mappedHistory = (data.matchHistory ?? []).map(mapHistoryMatch);
     const mappedChartPoints = (data.chartPoints ?? []).map(mapChartPoint);
     const rawMatchesPlayed = data.matchesPlayed ?? 0;
@@ -173,14 +182,25 @@ function mapCompetitiveInsights(
         inferredMatchesPlayed > 0
             ? Number(((inferredWins / inferredMatchesPlayed) * 100).toFixed(1))
             : 0;
+    const hasCompetitiveActivity =
+        inferredMatchesPlayed > 0 ||
+        mappedHistory.length > 0 ||
+        mappedChartPoints.length > 0;
+    const historicalCurrentRating = hasCompetitiveActivity
+        ? data.currentRating ?? safeFallbackRating
+        : safeFallbackRating;
+    const displayCurrentRating =
+        typeof fallbackRating === "number" && Number.isFinite(fallbackRating)
+            ? fallbackRating
+            : historicalCurrentRating;
     const fallbackChartPoints = buildFallbackChartPoints(
-        currentRating,
+        historicalCurrentRating,
         inferredMatchesPlayed,
         mappedHistory
     );
 
     return {
-        currentRating,
+        currentRating: displayCurrentRating,
         matchesPlayed: inferredMatchesPlayed,
         wins: inferredWins,
         losses: inferredLosses,
@@ -190,7 +210,9 @@ function mapCompetitiveInsights(
                 : inferredWinRate,
         currentStreak: data.currentStreak ?? 0,
         bestStreak: data.bestStreak ?? 0,
-        averageRating: data.averageRating ?? DEFAULT_COMPETITIVE_RATING,
+        averageRating: hasCompetitiveActivity
+            ? data.averageRating ?? historicalCurrentRating
+            : displayCurrentRating,
         chartPoints:
             mappedChartPoints.length > 0 ? mappedChartPoints : fallbackChartPoints,
         matchHistory: mappedHistory.map((match, index) => ({
@@ -199,7 +221,7 @@ function mapCompetitiveInsights(
                 match.rating == null &&
                 mappedHistory.length === 1 &&
                 index === 0
-                    ? currentRating
+                    ? historicalCurrentRating
                     : match.rating,
             ratingDelta:
                 match.ratingDelta == null &&
@@ -213,7 +235,8 @@ function mapCompetitiveInsights(
 
 export async function getProfileCompetitiveInsights(
     userId: string,
-    filter: CompetitiveInsightsFilter
+    filter: CompetitiveInsightsFilter,
+    fallbackRating?: number
 ): Promise<CompetitiveProfileInsights> {
     const { data, error } = await supabase.rpc("get_profile_competitive_insights", {
         target_user_id: userId,
@@ -222,5 +245,8 @@ export async function getProfileCompetitiveInsights(
 
     if (error) throw error;
 
-    return mapCompetitiveInsights(data as CompetitiveInsightsRpcResponse | null);
+    return mapCompetitiveInsights(
+        data as CompetitiveInsightsRpcResponse | null,
+        fallbackRating
+    );
 }

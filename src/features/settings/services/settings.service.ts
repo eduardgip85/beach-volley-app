@@ -108,7 +108,36 @@ export async function deleteCurrentAccount() {
         body: {},
     });
 
-    if (error) throw error;
+    if (error) {
+        const response = (error as { context?: Response }).context;
+
+        if (response) {
+            const rawBody = await response.text();
+
+            if (rawBody) {
+                try {
+                    const payload = JSON.parse(rawBody);
+
+                    if (
+                        payload &&
+                        typeof payload === "object" &&
+                        "error" in payload &&
+                        typeof payload.error === "string"
+                    ) {
+                        throw new Error(payload.error);
+                    }
+                } catch (parseError) {
+                    if (parseError instanceof Error && parseError.message !== rawBody) {
+                        throw new Error(rawBody);
+                    }
+
+                    throw parseError;
+                }
+            }
+        }
+
+        throw error;
+    }
 
     await supabase.auth.signOut({
         scope: "local",

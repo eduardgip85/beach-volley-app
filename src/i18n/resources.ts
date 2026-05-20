@@ -255,6 +255,7 @@ export const resources = {
                 whatBody:
                     "Beach Volley App combines event discovery, private coordination, player profiles and validated results in one place, so both casual communities and competitive players can manage games with less friction.",
                 howEyebrow: "How it works",
+                howTitle: "A simple flow from discovery to game day",
                 bestForEyebrow: "Best for",
                 upcomingEyebrow: "Upcoming beach volleyball events",
                 upcomingTitle: "Public sessions you can join next",
@@ -271,6 +272,70 @@ export const resources = {
                     "Beach Volley App is also prepared for competitive play. Match events support team assignment, set-based results, opposing-side validation and competitive rating updates when the final result is accepted.",
                 faqEyebrow: "Frequently asked",
                 faqTitle: "Quick answers about the platform",
+                heroMockType: "Competitive match",
+                heroMockVerified: "Verified gear",
+                heroMockBody:
+                    "Organize a clean 2v2 session with a clear location, fixed players and competitive follow-up.",
+                heroMockLocationLabel: "Location",
+                heroMockDateLabel: "Date",
+                heroMockPlayersLabel: "Players",
+                heroMockEquipmentLabel: "Equipment",
+                heroMockEquipmentValue: "Ball confirmed",
+                heroMockMiniOneTitle: "Visibility",
+                heroMockMiniOneBody: "Private or public access",
+                heroMockMiniTwoTitle: "Results",
+                heroMockMiniTwoBody: "Accepted score validation",
+                heroMockMiniThreeTitle: "Tracking",
+                heroMockMiniThreeBody: "Profile and rating history",
+                problemCardTitle: "Without structure",
+                problemItemOne:
+                    "Match plans get lost across chats, notes and last-minute messages.",
+                problemItemTwo:
+                    "Private sessions are harder to coordinate and access safely.",
+                problemItemThree:
+                    "Results and player progress are difficult to revisit later.",
+                solutionCardTitle: "With Beach Volley App",
+                solutionItemOne:
+                    "Players see clear event details, capacity, location and mode in one place.",
+                solutionItemTwo:
+                    "Private links, invitations and requests make access easier to control.",
+                solutionItemThree:
+                    "Accepted results, public profiles and history keep the product useful after the match.",
+                discoveryEyebrow: "Map and calendar",
+                discoveryTitle: "The same events, three ways to browse",
+                discoveryBody:
+                    "Some players prefer lists, others prefer a map, and others think by schedule. The same public events can be explored from every angle.",
+                discoveryListTitle: "List view",
+                discoveryListBody:
+                    "Scan event cards quickly, compare formats and jump straight into event detail pages.",
+                discoveryListCta: "Open list view",
+                discoveryMapTitle: "Map view",
+                discoveryMapBody:
+                    "Spot where the community is playing and open event detail directly from the map.",
+                discoveryMapCta: "Open map",
+                discoveryCalendarTitle: "Calendar view",
+                discoveryCalendarBody:
+                    "Understand the week at a glance and see how your local schedule is filling up.",
+                discoveryCalendarCta: "Open calendar",
+                aiEyebrow: "AI equipment verification",
+                aiTitle: "Verify your beach gear with AI",
+                aiBody:
+                    "Players can verify their ball or net so profiles and event coordination carry more trust around available equipment.",
+                aiBallTitle: "Ball verification",
+                aiBallBody:
+                    "Use the verification flow to confirm you really have a playable beach volleyball.",
+                aiNetTitle: "Net verification",
+                aiNetBody:
+                    "Verify a net too, so organizers and players know which profiles can help set up sessions.",
+                aiProfileTitle: "Visible on profile",
+                aiProfileBody:
+                    "Verified gear appears as badges on your profile and helps other players understand what you can bring.",
+                finalCtaEyebrow: "Ready to play",
+                finalCtaTitle:
+                    "Create a cleaner way to organize beach volleyball in your community",
+                finalCtaBody:
+                    "Explore public events, create your own sessions, track accepted results and keep your player profile organized in one place.",
+                finalCtaProfile: "Go to profile",
             },
             homeContent: {
                 faq1q: "What is Beach Volley App?",
@@ -942,6 +1007,142 @@ export const resources = {
                     all_time: "All time",
                 },
             },
+            onboardingRating: {
+                title: "Set your starting competitive level",
+                body: "Answer a few quick beach volleyball questions. We will estimate your starting competitive rating between 1.50 and 4.50, then your first competitive matches will keep adjusting it.",
+                progressLabel: "Progress",
+                previewEyebrow: "How it works",
+                previewTitle: "Starting estimate and fast adjustment",
+                previewBody: "You will not see your level until the survey is finished. After that, the app will quickly refine the estimate through your first accepted competitive matches.",
+                estimatedRatingLabel: "Estimated starting rating",
+                estimatedRatingBody: "The questionnaire gives you a reasonable starting point so you do not need to begin at the exact same level as everyone else.",
+                provisionalTitle: "First {{count}} competitive matches adapt faster",
+                provisionalBody: "Your first competitive matches use stronger adjustments so the rating can move quickly if this initial estimate is a bit high or low.",
+                resultEyebrow: "Starting level ready",
+                resultTitle: "This is your starting competitive rating",
+                resultBody: "It is only a starting estimate. Your first accepted competitive matches will keep refining it quickly.",
+                resultRatingLabel: "Your starting rating",
+                resultCta: "Enter the app",
+                back: "Back",
+                next: "Continue",
+                finish: "Save and continue",
+                saving: "Saving level...",
+                saveError: "Could not save your starting level",
+                steps: {
+                    foundation: {
+                        eyebrow: "Step 1",
+                        title: "Your playing base",
+                        body: "Start with simple questions about experience and how often you actually play beach volleyball.",
+                    },
+                    context: {
+                        eyebrow: "Step 2",
+                        title: "Competitive context",
+                        body: "Now we place your level against real match environments, tournaments and the players you normally face.",
+                    },
+                    technique: {
+                        eyebrow: "Step 3",
+                        title: "Technique and execution",
+                        body: "These answers help us separate casual control from players who are already ready for stronger competitive matches.",
+                    },
+                    advanced: {
+                        eyebrow: "Step 4",
+                        title: "Game understanding",
+                        body: "A few harder questions help us separate intermediate players from more advanced beach volleyball profiles.",
+                    },
+                },
+                questions: {
+                    experienceDuration: {
+                        title: "How long have you been playing beach volleyball?",
+                        description: "Think mostly about beach volleyball, not indoor volleyball.",
+                    },
+                    weeklyFrequency: {
+                        title: "How often do you usually play?",
+                        description: "Use your most normal recent rhythm, not your best week ever.",
+                    },
+                    tournamentExperience: {
+                        title: "What kind of competition have you played?",
+                        description: "This helps us know whether your level comes mostly from social games or structured competition.",
+                    },
+                    localLevel: {
+                        title: "Compared with players at your local courts, where do you usually fit?",
+                        description: "A self-estimate is useful here, but keep it honest.",
+                    },
+                    ballControl: {
+                        title: "How solid is your basic ball control under normal match pressure?",
+                        description: "Think about first touch, setting simple playable balls and keeping rallies alive with intent.",
+                    },
+                    sideoutConsistency: {
+                        title: "How often can you side-out from receive in matches at your current level?",
+                        description: "Side-out means winning the point while your team is receiving serve.",
+                    },
+                    tacticalSystems: {
+                        title: "How comfortable are you with beach volleyball tactics and systems?",
+                        description: "This is one of the harder questions and helps separate intermediate and advanced players.",
+                    },
+                    defenseReading: {
+                        title: "How well do you read the attacker and defensive space before the hit?",
+                        description: "Think about seeing line or cross, tips, high roll shots and where your teammate is covering.",
+                    },
+                },
+                options: {
+                    experience: {
+                        under_6_months: "Less than 6 months",
+                        six_to_twelve_months: "6 to 12 months",
+                        one_to_three_years: "1 to 3 years",
+                        three_to_six_years: "3 to 6 years",
+                        six_plus_years: "More than 6 years",
+                    },
+                    frequency: {
+                        occasional: "A few times per month or less",
+                        once_per_week: "About once per week",
+                        twice_per_week: "About twice per week",
+                        three_to_four_per_week: "3 to 4 times per week",
+                        five_plus_per_week: "5 or more times per week",
+                    },
+                    tournaments: {
+                        none: "No tournaments yet",
+                        friendly_ladders: "Friendly ladders or internal games",
+                        local_open: "Some open local tournaments",
+                        regular_local_tournaments: "Regularly play local tournaments",
+                        regional_or_national: "Regional or national level events",
+                    },
+                    localLevel: {
+                        starter: "Usually below the average local level",
+                        lower_intermediate: "Around lower-intermediate groups",
+                        intermediate: "Solid intermediate level locally",
+                        advanced_local: "Advanced compared with most local players",
+                        top_local: "Usually among the strongest local players",
+                    },
+                    ballControl: {
+                        beginner: "Still very inconsistent",
+                        basic: "Can keep simple balls alive",
+                        stable: "Generally stable in casual matches",
+                        advanced: "Reliable under good match rhythm",
+                        high_level: "Strong and dependable in competitive rhythm",
+                    },
+                    sideout: {
+                        learning: "Still learning to build clean side-outs",
+                        occasional: "I do it sometimes but not often",
+                        reliable_casual: "Quite reliable in casual games",
+                        competitive_ready: "Reliable against solid competitive players",
+                        advanced_competitive: "Strong side-out under real pressure",
+                    },
+                    tactics: {
+                        none: "I barely know the terms",
+                        heard_terms: "I know some terms but not deeply",
+                        understands_sideout_transition: "I understand side-out and transition basics",
+                        understands_block_defense_calls: "I understand block-defense calls and common systems",
+                        reads_systems_confidently: "I read systems and tactical adjustments confidently",
+                    },
+                    defense: {
+                        rarely: "I mostly react late",
+                        sometimes: "I read it sometimes",
+                        often: "I often read the attack with some anticipation",
+                        usually: "I usually read line, cross and soft shots well",
+                        advanced: "I read the game early and adjust with confidence",
+                    },
+                },
+            },
             ratingGuide: {
                 level: "Level",
                 bandStarter: "Starter",
@@ -1287,6 +1488,7 @@ export const resources = {
                 whatBody:
                     "Beach Volley App reune descubrimiento de eventos, coordinacion privada, perfiles de jugador y resultados validados en un solo sitio, para que tanto comunidades casuales como jugadores competitivos gestionen sus partidos con menos friccion.",
                 howEyebrow: "Como funciona",
+                howTitle: "Un flujo simple desde descubrir hasta jugar",
                 bestForEyebrow: "Ideal para",
                 upcomingEyebrow: "Proximos eventos de voley playa",
                 upcomingTitle: "Sesiones publicas a las que puedes unirte",
@@ -1303,6 +1505,70 @@ export const resources = {
                     "Beach Volley App tambien esta preparada para juego competitivo. Los partidos permiten asignacion de equipos, resultados por sets, validacion del rival y actualizacion del rating competitivo cuando el resultado final es aceptado.",
                 faqEyebrow: "Preguntas frecuentes",
                 faqTitle: "Respuestas rapidas sobre la plataforma",
+                heroMockType: "Partido competitivo",
+                heroMockVerified: "Material verificado",
+                heroMockBody:
+                    "Organiza una sesion 2v2 mas clara, con ubicacion definida, jugadores cerrados y seguimiento competitivo.",
+                heroMockLocationLabel: "Ubicacion",
+                heroMockDateLabel: "Fecha",
+                heroMockPlayersLabel: "Jugadores",
+                heroMockEquipmentLabel: "Equipamiento",
+                heroMockEquipmentValue: "Pelota confirmada",
+                heroMockMiniOneTitle: "Visibilidad",
+                heroMockMiniOneBody: "Acceso publico o privado",
+                heroMockMiniTwoTitle: "Resultados",
+                heroMockMiniTwoBody: "Validacion del marcador",
+                heroMockMiniThreeTitle: "Seguimiento",
+                heroMockMiniThreeBody: "Perfil e historial",
+                problemCardTitle: "Sin estructura",
+                problemItemOne:
+                    "Los planes de partido se pierden entre chats, notas y mensajes de ultima hora.",
+                problemItemTwo:
+                    "Las sesiones privadas son mas dificiles de coordinar y controlar.",
+                problemItemThree:
+                    "Cuesta volver a ver resultados y progreso de jugadores despues del partido.",
+                solutionCardTitle: "Con Beach Volley App",
+                solutionItemOne:
+                    "Los jugadores ven en un solo sitio los detalles del evento, plazas, ubicacion y formato.",
+                solutionItemTwo:
+                    "Los links privados, invitaciones y solicitudes hacen mas facil controlar el acceso.",
+                solutionItemThree:
+                    "Los resultados aceptados, perfiles publicos e historial mantienen el valor de la app despues de jugar.",
+                discoveryEyebrow: "Mapa y calendario",
+                discoveryTitle: "Los mismos eventos, tres formas de explorarlos",
+                discoveryBody:
+                    "Algunos jugadores prefieren lista, otros mapa y otros pensar por agenda. Los mismos eventos publicos se pueden descubrir desde cada vista.",
+                discoveryListTitle: "Vista lista",
+                discoveryListBody:
+                    "Recorre rapidamente las cards, compara formatos y entra directo al detalle del evento.",
+                discoveryListCta: "Abrir lista",
+                discoveryMapTitle: "Vista mapa",
+                discoveryMapBody:
+                    "Detecta donde juega la comunidad y abre el detalle del evento directamente desde el mapa.",
+                discoveryMapCta: "Abrir mapa",
+                discoveryCalendarTitle: "Vista calendario",
+                discoveryCalendarBody:
+                    "Entiende la semana de un vistazo y ve como se llena tu agenda local.",
+                discoveryCalendarCta: "Abrir calendario",
+                aiEyebrow: "Verificacion con IA",
+                aiTitle: "Verifica tu equipamiento con IA",
+                aiBody:
+                    "Los jugadores pueden verificar su pelota o red para que el perfil y la coordinacion de eventos tengan mas confianza alrededor del material disponible.",
+                aiBallTitle: "Verificacion de pelota",
+                aiBallBody:
+                    "Usa el flujo de verificacion para confirmar que realmente tienes una pelota valida para voley playa.",
+                aiNetTitle: "Verificacion de red",
+                aiNetBody:
+                    "Verifica tambien una red para que organizadores y jugadores sepan que perfiles pueden ayudar a montar sesiones.",
+                aiProfileTitle: "Visible en tu perfil",
+                aiProfileBody:
+                    "El material verificado aparece como badge en tu perfil y ayuda a otros jugadores a entender que puedes aportar.",
+                finalCtaEyebrow: "Listo para jugar",
+                finalCtaTitle:
+                    "Organiza mejor el voley playa de tu comunidad con una experiencia mas limpia",
+                finalCtaBody:
+                    "Explora eventos publicos, crea tus propias sesiones, sigue resultados aceptados y manten tu perfil de jugador organizado en un solo lugar.",
+                finalCtaProfile: "Ir al perfil",
             },
             homeContent: {
                 faq1q: "Que es Beach Volley App?",
@@ -1372,36 +1638,36 @@ export const resources = {
                 eyebrow: "Ranking competitivo",
                 title: "Sigue a los jugadores de voley playa mas fuertes",
                 body:
-                    "Explora la clasificacion global, compara jugadores de tu pais y mira como te situas frente a tus amigos. Las valoraciones solo se actualizan con partidos competitivos aceptados.",
+                    "Explora la clasificación global, compara jugadores de tu país y mira cómo te sitúas frente a tus amigos. Las valoraciones solo se actualizan con partidos competitivos aceptados.",
                 scope: "Alcance",
                 players: "Jugadores",
                 rules: "Reglas",
-                leaderboardSuffix: "clasificacion",
-                leaderboardTitle: "Clasificacion {{scope}}",
+                leaderboardSuffix: "clasificación",
+                leaderboardTitle: "Clasificación {{scope}}",
                 globalBody:
-                    "Todos los resultados competitivos aceptados contribuyen a esta clasificacion en vivo.",
-                countryBody: "Clasificacion filtrada por {{country}}.",
-                friendsBody: "Solo se incluyen amigos aceptados en esta comparacion.",
-                loginForFriends: "Inicia sesion para el ranking de amigos",
-                addCountry: "Anade tu pais mas tarde para desbloquear esta vista",
-                loadingTitle: "El ranking aun no esta listo",
+                    "Todos los resultados competitivos aceptados contribuyen a esta clasificación en vivo.",
+                countryBody: "Clasificación filtrada por {{country}}.",
+                friendsBody: "Solo se incluyen amigos aceptados en esta comparación.",
+                loginForFriends: "Inicia sesión para el ranking de amigos",
+                addCountry: "Añade tu país más tarde para desbloquear esta vista",
+                loadingTitle: "El ranking aún no está listo",
                 showLegend: "Mostrar leyenda del rating",
-                legendEyebrow: "Guia de rating competitivo",
+                legendEyebrow: "Guía de rating competitivo",
                 legendTitle: "Mapa de niveles inspirado en Playtomic para voley playa",
                 legendBody:
-                    "Esta escala va de 0.0 a 10.0. Es una guia practica para ayudar a los jugadores a entender que significa aproximadamente cada nivel dentro de la app.",
+                    "Esta escala va de 0.0 a 10.0. Es una guía práctica para ayudar a los jugadores a entender qué significa aproximadamente cada nivel dentro de la app.",
                 closeLegend: "Cerrar leyenda",
                 closeRatingLegend: "Cerrar leyenda del rating",
                 tabs: {
                     global: "Global",
-                    country: "Pais",
+                    country: "País",
                     friends: "Amigos",
                 },
-                emptyCountryUnlock: "Anade un pais a tu perfil para desbloquear el ranking local.",
-                emptyFriendsLogin: "Inicia sesion para comparar tu rating con amigos aceptados.",
-                emptyFriends: "Aun no hay amigos rankeados. Juega partidos competitivos y haz crecer tu red.",
-                emptyCountry: "Aun no hay jugadores rankeados para este pais.",
-                emptyGlobal: "Aun no hay datos de ranking competitivo. Valida un partido competitivo para aparecer aqui.",
+                emptyCountryUnlock: "Añade un país a tu perfil para desbloquear el ranking local.",
+                emptyFriendsLogin: "Inicia sesión para comparar tu rating con amigos aceptados.",
+                emptyFriends: "Aún no hay amigos rankeados. Juega partidos competitivos y haz crecer tu red.",
+                emptyCountry: "Aún no hay jugadores rankeados para este país.",
+                emptyGlobal: "Aún no hay datos de ranking competitivo. Valida un partido competitivo para aparecer aquí.",
             },
             myEventJoinRequests: {
                 title: "Solicitudes a eventos privados",
@@ -1932,11 +2198,11 @@ export const resources = {
                 ratingEvolutionBody:
                     "Mira como tus partidos competitivos aceptados movieron tu rating.",
                 ratingEvolutionLoading: "Cargando evolucion del rating...",
-                noCompetitiveRatingHistory: "Aun no hay historial de rating competitivo",
+                noCompetitiveRatingHistory: "Aún no hay historial de rating competitivo",
                 noCompetitiveRatingHistoryBody:
-                    "Cuando valides partidos competitivos, tu grafica de rating aparecera aqui.",
+                    "Cuando valides partidos competitivos, tu gráfica de rating aparecerá aquí.",
                 ratingTooltip: "{{rating}} de rating",
-                afterMatch: "{{delta}} despues del partido",
+                afterMatch: "{{delta}} después del partido",
                 competitiveSummary: "Resumen competitivo",
                 competitiveSummaryBody:
                     "Rating actual, nivel medio y rachas generales.",
@@ -1948,16 +2214,16 @@ export const resources = {
                 matchHistoryBody:
                     "Partidos competitivos con resultado, delta de rating y resumen por sets.",
                 loadingCompetitiveHistory: "Cargando historial competitivo...",
-                noCompetitiveHistory: "Aun no hay historial competitivo para este rango",
+                noCompetitiveHistory: "Aún no hay historial competitivo para este rango",
                 noCompetitiveHistoryBody:
-                    "Juega y valida partidos competitivos para desbloquear tu grafica y tus tarjetas de historial.",
-                lastFiveMatches: "Ultimos 5 partidos",
-                lastFiveMatchesBody: "Mostrando tus ultimos resultados validados.",
+                    "Juega y valida partidos competitivos para desbloquear tu gráfica y tus tarjetas de historial.",
+                lastFiveMatches: "Últimos 5 partidos",
+                lastFiveMatchesBody: "Mostrando tus últimos resultados validados.",
                 validatedOnly: "Solo validados",
                 loadingRecentMatches: "Cargando partidos recientes...",
-                noRecentMatches: "Aun no hay partidos validados recientes",
+                noRecentMatches: "Aún no hay partidos validados recientes",
                 noRecentMatchesBody:
-                    "Cuando un partido al que te hayas unido tenga un resultado aceptado, aparecera aqui.",
+                    "Cuando un partido al que te hayas unido tenga un resultado aceptado, aparecerá aquí.",
                 validated: "Validado",
                 won: "Ganado",
                 lost: "Perdido",
@@ -1968,10 +2234,146 @@ export const resources = {
                     casual: "Casual",
                 },
                 insightFilters: {
-                    last_5_matches: "Ultimos 5",
-                    last_10_matches: "Ultimos 10",
-                    last_30_days: "30 dias",
+                    last_5_matches: "Últimos 5",
+                    last_10_matches: "Últimos 10",
+                    last_30_days: "30 días",
                     all_time: "Todo",
+                },
+            },
+            onboardingRating: {
+                title: "Define tu nivel competitivo inicial",
+                body: "Responde unas pocas preguntas rápidas de voley playa. Estimaremos tu rating competitivo inicial entre 1.50 y 4.50, y luego tus primeros partidos competitivos lo seguirán ajustando.",
+                progressLabel: "Progreso",
+                previewEyebrow: "Cómo funciona",
+                previewTitle: "Estimación inicial y ajuste rápido",
+                previewBody: "No verás tu nivel hasta terminar la encuesta. Después, la app corregirá esa estimación con tus primeros partidos competitivos aceptados.",
+                estimatedRatingLabel: "Rating inicial estimado",
+                estimatedRatingBody: "El cuestionario te da un punto de partida razonable para que no tengas que empezar exactamente en el mismo nivel que todo el mundo.",
+                provisionalTitle: "Los primeros {{count}} partidos competitivos se ajustan más rápido",
+                provisionalBody: "Tus primeros partidos competitivos usan ajustes más fuertes para que el rating pueda moverse rápido si esta estimación inicial sale un poco alta o baja.",
+                resultEyebrow: "Nivel inicial listo",
+                resultTitle: "Este es tu rating competitivo inicial",
+                resultBody: "Es una estimación de arranque. Tus primeros partidos competitivos aceptados la irán afinando rápidamente.",
+                resultRatingLabel: "Tu rating inicial",
+                resultCta: "Entrar en la app",
+                back: "Atrás",
+                next: "Continuar",
+                finish: "Guardar y continuar",
+                saving: "Guardando nivel...",
+                saveError: "No se pudo guardar tu nivel inicial",
+                steps: {
+                    foundation: {
+                        eyebrow: "Paso 1",
+                        title: "Tu base de juego",
+                        body: "Empieza con preguntas simples sobre experiencia y frecuencia real jugando voley playa.",
+                    },
+                    context: {
+                        eyebrow: "Paso 2",
+                        title: "Contexto competitivo",
+                        body: "Ahora situamos tu nivel según partidos reales, torneos y el tipo de jugadores con los que sueles jugar.",
+                    },
+                    technique: {
+                        eyebrow: "Paso 3",
+                        title: "Técnica y ejecución",
+                        body: "Estas respuestas ayudan a separar control casual de jugadores ya preparados para partidos competitivos más exigentes.",
+                    },
+                    advanced: {
+                        eyebrow: "Paso 4",
+                        title: "Lectura de juego",
+                        body: "Unas preguntas algo más difíciles ayudan a separar perfiles intermedios de perfiles más avanzados de voley playa.",
+                    },
+                },
+                questions: {
+                    experienceDuration: {
+                        title: "¿Cuánto tiempo llevas jugando voley playa?",
+                        description: "Piensa sobre todo en voley playa, no en voley pista.",
+                    },
+                    weeklyFrequency: {
+                        title: "¿Con qué frecuencia sueles jugar?",
+                        description: "Usa tu ritmo normal reciente, no tu mejor semana aislada.",
+                    },
+                    tournamentExperience: {
+                        title: "¿Qué tipo de competición has jugado?",
+                        description: "Esto nos ayuda a saber si tu nivel viene más de pachangas sociales o de competición estructurada.",
+                    },
+                    localLevel: {
+                        title: "Comparado con la gente de tus pistas locales, ¿dónde sueles estar?",
+                        description: "Aquí una autoestimación ayuda, pero intenta ser honesto.",
+                    },
+                    ballControl: {
+                        title: "¿Qué tan sólido es tu control básico de balón con presión normal de partido?",
+                        description: "Piensa en primer toque, colocaciones sencillas jugables y mantener rallies con intención.",
+                    },
+                    sideoutConsistency: {
+                        title: "¿Con qué frecuencia haces side-out en partidos de tu nivel actual?",
+                        description: "Side-out significa ganar el punto cuando tu equipo esta recibiendo saque.",
+                    },
+                    tacticalSystems: {
+                        title: "¿Qué tan cómodo te sientes con la táctica y los sistemas de voley playa?",
+                        description: "Esta es de las preguntas más difíciles y ayuda a separar perfiles intermedios y avanzados.",
+                    },
+                    defenseReading: {
+                        title: "¿Qué tan bien lees al atacante y el espacio defensivo antes del golpe?",
+                        description: "Piensa en leer línea o cruzado, tips, roll shots y dónde está cubriendo tu compañero.",
+                    },
+                },
+                options: {
+                    experience: {
+                        under_6_months: "Menos de 6 meses",
+                        six_to_twelve_months: "De 6 a 12 meses",
+                        one_to_three_years: "De 1 a 3 años",
+                        three_to_six_years: "De 3 a 6 años",
+                        six_plus_years: "Más de 6 años",
+                    },
+                    frequency: {
+                        occasional: "Unas pocas veces al mes o menos",
+                        once_per_week: "Aproximadamente una vez por semana",
+                        twice_per_week: "Aproximadamente dos veces por semana",
+                        three_to_four_per_week: "3 o 4 veces por semana",
+                        five_plus_per_week: "5 o más veces por semana",
+                    },
+                    tournaments: {
+                        none: "Todavía ningún torneo",
+                        friendly_ladders: "Rankings internos o partidos amistosos",
+                        local_open: "Algunos torneos open locales",
+                        regular_local_tournaments: "Juego torneos locales con regularidad",
+                        regional_or_national: "Eventos regionales o nacionales",
+                    },
+                    localLevel: {
+                        starter: "Normalmente por debajo del nivel medio local",
+                        lower_intermediate: "Más o menos en grupos intermedios bajos",
+                        intermediate: "Nivel intermedio sólido en mi zona",
+                        advanced_local: "Avanzado respecto a la mayoría local",
+                        top_local: "Suele estar entre los más fuertes a nivel local",
+                    },
+                    ballControl: {
+                        beginner: "Todavía muy irregular",
+                        basic: "Puedo mantener bolas sencillas vivas",
+                        stable: "Bastante estable en partidos casuales",
+                        advanced: "Fiable con buen ritmo de partido",
+                        high_level: "Fuerte y sólido en ritmo competitivo",
+                    },
+                    sideout: {
+                        learning: "Todavía estoy aprendiendo a construir side-outs limpios",
+                        occasional: "Lo hago a veces, pero no muy a menudo",
+                        reliable_casual: "Bastante fiable en partidos casuales",
+                        competitive_ready: "Fiable contra jugadores competitivos sólidos",
+                        advanced_competitive: "Muy buen side-out con presión real",
+                    },
+                    tactics: {
+                        none: "Apenas conozco los términos",
+                        heard_terms: "Conozco algunos términos pero no en profundidad",
+                        understands_sideout_transition: "Entiendo las bases de side-out y transición",
+                        understands_block_defense_calls: "Entiendo llamadas de bloqueo-defensa y sistemas comunes",
+                        reads_systems_confidently: "Leo sistemas y ajustes tácticos con seguridad",
+                    },
+                    defense: {
+                        rarely: "Normalmente reacciono tarde",
+                        sometimes: "A veces lo leo bien",
+                        often: "Suelo leer el ataque con cierta anticipación",
+                        usually: "Normalmente leo bien línea, cruzado y bolas suaves",
+                        advanced: "Leo el juego pronto y ajusto con confianza",
+                    },
                 },
             },
             ratingGuide: {

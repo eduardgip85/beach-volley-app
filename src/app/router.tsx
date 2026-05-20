@@ -83,6 +83,13 @@ const ProfileHistoryPage = lazy(() =>
     default: module.ProfileHistoryPage,
   }))
 );
+const CompetitiveRatingOnboardingPage = lazy(() =>
+  import("../features/onboarding/pages/CompetitiveRatingOnboardingPage").then(
+    (module) => ({
+      default: module.CompetitiveRatingOnboardingPage,
+    })
+  )
+);
 const FriendsPage = lazy(() =>
   import("../features/friends/pages/FriendsPage").then((module) => ({
     default: module.FriendsPage,
@@ -202,6 +209,10 @@ export const router = createBrowserRouter([
           {
             path: "/profile/history",
             element: withSuspense(<ProfileHistoryPage />),
+          },
+          {
+            path: "/onboarding/competitive-rating",
+            element: withSuspense(<CompetitiveRatingOnboardingPage />),
           },
           {
             path: "/friends",

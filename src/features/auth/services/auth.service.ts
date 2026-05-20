@@ -70,6 +70,17 @@ function mapProfile(profile: any): UserProfile {
         preferredHand: profile.preferred_hand ?? null,
         preferredCourtSide: profile.preferred_court_side ?? null,
         preferredPlayDays: normalizePreferredPlayDays(profile.preferred_play_days),
+        ratingPlacementCompletedAt: profile.rating_placement_completed_at ?? null,
+        ratingPlacementEstimate:
+            typeof profile.rating_placement_estimate === "number"
+                ? profile.rating_placement_estimate
+                : null,
+        ratingPlacementScore:
+            typeof profile.rating_placement_score === "number"
+                ? profile.rating_placement_score
+                : null,
+        provisionalRatingMatchesRemaining:
+            profile.provisional_rating_matches_remaining ?? 0,
     };
 }
 

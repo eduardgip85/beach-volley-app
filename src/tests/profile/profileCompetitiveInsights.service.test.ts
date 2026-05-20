@@ -125,4 +125,47 @@ describe("profileCompetitiveInsights.service", () => {
         expect(result.matchHistory[0].rating).toBe(2.15);
         expect(result.matchHistory[0].ratingDelta).toBe(0.15);
     });
+
+    it("prefers the current profile rating for the current summary while preserving historical match ratings", async () => {
+        mockRpc.mockResolvedValue({
+            data: {
+                currentRating: 2.15,
+                matchesPlayed: 1,
+                wins: 1,
+                losses: 0,
+                winRate: 100,
+                currentStreak: 1,
+                bestStreak: 1,
+                averageRating: 2.15,
+                chartPoints: [],
+                matchHistory: [
+                    {
+                        historyId: "legacy-event-1",
+                        eventId: "event-legacy-1",
+                        title: "Legacy Competitive Match",
+                        locationName: "Nova Icaria",
+                        startDate: "2026-05-10T18:00:00.000Z",
+                        mode: "competitive",
+                        outcome: "win",
+                        winningTeam: "team_a",
+                        playerTeam: "team_a",
+                        rating: 2.15,
+                        ratingDelta: 0.15,
+                        sets: [],
+                    },
+                ],
+            },
+            error: null,
+        });
+
+        const result = await getProfileCompetitiveInsights(
+            "user-1",
+            "last_10_matches",
+            3.4
+        );
+
+        expect(result.currentRating).toBe(3.4);
+        expect(result.averageRating).toBe(2.15);
+        expect(result.matchHistory[0].rating).toBe(2.15);
+    });
 });
