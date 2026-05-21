@@ -6,6 +6,8 @@ import type {
     FriendRequestStatus,
 } from "../types/friends.types";
 
+export const FRIEND_REQUESTS_UPDATED_EVENT = "friends:requests-updated";
+
 interface FriendProfileRow {
     id: string;
     full_name: string;
@@ -66,6 +68,14 @@ function mapFriendRequest(row: FriendRequestRow): FriendRequest {
         requester: mapFriendProfile(normalizeFriendProfileRelation(row.requester)),
         receiver: mapFriendProfile(normalizeFriendProfileRelation(row.receiver)),
     };
+}
+
+function notifyFriendRequestsUpdated() {
+    if (typeof window === "undefined") {
+        return;
+    }
+
+    window.dispatchEvent(new Event(FRIEND_REQUESTS_UPDATED_EVENT));
 }
 
 async function getCurrentAuthenticatedUserId() {
@@ -149,6 +159,20 @@ export async function getFriendRequests(userId: string): Promise<FriendRequest[]
     return data.map(mapFriendRequest);
 }
 
+export async function getIncomingPendingFriendRequestCount(
+    userId: string
+): Promise<number> {
+    const { count, error } = await supabase
+        .from("friend_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("receiver_id", userId)
+        .eq("status", "pending");
+
+    if (error) throw error;
+
+    return count ?? 0;
+}
+
 export function getFriendsFromRequests(
     requests: FriendRequest[],
     userId: string
@@ -202,19 +226,31 @@ export async function sendFriendRequest(receiverId: string): Promise<FriendReque
         handleFriendRequestWriteError(error);
     }
 
-    return mapFriendRequest(data);
+    const request = mapFriendRequest(data);
+    notifyFriendRequestsUpdated();
+
+    return request;
 }
 
 export async function acceptFriendRequest(requestId: string): Promise<FriendRequest> {
-    return mutateFriendRequest(requestId, "accepted");
+    const request = await mutateFriendRequest(requestId, "accepted");
+    notifyFriendRequestsUpdated();
+
+    return request;
 }
 
 export async function rejectFriendRequest(requestId: string): Promise<FriendRequest> {
-    return mutateFriendRequest(requestId, "rejected");
+    const request = await mutateFriendRequest(requestId, "rejected");
+    notifyFriendRequestsUpdated();
+
+    return request;
 }
 
 export async function cancelFriendRequest(requestId: string): Promise<FriendRequest> {
-    return mutateFriendRequest(requestId, "cancelled");
+    const request = await mutateFriendRequest(requestId, "cancelled");
+    notifyFriendRequestsUpdated();
+
+    return request;
 }
 
 export async function removeFriend(friendUserId: string): Promise<FriendRequest> {
@@ -233,5 +269,8 @@ export async function removeFriend(friendUserId: string): Promise<FriendRequest>
         .single();
 
     if (error) throw error;
-    return mapFriendRequest(data);
+    const request = mapFriendRequest(data);
+    notifyFriendRequestsUpdated();
+
+    return request;
 }

@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/context/AuthContext";
+import { usePendingIncomingFriendRequests } from "../features/friends/hooks/usePendingIncomingFriendRequests";
 
 interface NavItem {
   label: string;
@@ -51,6 +52,7 @@ export function AppLayout() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOnboardingRoute = location.pathname === "/onboarding/competitive-rating";
+  const pendingFriendRequestCount = usePendingIncomingFriendRequests(profile?.id);
 
   async function handleLogout() {
     try {
@@ -130,6 +132,7 @@ export function AppLayout() {
   ];
 
   const mobileNavItems = desktopNavItems;
+  const showFriendsNotification = pendingFriendRequestCount > 0;
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-slate-100 md:flex">
@@ -205,6 +208,8 @@ export function AppLayout() {
           <nav className="mt-6 flex-1 space-y-2">
             {desktopNavItems.map((item) => {
               const Icon = item.icon;
+              const shouldShowNotification =
+                item.path === "/friends" && showFriendsNotification;
 
               return (
                 <NavLink
@@ -217,6 +222,12 @@ export function AppLayout() {
                     <Icon size={18} />
                   </span>
                   <span>{item.label}</span>
+                  {shouldShowNotification ? (
+                    <span
+                      aria-hidden="true"
+                      className="ml-auto h-2.5 w-2.5 rounded-full bg-rose-500"
+                    />
+                  ) : null}
                 </NavLink>
               );
             })}
@@ -326,6 +337,8 @@ export function AppLayout() {
           <nav className="relative flex-1 space-y-2 overflow-y-auto px-4 py-5">
             {mobileNavItems.map((item) => {
               const Icon = item.icon;
+              const shouldShowNotification =
+                item.path === "/friends" && showFriendsNotification;
 
               return (
                 <NavLink
@@ -337,6 +350,12 @@ export function AppLayout() {
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
+                  {shouldShowNotification ? (
+                    <span
+                      aria-hidden="true"
+                      className="ml-auto h-2.5 w-2.5 rounded-full bg-rose-500"
+                    />
+                  ) : null}
                 </NavLink>
               );
             })}
