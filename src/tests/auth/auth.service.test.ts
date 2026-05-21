@@ -93,7 +93,7 @@ describe("auth.service", () => {
     });
 
     describe("registerUser", () => {
-        it("should register a user and create a player profile", async () => {
+        it("should register a user and return immediate access when a session exists", async () => {
             const authData = {
                 user: {
                     id: "user-1",
@@ -133,15 +133,7 @@ describe("auth.service", () => {
                         "http://localhost:3000/auth/callback?redirect=%2Fprofile",
                 },
             });
-
-            expect(mocks.mockInsert).toHaveBeenCalledWith({
-                id: "user-1",
-                full_name: "Test User",
-                email: "test@test.com",
-                role: "player",
-                competitive_rating: 2,
-                preferred_language: "en",
-            });
+            expect(mocks.mockInsert).not.toHaveBeenCalled();
         });
 
         it("should not create a profile immediately when email verification is required", async () => {
@@ -416,6 +408,55 @@ describe("auth.service", () => {
             });
             expect(result?.fullName).toBe("Google User");
             expect(result?.role).toBe("player");
+        });
+
+        it("should recover the existing profile when creation hits a duplicate conflict", async () => {
+            mocks.mockGetSession.mockResolvedValue({
+                data: {
+                    session: {
+                        user: {
+                            id: "user-3",
+                            email: "duplicate@test.com",
+                            user_metadata: {
+                                full_name: "Duplicate User",
+                            },
+                        },
+                    },
+                },
+                error: null,
+            });
+
+            mocks.mockMaybeSingle.mockResolvedValueOnce({
+                data: null,
+                error: null,
+            });
+
+            mocks.mockInsert.mockReturnValue({
+                select: mocks.mockInsertSelect,
+            });
+
+            mocks.mockSingle
+                .mockResolvedValueOnce({
+                    data: null,
+                    error: {
+                        code: "23505",
+                        message: "duplicate key value violates unique constraint",
+                    },
+                })
+                .mockResolvedValueOnce({
+                    data: {
+                        ...profileRow,
+                        id: "user-3",
+                        email: "duplicate@test.com",
+                        full_name: "Duplicate User",
+                    },
+                    error: null,
+                });
+
+            const result = await getCurrentProfile();
+
+            expect(result?.id).toBe("user-3");
+            expect(result?.email).toBe("duplicate@test.com");
         });
 
     });

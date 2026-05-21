@@ -134,7 +134,29 @@ async function ensureProfileForUser(user: any) {
         .select("*")
         .single();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+        const isDuplicateProfileError =
+            typeof insertError === "object" &&
+            insertError !== null &&
+            "code" in insertError &&
+            insertError.code === "23505";
+
+        if (!isDuplicateProfileError) {
+            throw insertError;
+        }
+
+        const { data: existingProfile, error: retryError } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .single();
+
+        if (retryError) {
+            throw retryError;
+        }
+
+        return existingProfile;
+    }
 
     return insertedProfile;
 }
@@ -164,19 +186,6 @@ export async function registerUser({
     }
 
     const requiresEmailVerification = !authData.session;
-
-    if (!requiresEmailVerification) {
-        const { error: profileError } = await supabase.from("profiles").insert({
-            id: userId,
-            full_name: fullName,
-            email,
-            role: "player",
-            competitive_rating: DEFAULT_COMPETITIVE_RATING,
-            preferred_language: getPreferredAppLanguage(),
-        });
-
-        if (profileError) throw profileError;
-    }
 
     return {
         requiresEmailVerification,
