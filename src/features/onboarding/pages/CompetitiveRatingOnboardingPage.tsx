@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
@@ -40,6 +40,7 @@ export function CompetitiveRatingOnboardingPage() {
     const [submitError, setSubmitError] = useState("");
     const [completedResult, setCompletedResult] =
         useState<RatingPlacementResult | null>(null);
+    const pageTopRef = useRef<HTMLDivElement | null>(null);
 
     const redirectTarget = useMemo(() => {
         const params = new URLSearchParams(location.search);
@@ -61,6 +62,17 @@ export function CompetitiveRatingOnboardingPage() {
     const progress = Math.round(
         ((currentStepIndex + 1) / ratingPlacementSteps.length) * 100
     );
+
+    useEffect(() => {
+        if (completedResult) {
+            return;
+        }
+
+        pageTopRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+        });
+    }, [completedResult, currentStepIndex]);
 
     if (!profile) {
         return (
@@ -120,6 +132,7 @@ export function CompetitiveRatingOnboardingPage() {
 
     return (
         <section className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 md:px-8 md:py-10">
+            <div ref={pageTopRef} />
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_360px] lg:items-start">
                 <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] sm:p-6 md:p-8">
                     <div className="flex flex-col gap-4">

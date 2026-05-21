@@ -19,13 +19,13 @@ export function CalendarGrid({
 }: CalendarGridProps) {
     const { t } = useTranslation();
     const weekDays = [
-        t("calendar.weekDaySun"),
         t("calendar.weekDayMon"),
         t("calendar.weekDayTue"),
         t("calendar.weekDayWed"),
         t("calendar.weekDayThu"),
         t("calendar.weekDayFri"),
         t("calendar.weekDaySat"),
+        t("calendar.weekDaySun"),
     ];
 
     return (

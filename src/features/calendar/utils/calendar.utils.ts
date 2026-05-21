@@ -6,7 +6,7 @@ import {
     isPastEvent as isSharedPastEvent,
 } from "../../events/utils/event-display.utils";
 
-export const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export function isSameDay(dateA: Date, dateB: Date) {
     return dateA.toDateString() === dateB.toDateString();
@@ -33,13 +33,14 @@ export function getMonthDays(currentDate: Date) {
 
     const firstDay = new Date(year, month, 1);
     const startDay = firstDay.getDay();
+    const leadingDays = (startDay + 6) % 7;
 
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const previousMonthDays = new Date(year, month, 0).getDate();
 
     const days: Date[] = [];
 
-    for (let i = startDay - 1; i >= 0; i--) {
+    for (let i = leadingDays - 1; i >= 0; i--) {
         days.push(new Date(year, month - 1, previousMonthDays - i));
     }
 
@@ -48,7 +49,7 @@ export function getMonthDays(currentDate: Date) {
     }
 
     while (days.length < 42) {
-        const nextDay = days.length - (startDay + daysInMonth) + 1;
+        const nextDay = days.length - (leadingDays + daysInMonth) + 1;
         days.push(new Date(year, month + 1, nextDay));
     }
 
