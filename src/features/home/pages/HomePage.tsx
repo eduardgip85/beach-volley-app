@@ -224,6 +224,7 @@ export function HomePage() {
         t("home.featureList.discovery"),
         t("home.featureList.organize"),
         t("home.featureList.privateAccess"),
+        t("home.featureList.eventChat"),
         t("home.featureList.validatedResults"),
         t("home.featureList.competitiveRating"),
         t("home.featureList.publicProfiles"),

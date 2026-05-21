@@ -245,7 +245,7 @@ export const resources = {
                 heroTitle:
                     "Find beach volleyball matches, create events and play with your local community.",
                 heroBody:
-                    "Beach Volley App helps players discover beach volleyball matches, join open play sessions, manage private games and track competitive progress without relying on scattered chats.",
+                    "Beach Volley App helps players discover beach volleyball matches, join open play sessions, manage private games, coordinate through event chats and track competitive progress without relying on scattered tools.",
                 loadError: "Could not load home data",
                 exploreEvents: "Explore events",
                 createEvent: "Create an event",
@@ -284,14 +284,14 @@ export const resources = {
                 competitiveEyebrow: "Competitive layer",
                 competitiveTitle: "More than just event listings",
                 competitiveBody:
-                    "Beach Volley App is also prepared for competitive play. Match events support team assignment, set-based results, opposing-side validation and competitive rating updates when the final result is accepted.",
+                    "Beach Volley App is also prepared for competitive play. Match events support team assignment, joined-player event chat, set-based results, opposing-side validation and competitive rating updates when the final result is accepted.",
                 faqEyebrow: "Frequently asked",
                 faqTitle: "Quick answers about the platform",
                 heroMockType: "Competitive match",
                 heroMockVerified: "Verified gear",
                 heroMockTitle: "Sunset Beach Match",
                 heroMockBody:
-                    "Organize a clean 2v2 session with a clear location, fixed players and competitive follow-up.",
+                    "Organize a clean 2v2 session with a clear location, fixed players, event chat and competitive follow-up.",
                 heroMockLocationLabel: "Location",
                 heroMockLocationValue: "Barceloneta",
                 heroMockDateLabel: "Date",
@@ -303,8 +303,8 @@ export const resources = {
                 heroMockMiniOneBody: "Private or public access",
                 heroMockMiniTwoTitle: "Results",
                 heroMockMiniTwoBody: "Accepted score validation",
-                heroMockMiniThreeTitle: "Tracking",
-                heroMockMiniThreeBody: "Profile and rating history",
+                heroMockMiniThreeTitle: "Event chat",
+                heroMockMiniThreeBody: "Joined players coordinate inside the event",
                 problemCardTitle: "Without structure",
                 problemItemOne:
                     "Match plans get lost across chats, notes and last-minute messages.",
@@ -363,6 +363,7 @@ export const resources = {
                     discovery: "Beach volleyball event discovery",
                     organize: "Open play and match organization",
                     privateAccess: "Private event join requests",
+                    eventChat: "Event chat for joined players",
                     validatedResults: "Validated match results",
                     competitiveRating: "Competitive player rating",
                     publicProfiles: "Public player profiles",
@@ -377,7 +378,7 @@ export const resources = {
                     "It is built for casual players, competitive duos, local communities and organizers who want a cleaner way to coordinate beach volleyball games.",
                 faq3q: "What can you do inside the app?",
                 faq3a:
-                    "You can explore public events, join matches, request access to private games, track validated results, manage friends and build a competitive profile over time.",
+                    "You can explore public events, join matches, request access to private games, use event chat with joined players, track validated results, manage friends and build a competitive profile over time.",
                 faq4q: "How do competitive matches work?",
                 faq4a:
                     "Competitive matches use team assignment, result submission, opponent validation and Elo-based rating updates once the final result is accepted.",
@@ -390,9 +391,9 @@ export const resources = {
                 feature3t: "Validate results with more trust",
                 feature3d:
                     "Competitive match results are reviewed by the opposing side, so stats and rating progress are tied to accepted results.",
-                feature4t: "Build your player network",
+                feature4t: "Coordinate inside each event",
                 feature4d:
-                    "Send friend requests, open public player profiles and keep a better overview of the people you play with regularly.",
+                    "Joined players can use an event chat to coordinate arrival time, court details and last-minute updates without leaving the session context.",
                 useCase1:
                     "Discover upcoming beach volleyball matches without jumping between chats and spreadsheets.",
                 useCase2:
@@ -740,6 +741,7 @@ export const resources = {
                 joinedProgress: "{{joined}} / {{total}}",
                 spotsLeft_one: "{{count}} spot left",
                 spotsLeft_other: "{{count}} spots left",
+                mobileSummaryCta: "Summary",
                 labels: {
                     date: "Date",
                     startTime: "Start time",
@@ -773,6 +775,41 @@ export const resources = {
                     casual3:
                         "Results stay social only, so there is no rating impact here.",
                 },
+            },
+            eventChat: {
+                title: "Event chat",
+                helper:
+                    "Only joined players can see this chat. Messages disappear when the event finishes or is cancelled.",
+                live: "Live",
+                emptyTitle: "No messages yet",
+                emptyBody:
+                    "Use this space to coordinate arrival time, court details, equipment, or anything the group needs before playing.",
+                loadError: "Could not load the event chat",
+                sendError: "Could not send the message",
+                emptyMessage: "Message cannot be empty",
+                writeMessage: "Write a message",
+                placeholder: "Write something useful for the group...",
+                messageLimit: "Press Enter to send. Use Shift + Enter for a new line.",
+                sending: "Sending...",
+                send: "Send",
+                you: "You",
+            },
+            matchPlayers: {
+                title: "Match teams",
+                subtitle: "Players are auto-assigned to the team with fewer players.",
+                loading: "Loading match players...",
+                teamA: "Team A",
+                teamB: "Team B",
+                you: "You",
+                moving: "Moving...",
+                moveToTeamA: "Move to Team A",
+                moveToTeamB: "Move to Team B",
+                remove: "Remove",
+                removing: "Removing...",
+                emptySlot: "Empty slot",
+                formatTitle: "Match format",
+                formatBody:
+                    "Each team supports up to 2 players, for a total of 4 active players.",
             },
             eventForm: {
                 cancel: "Cancel",
@@ -1521,7 +1558,7 @@ export const resources = {
                 heroTitle:
                     "Encuentra partidos de voley playa, crea eventos y juega con tu comunidad local.",
                 heroBody:
-                    "Beach Volley App te ayuda a descubrir partidos de voley playa, unirte a open plays, gestionar eventos privados y seguir tu progreso competitivo sin depender de chats dispersos.",
+                    "Beach Volley App te ayuda a descubrir partidos de voley playa, unirte a open plays, gestionar eventos privados, coordinarte con chats dentro del evento y seguir tu progreso competitivo sin depender de herramientas dispersas.",
                 loadError: "No se pudieron cargar los datos del inicio",
                 exploreEvents: "Explorar eventos",
                 createEvent: "Crear evento",
@@ -1560,14 +1597,14 @@ export const resources = {
                 competitiveEyebrow: "Capa competitiva",
                 competitiveTitle: "Mucho mas que un listado de eventos",
                 competitiveBody:
-                    "Beach Volley App tambien esta preparada para juego competitivo. Los partidos permiten asignacion de equipos, resultados por sets, validacion del rival y actualizacion del rating competitivo cuando el resultado final es aceptado.",
+                    "Beach Volley App tambien esta preparada para juego competitivo. Los partidos permiten asignacion de equipos, chat del evento para jugadores unidos, resultados por sets, validacion del rival y actualizacion del rating competitivo cuando el resultado final es aceptado.",
                 faqEyebrow: "Preguntas frecuentes",
                 faqTitle: "Respuestas rapidas sobre la plataforma",
                 heroMockType: "Partido competitivo",
                 heroMockVerified: "Material verificado",
                 heroMockTitle: "Partido sunset en la playa",
                 heroMockBody:
-                    "Organiza una sesion 2v2 mas clara, con ubicacion definida, jugadores cerrados y seguimiento competitivo.",
+                    "Organiza una sesion 2v2 mas clara, con ubicacion definida, jugadores cerrados, chat del evento y seguimiento competitivo.",
                 heroMockLocationLabel: "Ubicacion",
                 heroMockLocationValue: "Barceloneta",
                 heroMockDateLabel: "Fecha",
@@ -1579,8 +1616,8 @@ export const resources = {
                 heroMockMiniOneBody: "Acceso publico o privado",
                 heroMockMiniTwoTitle: "Resultados",
                 heroMockMiniTwoBody: "Validacion del marcador",
-                heroMockMiniThreeTitle: "Seguimiento",
-                heroMockMiniThreeBody: "Perfil e historial",
+                heroMockMiniThreeTitle: "Chat del evento",
+                heroMockMiniThreeBody: "Los jugadores unidos se coordinan dentro del evento",
                 problemCardTitle: "Sin estructura",
                 problemItemOne:
                     "Los planes de partido se pierden entre chats, notas y mensajes de ultima hora.",
@@ -1639,6 +1676,7 @@ export const resources = {
                     discovery: "Descubrimiento de eventos de voley playa",
                     organize: "Organizacion de open play y partidos",
                     privateAccess: "Solicitudes para eventos privados",
+                    eventChat: "Chat del evento para jugadores unidos",
                     validatedResults: "Resultados validados",
                     competitiveRating: "Rating competitivo de jugador",
                     publicProfiles: "Perfiles publicos de jugador",
@@ -1653,7 +1691,7 @@ export const resources = {
                     "Esta pensada para jugadores casuales, parejas competitivas, comunidades locales y organizadores que quieran una forma mas limpia de coordinar partidos de voley playa.",
                 faq3q: "Que se puede hacer dentro de la app?",
                 faq3a:
-                    "Puedes explorar eventos publicos, unirte a partidos, pedir acceso a juegos privados, seguir resultados validados, gestionar amigos y construir un perfil competitivo con el tiempo.",
+                    "Puedes explorar eventos publicos, unirte a partidos, pedir acceso a juegos privados, usar el chat del evento con jugadores unidos, seguir resultados validados, gestionar amigos y construir un perfil competitivo con el tiempo.",
                 faq4q: "Como funcionan los partidos competitivos?",
                 faq4a:
                     "Los partidos competitivos usan asignacion de equipos, envio de resultado, validacion del rival y actualizaciones de rating tipo Elo una vez que el resultado final es aceptado.",
@@ -1666,9 +1704,9 @@ export const resources = {
                 feature3t: "Valida resultados con mas confianza",
                 feature3d:
                     "Los resultados competitivos los revisa el lado rival, asi que las estadisticas y el progreso del rating quedan ligados a resultados aceptados.",
-                feature4t: "Construye tu red de jugadores",
+                feature4t: "Coordinacion dentro de cada evento",
                 feature4d:
-                    "Envia solicitudes de amistad, abre perfiles publicos de jugador y manten una mejor vision de la gente con la que juegas habitualmente.",
+                    "Los jugadores unidos pueden usar un chat del evento para coordinar llegada, pista y cambios de ultima hora sin salir del contexto de la sesion.",
                 useCase1:
                     "Descubre proximos partidos de voley playa sin saltar entre chats y hojas de calculo.",
                 useCase2:
@@ -2016,6 +2054,7 @@ export const resources = {
                 joinedProgress: "{{joined}} / {{total}}",
                 spotsLeft_one: "{{count}} plaza libre",
                 spotsLeft_other: "{{count}} plazas libres",
+                mobileSummaryCta: "Resumen",
                 labels: {
                     date: "Fecha",
                     startTime: "Hora de inicio",
@@ -2049,6 +2088,41 @@ export const resources = {
                     casual3:
                         "Los resultados se quedan en lo social, asi que aqui no hay impacto de rating.",
                 },
+            },
+            eventChat: {
+                title: "Chat del evento",
+                helper:
+                    "Solo los jugadores unidos pueden ver este chat. Los mensajes desaparecen cuando el evento se cancela o termina.",
+                live: "En vivo",
+                emptyTitle: "Aun no hay mensajes",
+                emptyBody:
+                    "Usa este espacio para coordinar la hora de llegada, la pista, el material o cualquier detalle util antes de jugar.",
+                loadError: "No se pudo cargar el chat del evento",
+                sendError: "No se pudo enviar el mensaje",
+                emptyMessage: "El mensaje no puede estar vacio",
+                writeMessage: "Escribe un mensaje",
+                placeholder: "Escribe algo util para el grupo...",
+                messageLimit: "Pulsa Enter para enviar. Usa Shift + Enter para una nueva linea.",
+                sending: "Enviando...",
+                send: "Enviar",
+                you: "Tu",
+            },
+            matchPlayers: {
+                title: "Equipos del partido",
+                subtitle: "Los jugadores se asignan automaticamente al equipo con menos gente.",
+                loading: "Cargando jugadores del partido...",
+                teamA: "Equipo A",
+                teamB: "Equipo B",
+                you: "Tu",
+                moving: "Moviendo...",
+                moveToTeamA: "Mover a Equipo A",
+                moveToTeamB: "Mover a Equipo B",
+                remove: "Quitar",
+                removing: "Quitando...",
+                emptySlot: "Plaza libre",
+                formatTitle: "Formato del partido",
+                formatBody:
+                    "Cada equipo admite hasta 2 jugadores, para un total de 4 jugadores activos.",
             },
             eventForm: {
                 cancel: "Cancelar",

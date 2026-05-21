@@ -1,4 +1,5 @@
 import { ArrowRightLeft, Shield, UserMinus, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { MatchPlayer, MatchTeam } from "../types/matchPlayer.types";
 
 interface MatchPlayersSectionProps {
@@ -32,6 +33,7 @@ function TeamColumn({
     onAssignTeam: (userId: string, team: MatchTeam) => Promise<void>;
     onRemove: (userId: string) => Promise<void>;
 }) {
+    const { t } = useTranslation();
     const oppositeTeam = team === "team_a" ? "team_b" : "team_a";
 
     return (
@@ -62,8 +64,10 @@ function TeamColumn({
 
                                 <div className="min-w-0">
                                     <p className="truncate font-bold text-slate-900">
-                                        {player.profile.fullName}
-                                        {player.userId === currentUserId ? " (You)" : ""}
+                                    {player.profile.fullName}
+                                        {player.userId === currentUserId
+                                            ? ` (${t("matchPlayers.you")})`
+                                            : ""}
                                     </p>
                                 </div>
                             </div>
@@ -78,8 +82,10 @@ function TeamColumn({
                                     >
                                         <ArrowRightLeft size={16} />
                                         {isAssigning
-                                            ? "Moving..."
-                                            : `Move to ${oppositeTeam === "team_a" ? "Team A" : "Team B"}`}
+                                            ? t("matchPlayers.moving")
+                                            : oppositeTeam === "team_a"
+                                              ? t("matchPlayers.moveToTeamA")
+                                              : t("matchPlayers.moveToTeamB")}
                                     </button>
 
                                     <button
@@ -89,7 +95,9 @@ function TeamColumn({
                                         className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-600 disabled:opacity-60"
                                     >
                                         <UserMinus size={16} />
-                                        {isRemoving ? "Removing..." : "Remove"}
+                                        {isRemoving
+                                            ? t("matchPlayers.removing")
+                                            : t("matchPlayers.remove")}
                                     </button>
                                 </div>
                             )}
@@ -102,7 +110,7 @@ function TeamColumn({
                         key={`${team}-empty-${index}`}
                         className="rounded-2xl border border-dashed border-slate-300 bg-white/70 p-4 text-sm text-slate-400"
                     >
-                        Empty slot
+                        {t("matchPlayers.emptySlot")}
                     </div>
                 ))}
             </div>
@@ -121,6 +129,8 @@ export function MatchPlayersSection({
     onAssignTeam,
     onRemove,
 }: MatchPlayersSectionProps) {
+    const { t } = useTranslation();
+
     return (
         <div className="rounded-3xl bg-white p-6 shadow-sm md:p-8">
             <div className="flex items-center gap-3">
@@ -129,15 +139,19 @@ export function MatchPlayersSection({
                 </span>
 
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900">Match teams</h2>
+                    <h2 className="text-2xl font-bold text-slate-900">
+                        {t("matchPlayers.title")}
+                    </h2>
                     <p className="mt-1 text-sm text-slate-500">
-                        Players are auto-assigned to the team with fewer players.
+                        {t("matchPlayers.subtitle")}
                     </p>
                 </div>
             </div>
 
             {loading ? (
-                <p className="mt-6 text-sm text-slate-500">Loading match players...</p>
+                <p className="mt-6 text-sm text-slate-500">
+                    {t("matchPlayers.loading")}
+                </p>
             ) : null}
 
             {error ? (
@@ -149,7 +163,7 @@ export function MatchPlayersSection({
             {!loading && (
                 <div className="mt-6 grid gap-4 lg:grid-cols-2">
                     <TeamColumn
-                        title="Team A"
+                        title={t("matchPlayers.teamA")}
                         team="team_a"
                         players={teamAPlayers}
                         actionLoadingId={actionLoadingId}
@@ -159,7 +173,7 @@ export function MatchPlayersSection({
                         onRemove={onRemove}
                     />
                     <TeamColumn
-                        title="Team B"
+                        title={t("matchPlayers.teamB")}
                         team="team_b"
                         players={teamBPlayers}
                         actionLoadingId={actionLoadingId}
@@ -174,10 +188,10 @@ export function MatchPlayersSection({
             <div className="mt-6 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2 font-semibold text-slate-800">
                     <Shield size={16} />
-                    Match format
+                    {t("matchPlayers.formatTitle")}
                 </div>
                 <p className="mt-2">
-                    Each team supports up to 2 players, for a total of 4 active players.
+                    {t("matchPlayers.formatBody")}
                 </p>
             </div>
         </div>

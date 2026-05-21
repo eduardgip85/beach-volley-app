@@ -1,6 +1,6 @@
 import {
+  ArrowDownToLine,
   CalendarDays,
-  Clock3,
   Copy,
   Info,
   MapPin,
@@ -8,12 +8,12 @@ import {
   Share2,
   Shield,
   UserCircle2,
-  Users,
 } from "lucide-react";
 import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import { EventChatSection } from "../../event-chat/components/EventChatSection";
 import { useEventInvitations } from "../../event-invitations/hooks/useEventInvitations";
 import { useEventJoinRequests } from "../../event-join-requests/hooks/useEventJoinRequests";
 import { useMatchPlayers } from "../../match-players/hooks/useMatchPlayers";
@@ -91,41 +91,6 @@ function formatEventDate(dateValue: string, locale: string, fallback: string) {
   return parsedDate.toLocaleString(locale);
 }
 
-function formatEventDateLabel(dateValue: string, locale: string, fallback: string) {
-  if (!dateValue) {
-    return fallback;
-  }
-
-  const parsedDate = new Date(dateValue);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return fallback;
-  }
-
-  return parsedDate.toLocaleDateString(locale, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function formatEventTimeLabel(dateValue: string, locale: string, fallback: string) {
-  if (!dateValue) {
-    return fallback;
-  }
-
-  const parsedDate = new Date(dateValue);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return fallback;
-  }
-
-  return parsedDate.toLocaleTimeString(locale, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function getEventHighlights(event: Event, t: (key: string) => string) {
   if (event.type === "tournament") {
     return [
@@ -176,6 +141,7 @@ export function EventDetailPage() {
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const [creatorName, setCreatorName] = useState<string | null>(null);
+  const [summaryAnchor, setSummaryAnchor] = useState<HTMLDivElement | null>(null);
 
   const canEdit = Boolean(
     profile && event && (profile.id === event.createdBy || isAdmin)
@@ -254,6 +220,11 @@ export function EventDetailPage() {
   const isAcceptedMatch =
     event?.type === "match" &&
     matchResult.matchResult?.validationStatus === "accepted";
+  const hasActiveMatchChatAccess = Boolean(
+    matchPlayers.state.currentPlayer &&
+      (matchPlayers.state.currentPlayer.status === "joined" ||
+        matchPlayers.state.currentPlayer.status === "confirmed")
+  );
 
   const eventInvitations = useEventInvitations(eventId, {
     currentUserId: profile?.id,
@@ -468,6 +439,11 @@ export function EventDetailPage() {
   const visibleParticipants = showAllParticipants
     ? participants
     : participants.slice(0, 5);
+  const canAccessEventChat = Boolean(
+    profile &&
+      !isClosedEvent &&
+      (event.type === "match" ? hasActiveMatchChatAccess : alreadyJoined)
+  );
   const spotsLeft = hasUnlimitedSpots
     ? null
     : Math.max(event.maxParticipants - displayJoinedCount, 0);
@@ -478,6 +454,13 @@ export function EventDetailPage() {
   const eventHighlights = getEventHighlights(event, t);
   const shouldShowParticipantsCard =
     canViewParticipants && (participantsLoading || participants.length > 0);
+
+  function scrollToSummary() {
+    summaryAnchor?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
 
   return (
     <section className="space-y-6">
@@ -537,43 +520,6 @@ export function EventDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <EventDetailStatCard
-          icon={<CalendarDays size={18} className="text-blue-600" />}
-          label={t("eventDetail.labels.date")}
-          value={formatEventDateLabel(event.startDate, i18n.language, t("eventDetail.datePending"))}
-        />
-        <EventDetailStatCard
-          icon={<Clock3 size={18} className="text-blue-600" />}
-          label={t("eventDetail.labels.startTime")}
-          value={formatEventTimeLabel(event.startDate, i18n.language, t("eventDetail.timePending"))}
-        />
-        <EventDetailStatCard
-          icon={<MapPin size={18} className="text-blue-600" />}
-          label={t("eventDetail.labels.location")}
-          value={event.locationName || t("eventDetail.locationPending")}
-        />
-        <EventDetailStatCard
-          icon={<Users size={18} className="text-blue-600" />}
-          label={t("eventDetail.labels.joined")}
-          value={
-            hasUnlimitedSpots
-              ? t("eventDetail.joined", { count: displayJoinedCount })
-              : t("eventDetail.joinedProgress", {
-                  joined: displayJoinedCount,
-                  total: event.maxParticipants,
-                })
-          }
-          helper={
-            hasUnlimitedSpots
-              ? t("eventDetail.unlimited")
-              : spotsLeft && spotsLeft > 0
-                ? t("eventDetail.spotsLeft", { count: spotsLeft })
-                : t("eventDetail.eventFull")
-          }
-        />
-      </div>
-
       {error ? (
         <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
@@ -585,6 +531,47 @@ export function EventDetailPage() {
           {eventStatusReason}
         </p>
       ) : null}
+
+      <div className="md:hidden">
+        <div className="rounded-3xl bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="text-base font-black text-slate-900">
+                  {t("eventDetail.courtLocation")}
+                </h2>
+                <p className="mt-1 truncate text-sm text-slate-500">
+                  {event.locationName || t("eventDetail.locationPending")}
+                </p>
+              </div>
+
+              {directionsUrl ? (
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                  aria-label={t("eventDetail.getDirections")}
+                  title={t("eventDetail.getDirections")}
+                >
+                  <Navigation size={16} />
+                </a>
+              ) : null}
+            </div>
+
+            <div className="h-52 overflow-hidden rounded-2xl bg-slate-100">
+              <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingMap")} />}>
+                <EventLocationMap
+                  latitude={event.latitude}
+                  longitude={event.longitude}
+                  title={event.title}
+                  locationName={event.locationName}
+                />
+              </Suspense>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_360px]">
         <div className="space-y-6">
@@ -673,39 +660,13 @@ export function EventDetailPage() {
             ) : null}
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-lg font-black text-slate-900">{t("eventDetail.courtLocation")}</h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  {event.locationName || t("eventDetail.locationPending")}
-                </p>
-              </div>
-
-              {directionsUrl ? (
-                <a
-                  href={directionsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
-                >
-                  <Navigation size={16} />
-                  {t("eventDetail.getDirections")}
-                </a>
-              ) : null}
-            </div>
-
-            <div className="mt-5 h-72 overflow-hidden rounded-2xl bg-slate-100">
-              <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingMap")} />}>
-                <EventLocationMap
-                  latitude={event.latitude}
-                  longitude={event.longitude}
-                  title={event.title}
-                  locationName={event.locationName}
-                />
-              </Suspense>
-            </div>
-          </div>
+          {canAccessEventChat && profile ? (
+            <EventChatSection
+              eventId={event.id}
+              currentUserId={profile.id}
+              canSend={!isClosedEvent}
+            />
+          ) : null}
 
           {event.type === "match" && canViewMatchPlayers ? (
             <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingTeams")} />}>
@@ -776,6 +737,50 @@ export function EventDetailPage() {
         </div>
 
         <aside className="space-y-4 xl:sticky xl:top-24 xl:self-start">
+          <div className="hidden rounded-3xl bg-white p-5 shadow-sm md:block">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <h2 className="text-base font-black text-slate-900">
+                    {t("eventDetail.courtLocation")}
+                  </h2>
+                  <p className="mt-1 truncate text-sm text-slate-500">
+                    {event.locationName || t("eventDetail.locationPending")}
+                  </p>
+                </div>
+
+                {directionsUrl ? (
+                  <a
+                    href={directionsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
+                    aria-label={t("eventDetail.getDirections")}
+                    title={t("eventDetail.getDirections")}
+                  >
+                    <Navigation size={16} />
+                  </a>
+                ) : null}
+              </div>
+
+              <div className="h-52 overflow-hidden rounded-2xl bg-slate-100">
+                <Suspense
+                  fallback={
+                    <SectionLoadingMessage message={t("eventDetail.loadingMap")} />
+                  }
+                >
+                  <EventLocationMap
+                    latitude={event.latitude}
+                    longitude={event.longitude}
+                    title={event.title}
+                    locationName={event.locationName}
+                  />
+                </Suspense>
+              </div>
+            </div>
+          </div>
+
+          <div ref={setSummaryAnchor} />
           <div className="rounded-3xl bg-white p-6 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-slate-400">
               {t("eventDetail.snapshot")}
@@ -917,30 +922,16 @@ export function EventDetailPage() {
           ) : null}
         </aside>
       </section>
-    </section>
-  );
-}
 
-function EventDetailStatCard({
-  icon,
-  label,
-  value,
-  helper,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  helper?: string;
-}) {
-  return (
-    <div className="rounded-3xl bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2">{icon}</div>
-      <p className="mt-4 text-[11px] font-bold uppercase tracking-[0.24em] text-slate-400">
-        {label}
-      </p>
-      <p className="mt-2 text-base font-black text-slate-900">{value}</p>
-      {helper ? <p className="mt-1 text-sm text-slate-500">{helper}</p> : null}
-    </div>
+      <button
+        type="button"
+        onClick={scrollToSummary}
+        className="fixed bottom-5 right-5 z-[2000] inline-flex items-center gap-2 rounded-full bg-slate-950 px-4 py-3 text-sm font-bold text-white shadow-[0_16px_40px_rgba(15,23,42,0.28)] transition hover:bg-slate-800 md:hidden"
+      >
+        <ArrowDownToLine size={16} />
+        {t("eventDetail.mobileSummaryCta")}
+      </button>
+    </section>
   );
 }
 
