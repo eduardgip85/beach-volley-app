@@ -21,6 +21,10 @@ export function buildOAuthRedirectUrl(redirectTo?: string | null) {
     )}`;
 }
 
+export function buildEmailConfirmationRedirectUrl(redirectTo?: string | null) {
+    return buildOAuthRedirectUrl(redirectTo);
+}
+
 export function buildPasswordResetUrl() {
     return `${window.location.origin}${passwordResetPath}`;
 }

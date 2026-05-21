@@ -29,6 +29,7 @@ export interface Event {
     maxParticipants: number;
     status: EventStatus;
     resultValidationStatus?: EventResultValidationStatus | null;
+    participantCount?: number;
     imageUrl?: string | null;
     createdBy: string;
     createdAt: string;

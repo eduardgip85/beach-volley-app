@@ -1,4 +1,5 @@
-import { MapPin } from "lucide-react";
+import { AlertCircle, MapPin, X } from "lucide-react";
+import { useEffect } from "react";
 import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 import { LocationPickerMap } from "./LocationPickerMap";
@@ -26,6 +27,7 @@ interface EventFormProps {
     error: string;
     submitting: boolean;
     searchingLocation: boolean;
+    onDismissError?: () => void;
 
     submitLabel: string;
     submittingLabel: string;
@@ -83,6 +85,7 @@ export function EventForm({
     error,
     submitting,
     searchingLocation,
+    onDismissError,
     submitLabel,
     submittingLabel,
     cancelLabel,
@@ -113,6 +116,20 @@ export function EventForm({
               ? t("eventForm.typeHelperOpenPlay")
               : t("eventForm.typeHelperTournament");
 
+    useEffect(() => {
+        if (!error || !onDismissError) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            onDismissError();
+        }, 5000);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [error, onDismissError]);
+
     function handleHourChange(nextHours: string) {
         setTime(`${nextHours}:${timeParts.minutes || "00"}`);
     }
@@ -122,15 +139,45 @@ export function EventForm({
     }
 
     return (
-        <form
-            onSubmit={onSubmit}
-            className="rounded-4xl bg-white p-6 shadow-sm md:p-8"
-        >
-            {error && (
-                <p className="mb-6 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
-                    {error}
-                </p>
-            )}
+        <>
+            {error ? (
+                <div className="fixed right-4 top-4 z-[2300] w-[min(24rem,calc(100vw-2rem))]">
+                    <div
+                        role="alert"
+                        className="rounded-3xl border border-red-200 bg-white/95 p-4 shadow-[0_18px_50px_rgba(239,68,68,0.18)] ring-1 ring-red-100 backdrop-blur-md"
+                    >
+                        <div className="flex items-start gap-3">
+                            <div className="mt-0.5 rounded-2xl bg-red-50 p-2 text-red-600">
+                                <AlertCircle size={18} />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                                <p className="text-sm font-black text-slate-950">
+                                    {t("eventForm.errors.title")}
+                                </p>
+                                <p className="mt-1 text-sm leading-6 text-slate-600">
+                                    {error}
+                                </p>
+                            </div>
+
+                            {onDismissError ? (
+                                <button
+                                    type="button"
+                                    onClick={onDismissError}
+                                    className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                                >
+                                    <X size={16} />
+                                </button>
+                            ) : null}
+                        </div>
+                    </div>
+                </div>
+            ) : null}
+
+            <form
+                onSubmit={onSubmit}
+                className="rounded-4xl bg-white p-6 shadow-sm md:p-8"
+            >
 
             <div className="space-y-6">
                 <div>
@@ -201,17 +248,31 @@ export function EventForm({
                             {t("eventForm.visibility")}
                         </label>
 
-                        <select
-                            value={visibility}
-                            onChange={(event) =>
-                                setVisibility(event.target.value as EventVisibility)
-                            }
-                            className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
-                            required
-                        >
-                            <option value="public">{t("eventVisibility.public")}</option>
-                            <option value="private">{t("eventVisibility.private")}</option>
-                        </select>
+                        <div className="mt-2 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                            <button
+                                type="button"
+                                onClick={() => setVisibility("public")}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                    visibility === "public"
+                                        ? "bg-blue-600 text-white shadow-sm"
+                                        : "text-slate-600"
+                                }`}
+                            >
+                                {t("eventVisibility.public")}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setVisibility("private")}
+                                className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                    visibility === "private"
+                                        ? "bg-blue-600 text-white shadow-sm"
+                                        : "text-slate-600"
+                                }`}
+                            >
+                                {t("eventVisibility.private")}
+                            </button>
+                        </div>
                     </div>
 
                     {type === "match" && (
@@ -220,17 +281,31 @@ export function EventForm({
                                 {t("eventForm.mode")}
                             </label>
 
-                            <select
-                                value={mode ?? ""}
-                                onChange={(event) =>
-                                    setMode(event.target.value as EventMode)
-                                }
-                                className="mt-2 w-full rounded-2xl border-0 bg-slate-100 px-4 py-3 text-slate-900 outline-none ring-1 ring-transparent focus:ring-blue-500"
-                                required
-                            >
-                                <option value="casual">{t("eventModes.casual")}</option>
-                                <option value="competitive">{t("eventModes.competitive")}</option>
-                            </select>
+                            <div className="mt-2 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">
+                                <button
+                                    type="button"
+                                    onClick={() => setMode("casual")}
+                                    className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                        mode === "casual"
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-slate-600"
+                                    }`}
+                                >
+                                    {t("eventModes.casual")}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setMode("competitive")}
+                                    className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+                                        mode === "competitive"
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-slate-600"
+                                    }`}
+                                >
+                                    {t("eventModes.competitive")}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
@@ -360,27 +435,6 @@ export function EventForm({
 
                 <div>
                     <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                        {t("eventForm.locationName")}
-                    </label>
-
-                    <div className="mt-2 flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 ring-1 ring-transparent focus-within:ring-blue-500">
-                        <MapPin size={18} className="text-slate-400" />
-                        <input
-                            placeholder={t("eventForm.locationNamePlaceholder")}
-                            value={locationName}
-                            className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
-                            required
-                            readOnly
-                        />
-                    </div>
-
-                    <p className="mt-2 text-xs text-slate-500">
-                        {t("eventForm.locationNameBody")}
-                    </p>
-                </div>
-
-                <div>
-                    <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
                         {t("eventForm.searchLocation")}
                     </label>
 
@@ -406,6 +460,27 @@ export function EventForm({
 
                     <p className="mt-2 text-xs text-slate-500">
                         {t("eventForm.searchLocationBody")}
+                    </p>
+                </div>
+
+                <div>
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
+                        {t("eventForm.locationName")}
+                    </label>
+
+                    <div className="mt-2 flex items-center gap-3 rounded-2xl bg-slate-100 px-4 py-3 ring-1 ring-transparent focus-within:ring-blue-500">
+                        <MapPin size={18} className="text-slate-400" />
+                        <input
+                            placeholder={t("eventForm.locationNamePlaceholder")}
+                            value={locationName}
+                            className="w-full bg-transparent text-slate-900 outline-none placeholder:text-slate-400"
+                            required
+                            readOnly
+                        />
+                    </div>
+
+                    <p className="mt-2 text-xs text-slate-500">
+                        {t("eventForm.locationNameBody")}
                     </p>
                 </div>
 
@@ -451,5 +526,6 @@ export function EventForm({
                 </div>
             </div>
         </form>
+        </>
     );
 }

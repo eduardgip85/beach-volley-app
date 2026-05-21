@@ -37,6 +37,7 @@ export function CreateEventPage() {
         error={form.state.error}
         submitting={form.state.submitting}
         searchingLocation={form.state.searchingLocation}
+        onDismissError={() => form.actions.setError("")}
         onSubmit={form.actions.handleSubmit}
         onSearchLocation={form.actions.handleSearchLocation}
         onMapLocationChange={form.actions.handleMapLocationChange}

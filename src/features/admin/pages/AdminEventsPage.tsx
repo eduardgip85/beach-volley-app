@@ -9,7 +9,7 @@ import {
   Trash2,
   UserCircle2,
 } from "lucide-react";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { deleteEvent } from "../../events/services/events.service";
@@ -35,7 +35,7 @@ export function AdminEventsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const { items, totalCount, loading, error: loadError, setItems } = useAdminEvents({
+  const { items, totalCount, summary, loading, error: loadError, setItems } = useAdminEvents({
     page,
     pageSize: PAGE_SIZE,
     search: deferredSearch,
@@ -49,25 +49,6 @@ export function AdminEventsPage() {
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const visibleFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const visibleTo = Math.min(page * PAGE_SIZE, totalCount);
-
-  const summary = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
-        const status = getEventDisplayStatus(item.event);
-
-        if (status === t("eventStatus.finished")) {
-          acc.finished += 1;
-        } else if (status === t("eventStatus.cancelled")) {
-          acc.cancelled += 1;
-        } else {
-          acc.active += 1;
-        }
-
-        return acc;
-      },
-      { active: 0, finished: 0, cancelled: 0 }
-    );
-  }, [items, t]);
 
   async function handleDelete(eventId: string) {
     const confirmed = window.confirm(t("adminEvents.deleteConfirm"));

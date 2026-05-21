@@ -20,6 +20,11 @@ export function useAdminEvents({
 }: UseAdminEventsParams) {
   const [items, setItems] = useState<AdminEventListItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [summary, setSummary] = useState({
+    active: 0,
+    finished: 0,
+    cancelled: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -44,6 +49,7 @@ export function useAdminEvents({
 
         setItems(result.items);
         setTotalCount(result.totalCount);
+        setSummary(result.summary);
       } catch (err) {
         if (ignore) {
           return;
@@ -68,6 +74,7 @@ export function useAdminEvents({
   return {
     items,
     totalCount,
+    summary,
     loading,
     error,
     setItems,

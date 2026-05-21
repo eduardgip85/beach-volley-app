@@ -49,6 +49,15 @@ export function LoginPage() {
 
     return (
         <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mb-6">
+            <Link
+                to="/"
+                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900"
+            >
+                {t("nav.home")}
+            </Link>
+        </div>
+
         <h1 className="text-2xl font-bold text-slate-900">{t("auth.loginTitle")}</h1>
 
         <p className="mt-2 text-sm text-slate-500">

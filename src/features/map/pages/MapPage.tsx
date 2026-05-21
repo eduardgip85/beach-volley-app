@@ -5,7 +5,7 @@ import { useAuth } from "../../auth/context/AuthContext";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
-import { isPastEvent } from "../../events/utils/event-display.utils";
+import { isFinishedEvent, isPastEvent } from "../../events/utils/event-display.utils";
 import { EventsMap } from "../components/EventsMap";
 
 export function MapPage() {
@@ -16,7 +16,7 @@ export function MapPage() {
   const [error, setError] = useState("");
   const { profile } = useAuth();
   const visibleEvents = events.filter(
-    (event) => event.status === "active" && !isPastEvent(event)
+    (event) => !isFinishedEvent(event) && !isPastEvent(event)
   );
 
   const {

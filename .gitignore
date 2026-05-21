@@ -15,6 +15,7 @@ presentacio
 coverage
 .npm-cache
 sql
+supabase
 
 # Editor directories and files
 .vscode/*

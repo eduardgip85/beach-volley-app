@@ -1,7 +1,5 @@
 import { CalendarDays, MapPin, Users } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getEventRegistrationsCount } from "../../registrations/services/registrations.service";
 import { isUnlimitedEventCapacity } from "../types/event.types";
 import type { Event } from "../types/event.types";
 import {
@@ -19,26 +17,13 @@ interface Props {
 }
 
 export function EventCard({ event }: Props) {
-  const [registrationsCount, setRegistrationsCount] = useState(0);
   const image = getEventFallbackImage(event);
+  const registrationsCount = event.participantCount ?? 0;
   const hasUnlimitedSpots =
     event.type !== "match" && isUnlimitedEventCapacity(event.maxParticipants);
   const isFull = !hasUnlimitedSpots && registrationsCount >= event.maxParticipants;
   const isPast = isPastEvent(event);
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
-
-  useEffect(() => {
-    async function loadCount() {
-      try {
-        const count = await getEventRegistrationsCount(event.id);
-        setRegistrationsCount(count);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadCount();
-  }, [event.id]);
 
   return (
     <Link

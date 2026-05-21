@@ -21,11 +21,13 @@ export function resolveEventStatus({
   status,
   startDate,
   resultValidationStatus,
+  participantCount,
 }: {
   type: EventType;
   status: unknown;
   startDate: string;
   resultValidationStatus?: EventResultValidationStatus | null;
+  participantCount?: number;
 }): EventStatus {
   if (status === "cancelled") {
     return "cancelled";
@@ -34,6 +36,14 @@ export function resolveEventStatus({
   if (type === "match") {
     if (status === "completed" || resultValidationStatus === "accepted") {
       return "completed";
+    }
+
+    if (
+      isPastEventDate(startDate) &&
+      typeof participantCount === "number" &&
+      participantCount < 4
+    ) {
+      return "cancelled";
     }
 
     if (hasMatchAcceptanceGraceExpired(startDate)) {
@@ -51,7 +61,10 @@ export function resolveEventStatus({
 }
 
 export function getResolvedEventDisplayStatus(
-  event: Pick<Event, "type" | "status" | "startDate" | "resultValidationStatus">
+  event: Pick<
+    Event,
+    "type" | "status" | "startDate" | "resultValidationStatus" | "participantCount"
+  >
 ) {
   if (event.status === "cancelled") {
     return i18n.t("eventStatus.cancelled");
@@ -76,4 +89,29 @@ export function getResolvedEventDisplayStatus(
   }
 
   return i18n.t("eventStatus.active");
+}
+
+export function getResolvedEventStatusReason(
+  event: Pick<
+    Event,
+    "type" | "status" | "startDate" | "resultValidationStatus" | "participantCount"
+  >
+) {
+  if (event.type !== "match" || event.status !== "cancelled") {
+    return "";
+  }
+
+  if (
+    isPastEventDate(event.startDate) &&
+    typeof event.participantCount === "number" &&
+    event.participantCount < 4
+  ) {
+    return i18n.t("eventStatusReasons.notEnoughPlayers");
+  }
+
+  if (hasMatchAcceptanceGraceExpired(event.startDate)) {
+    return i18n.t("eventStatusReasons.unvalidatedResult");
+  }
+
+  return "";
 }

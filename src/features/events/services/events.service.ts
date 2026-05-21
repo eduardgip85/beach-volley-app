@@ -12,6 +12,57 @@ import type {
 } from "../types/event.types";
 import { resolveEventStatus } from "../utils/event-status.utils";
 
+const EVENTS_CACHE_TTL_MS = 30_000;
+
+interface CacheEntry<T> {
+    value: T;
+    expiresAt: number;
+}
+
+const cache = {
+    events: null as CacheEntry<Event[]> | null,
+    publicEvents: null as CacheEntry<Event[]> | null,
+    createdEventsByUser: new Map<string, CacheEntry<Event[]>>(),
+};
+
+const inflightRequests = {
+    events: null as Promise<Event[]> | null,
+    publicEvents: null as Promise<Event[]> | null,
+    createdEventsByUser: new Map<string, Promise<Event[]>>(),
+};
+
+function getCachedValue<T>(entry: CacheEntry<T> | null) {
+    if (!entry) {
+        return null;
+    }
+
+    if (entry.expiresAt <= Date.now()) {
+        return null;
+    }
+
+    return entry.value;
+}
+
+function setCachedValue<T>(value: T): CacheEntry<T> {
+    return {
+        value,
+        expiresAt: Date.now() + EVENTS_CACHE_TTL_MS,
+    };
+}
+
+function invalidateEventCaches() {
+    cache.events = null;
+    cache.publicEvents = null;
+    cache.createdEventsByUser.clear();
+    inflightRequests.events = null;
+    inflightRequests.publicEvents = null;
+    inflightRequests.createdEventsByUser.clear();
+}
+
+export function invalidateEventServiceCache() {
+    invalidateEventCaches();
+}
+
 function normalizeEventType(type: unknown): EventType {
     if (
         type === "open_play" ||
@@ -94,6 +145,10 @@ function normalizeNumericValue(value: unknown): number {
 interface MatchResultStatusRow {
     event_id: string;
     validation_status: EventResultValidationStatus;
+}
+
+interface EventParticipantCountRow {
+    event_id: string;
 }
 
 function buildEventWritePayload(payload: CreateEventPayload) {
@@ -251,9 +306,50 @@ async function getMatchResultStatusByEventIds(eventIds: string[]) {
     );
 }
 
+async function getEventParticipantCountByEventIds(eventRows: Record<string, unknown>[]) {
+    const matchEventIds = eventRows
+        .filter((row) => normalizeEventType(row.type) === "match")
+        .map((row) => String(row.id));
+    const nonMatchEventIds = eventRows
+        .filter((row) => normalizeEventType(row.type) !== "match")
+        .map((row) => String(row.id));
+
+    const counts = new Map<string, number>();
+
+    if (matchEventIds.length > 0) {
+        const { data, error } = await supabase
+            .from("match_players")
+            .select("event_id")
+            .in("event_id", matchEventIds)
+            .in("status", ["joined", "confirmed"]);
+
+        if (error) throw error;
+
+        for (const row of (data ?? []) as EventParticipantCountRow[]) {
+            counts.set(row.event_id, (counts.get(row.event_id) ?? 0) + 1);
+        }
+    }
+
+    if (nonMatchEventIds.length > 0) {
+        const { data, error } = await supabase
+            .from("registrations")
+            .select("event_id")
+            .in("event_id", nonMatchEventIds);
+
+        if (error) throw error;
+
+        for (const row of (data ?? []) as EventParticipantCountRow[]) {
+            counts.set(row.event_id, (counts.get(row.event_id) ?? 0) + 1);
+        }
+    }
+
+    return counts;
+}
+
 function mapEvent(
     row: any,
-    resultValidationStatus: EventResultValidationStatus | null = null
+    resultValidationStatus: EventResultValidationStatus | null = null,
+    participantCount?: number
 ): Event {
     const eventRow = row as Record<string, unknown>;
     const type = normalizeEventType(row.type);
@@ -280,8 +376,10 @@ function mapEvent(
             status: row.status,
             startDate,
             resultValidationStatus,
+            participantCount,
         }),
         resultValidationStatus,
+        participantCount,
         imageUrl: readRowValue<string | null>(eventRow, "image_url", "imageUrl") ?? null,
         createdBy:
             readRowValue<string>(eventRow, "created_by", "createdBy") ?? "",
@@ -312,25 +410,77 @@ export interface AccessibleEventsResult {
 }
 
 export async function getEvents(): Promise<Event[]> {
-    const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .order("start_date", { ascending: true });
+    const cachedEvents = getCachedValue(cache.events);
 
-    if (error) throw error;
+    if (cachedEvents) {
+        return cachedEvents;
+    }
 
-    const matchEventIds = (data ?? [])
-        .filter((row) => normalizeEventType(row.type) === "match")
-        .map((row) => row.id);
-    const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+    if (inflightRequests.events) {
+        return inflightRequests.events;
+    }
 
-    return data.map((row) => mapEvent(row, resultStatuses.get(row.id) ?? null));
+    inflightRequests.events = (async () => {
+        const { data, error } = await supabase
+            .from("events")
+            .select("*")
+            .order("start_date", { ascending: true });
+
+        if (error) throw error;
+
+        const matchEventIds = (data ?? [])
+            .filter((row) => normalizeEventType(row.type) === "match")
+            .map((row) => row.id);
+        const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+        const participantCounts = await getEventParticipantCountByEventIds(
+            (data ?? []) as Record<string, unknown>[]
+        );
+
+        const events = data.map((row) =>
+            mapEvent(
+                row,
+                resultStatuses.get(row.id) ?? null,
+                participantCounts.get(row.id) ?? 0
+            )
+        );
+
+        cache.events = setCachedValue(events);
+
+        return events;
+    })();
+
+    try {
+        return await inflightRequests.events;
+    } finally {
+        inflightRequests.events = null;
+    }
 }
 
 export async function getPublicEvents(): Promise<Event[]> {
-    const events = await getEvents();
+    const cachedPublicEvents = getCachedValue(cache.publicEvents);
 
-    return events.filter((event) => event.visibility === "public");
+    if (cachedPublicEvents) {
+        return cachedPublicEvents;
+    }
+
+    if (inflightRequests.publicEvents) {
+        return inflightRequests.publicEvents;
+    }
+
+    inflightRequests.publicEvents = (async () => {
+        const events = await getEvents();
+        const publicEvents = events.filter((event) => event.visibility === "public");
+
+        cache.publicEvents = setCachedValue(publicEvents);
+
+        return publicEvents;
+    })();
+
+    try {
+        return await inflightRequests.publicEvents;
+    } finally {
+        inflightRequests.publicEvents = null;
+    }
 }
 
 export async function getAccessibleEventsForUser(
@@ -372,6 +522,13 @@ export async function getAccessibleEventsForUser(
 }
 
 export async function getEventById(eventId: string): Promise<Event> {
+    const cachedEvents = getCachedValue(cache.events);
+    const cachedEvent = cachedEvents?.find((event) => event.id === eventId);
+
+    if (cachedEvent) {
+        return cachedEvent;
+    }
+
     const { data, error } = await supabase
         .from("events")
         .select("*")
@@ -381,8 +538,15 @@ export async function getEventById(eventId: string): Promise<Event> {
     if (error) throw error;
 
     const resultStatuses = await getMatchResultStatusByEventIds([eventId]);
+    const participantCounts = await getEventParticipantCountByEventIds([
+        data as Record<string, unknown>,
+    ]);
 
-    return mapEvent(data, resultStatuses.get(eventId) ?? null);
+    return mapEvent(
+        data,
+        resultStatuses.get(eventId) ?? null,
+        participantCounts.get(eventId) ?? 0
+    );
 }
 
 export async function getEventDetailSummary(
@@ -397,9 +561,16 @@ export async function getEventDetailSummary(
     const row = data as EventDetailSummaryRow;
     const summaryRow = row as unknown as Record<string, unknown>;
     const resultStatuses = await getMatchResultStatusByEventIds([eventId]);
+    const participantCounts = await getEventParticipantCountByEventIds([
+        row.event as Record<string, unknown>,
+    ]);
 
     return {
-        event: mapEvent(row.event, resultStatuses.get(eventId) ?? null),
+        event: mapEvent(
+            row.event,
+            resultStatuses.get(eventId) ?? null,
+            participantCounts.get(eventId) ?? 0
+        ),
         creatorName:
             summaryRow.creatorName?.toString() ??
             summaryRow.creator_name?.toString() ??
@@ -436,6 +607,8 @@ export async function createEvent(
         }
     }
 
+    invalidateEventCaches();
+
     return event;
 }
 
@@ -448,6 +621,8 @@ export async function updateEvent(
         updated_at: new Date().toISOString(),
     });
 
+    invalidateEventCaches();
+
     return mapEvent(data);
 }
 
@@ -455,10 +630,25 @@ export async function deleteEvent(eventId: string): Promise<void> {
     const { error } = await supabase.from("events").delete().eq("id", eventId);
 
     if (error) throw error;
+
+    invalidateEventCaches();
 }
 
 export async function getEventsByIds(eventIds: string[]): Promise<Event[]> {
     if (eventIds.length === 0) return [];
+
+    const cachedEvents = getCachedValue(cache.events);
+
+    if (cachedEvents) {
+        const requestedIds = new Set(eventIds);
+        const cachedMatches = cachedEvents.filter((event) => requestedIds.has(event.id));
+
+        if (cachedMatches.length === requestedIds.size) {
+            return cachedMatches.sort((left, right) =>
+                left.startDate.localeCompare(right.startDate)
+            );
+        }
+    }
 
     const { data, error } = await supabase
         .from("events")
@@ -472,25 +662,69 @@ export async function getEventsByIds(eventIds: string[]): Promise<Event[]> {
         .filter((row) => normalizeEventType(row.type) === "match")
         .map((row) => row.id);
     const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+    const participantCounts = await getEventParticipantCountByEventIds(
+        (data ?? []) as Record<string, unknown>[]
+    );
 
-    return data.map((row) => mapEvent(row, resultStatuses.get(row.id) ?? null));
+    return data.map((row) =>
+        mapEvent(
+            row,
+            resultStatuses.get(row.id) ?? null,
+            participantCounts.get(row.id) ?? 0
+        )
+    );
 }
 
 export async function getEventsCreatedByUser(userId: string): Promise<Event[]> {
-    const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("created_by", userId)
-        .order("start_date", { ascending: true });
+    const cachedCreatedEvents = getCachedValue(cache.createdEventsByUser.get(userId) ?? null);
 
-    if (error) throw error;
+    if (cachedCreatedEvents) {
+        return cachedCreatedEvents;
+    }
 
-    const matchEventIds = (data ?? [])
-        .filter((row) => normalizeEventType(row.type) === "match")
-        .map((row) => row.id);
-    const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+    const inflightCreatedEvents = inflightRequests.createdEventsByUser.get(userId);
 
-    return data.map((row) => mapEvent(row, resultStatuses.get(row.id) ?? null));
+    if (inflightCreatedEvents) {
+        return inflightCreatedEvents;
+    }
+
+    const request = (async () => {
+        const { data, error } = await supabase
+            .from("events")
+            .select("*")
+            .eq("created_by", userId)
+            .order("start_date", { ascending: true });
+
+        if (error) throw error;
+
+        const matchEventIds = (data ?? [])
+            .filter((row) => normalizeEventType(row.type) === "match")
+            .map((row) => row.id);
+        const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
+        const participantCounts = await getEventParticipantCountByEventIds(
+            (data ?? []) as Record<string, unknown>[]
+        );
+
+        const createdEvents = data.map((row) =>
+            mapEvent(
+                row,
+                resultStatuses.get(row.id) ?? null,
+                participantCounts.get(row.id) ?? 0
+            )
+        );
+
+        cache.createdEventsByUser.set(userId, setCachedValue(createdEvents));
+
+        return createdEvents;
+    })();
+
+    inflightRequests.createdEventsByUser.set(userId, request);
+
+    try {
+        return await request;
+    } finally {
+        inflightRequests.createdEventsByUser.delete(userId);
+    }
 }
 
 export async function getProfileNameById(userId: string): Promise<string | null> {

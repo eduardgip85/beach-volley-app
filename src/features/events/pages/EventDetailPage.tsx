@@ -33,6 +33,7 @@ import {
   getEventFallbackImage,
   getEventModeBadgeClasses,
   getEventModeLabel,
+  getEventStatusReason,
   getEventTypeLabel,
   getEventVisibilityBadgeClasses,
   getEventVisibilityLabel,
@@ -197,9 +198,12 @@ export function EventDetailPage() {
     ? !hasUnlimitedSpots && registrationsCount >= event.maxParticipants
     : false;
   const isPast = event ? isPastEvent(event) : false;
+  const eventStatusReason = event ? getEventStatusReason(event) : "";
   const isClosedEvent = Boolean(
     event &&
-      (event.status === "completed" || event.status === "cancelled" || isPast)
+      (event.status === "completed" ||
+        event.status === "cancelled" ||
+        (event.type !== "match" && isPast))
   );
   const canViewMatchPlayers = Boolean(
     event &&
@@ -286,7 +290,7 @@ export function EventDetailPage() {
     }
 
     loadEvent();
-  }, [eventId, profile?.id, t]);
+  }, [eventId]);
 
   useEffect(() => {
     async function loadParticipants() {
@@ -309,7 +313,7 @@ export function EventDetailPage() {
     }
 
     loadParticipants();
-  }, [canViewParticipants, event, eventId]);
+  }, [canViewParticipants, event?.id, event?.type, eventId]);
 
   async function handleJoinEvent() {
     if (!eventId) return;
@@ -573,6 +577,12 @@ export function EventDetailPage() {
       {error ? (
         <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
           {error}
+        </p>
+      ) : null}
+
+      {eventStatusReason ? (
+        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {eventStatusReason}
         </p>
       ) : null}
 

@@ -5,6 +5,7 @@ import { useAuth } from "../../auth/context/AuthContext";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
 import type { Event } from "../../events/types/event.types";
+import { isFinishedEvent } from "../../events/utils/event-display.utils";
 import { EventsCalendar } from "../components/EventsCalendar";
 
 export function CalendarPage() {
@@ -18,6 +19,10 @@ export function CalendarPage() {
     useEventFilters(events, {
       isMyEvent: (event) => myEventIds.includes(event.id),
     });
+  const calendarEvents =
+    filters.myEventsOnly
+      ? filteredEvents.filter((event) => !isFinishedEvent(event))
+      : filteredEvents;
 
   useEffect(() => {
     async function loadEvents() {
@@ -57,7 +62,7 @@ export function CalendarPage() {
         </p>
       )}
 
-      {!loading && !error && <EventsCalendar events={filteredEvents} />}
+      {!loading && !error && <EventsCalendar events={calendarEvents} />}
     </section>
   );
 }

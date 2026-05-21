@@ -125,6 +125,7 @@ export function EditEventPage() {
       eventData={eventData}
       deleting={deleting}
       pageError={pageError}
+      onClearPageError={() => setPageError("")}
       onDelete={handleDelete}
       onSubmit={handleUpdateEvent}
     />
@@ -135,12 +136,14 @@ function EditEventContent({
   eventData,
   deleting,
   pageError,
+  onClearPageError,
   onDelete,
   onSubmit,
 }: {
   eventData: Event;
   deleting: boolean;
   pageError: string;
+  onClearPageError: () => void;
   onDelete: () => void;
   onSubmit: (payload: CreateEventPayload) => Promise<void>;
 }) {
@@ -169,6 +172,10 @@ function EditEventContent({
         error={form.state.error || pageError}
         submitting={form.state.submitting}
         searchingLocation={form.state.searchingLocation}
+        onDismissError={() => {
+          form.actions.setError("");
+          onClearPageError();
+        }}
         onSubmit={form.actions.handleSubmit}
         onSearchLocation={form.actions.handleSearchLocation}
         onMapLocationChange={form.actions.handleMapLocationChange}

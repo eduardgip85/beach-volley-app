@@ -7,6 +7,7 @@ import {
     getEventsCreatedByUser,
     getEvents,
     getPublicEvents,
+    invalidateEventServiceCache,
     updateEvent,
 } from "../../features/events/services/events.service";
 
@@ -75,6 +76,7 @@ const privateEventRow = {
 describe("events.service", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        invalidateEventServiceCache();
 
         mockSelect.mockReturnValue({
             order: mockOrder,
@@ -103,9 +105,17 @@ describe("events.service", () => {
             order: mockOrder,
         });
 
-        mockIn.mockResolvedValue({
-            data: [],
-            error: null,
+        mockIn.mockImplementation((column: string) => {
+            if (column === "event_id") {
+                return {
+                    in: mockIn,
+                };
+            }
+
+            return Promise.resolve({
+                data: [],
+                error: null,
+            });
         });
     });
 
@@ -134,6 +144,7 @@ describe("events.service", () => {
                 maxParticipants: 4,
                 status: "cancelled",
                 resultValidationStatus: null,
+                participantCount: 0,
                 imageUrl: null,
                 createdBy: "user-1",
                 createdAt: "2026-04-30T10:00:00.000Z",

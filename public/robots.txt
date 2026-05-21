@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /auth/callback
+Disallow: /events/create
+Disallow: /profile
+Disallow: /friends
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /stats
+Disallow: /admin
+
+Sitemap: https://beach-volley-app-blush.vercel.app/sitemap.xml

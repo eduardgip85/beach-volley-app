@@ -116,12 +116,17 @@ describe("event-display.utils", () => {
         );
         expect(
             getEventBadgeClasses(createEvent({ mode: "competitive" }))
-        ).toBe("bg-blue-100 text-blue-700");
+        ).toBe("bg-violet-100 text-violet-700");
         expect(
             getEventBadgeClasses(
                 createEvent({ type: "open_play", mode: null, maxParticipants: 12 })
             )
         ).toBe("bg-orange-100 text-orange-700");
+        expect(
+            getEventBadgeClasses(
+                createEvent({ type: "tournament", mode: null, maxParticipants: 16 })
+            )
+        ).toBe("bg-blue-100 text-blue-700");
         expect(getEventVisibilityBadgeClasses("private")).toBe(
             "bg-slate-900 text-white"
         );

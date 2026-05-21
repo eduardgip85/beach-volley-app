@@ -96,7 +96,10 @@ describe("auth.service", () => {
         it("should register a user and create a player profile", async () => {
             const authData = {
                 user: {
-                id: "user-1",
+                    id: "user-1",
+                },
+                session: {
+                    access_token: "token",
                 },
             };
 
@@ -115,11 +118,20 @@ describe("auth.service", () => {
                 fullName: "Test User",
             });
 
-            expect(result).toEqual(authData);
+            expect(result).toEqual({
+                requiresEmailVerification: false,
+            });
 
             expect(mocks.mockSignUp).toHaveBeenCalledWith({
                 email: "test@test.com",
                 password: "password123",
+                options: {
+                    data: {
+                        full_name: "Test User",
+                    },
+                    emailRedirectTo:
+                        "http://localhost:3000/auth/callback?redirect=%2Fprofile",
+                },
             });
 
             expect(mocks.mockInsert).toHaveBeenCalledWith({
@@ -130,6 +142,29 @@ describe("auth.service", () => {
                 competitive_rating: 2,
                 preferred_language: "en",
             });
+        });
+
+        it("should not create a profile immediately when email verification is required", async () => {
+            mocks.mockSignUp.mockResolvedValue({
+                data: {
+                    user: {
+                        id: "user-2",
+                    },
+                    session: null,
+                },
+                error: null,
+            });
+
+            const result = await registerUser({
+                email: "verify@test.com",
+                password: "password123",
+                fullName: "Verify User",
+            });
+
+            expect(result).toEqual({
+                requiresEmailVerification: true,
+            });
+            expect(mocks.mockInsert).not.toHaveBeenCalled();
         });
 
         it("should throw when Supabase signUp fails", async () => {
@@ -320,6 +355,10 @@ describe("auth.service", () => {
                 preferredHand: null,
                 preferredCourtSide: null,
                 preferredPlayDays: [],
+                ratingPlacementCompletedAt: null,
+                ratingPlacementEstimate: null,
+                ratingPlacementScore: null,
+                provisionalRatingMatchesRemaining: 0,
             });
 
             expect(mocks.mockSelect).toHaveBeenCalledWith("*");

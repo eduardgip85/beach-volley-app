@@ -1,6 +1,7 @@
 import { supabase } from "../../../config/supabase";
 import type { UserProfile } from "../types/auth.types";
 import {
+    buildEmailConfirmationRedirectUrl,
     buildOAuthRedirectUrl,
     buildPasswordResetUrl,
     normalizeAuthRedirectPath,
@@ -25,6 +26,10 @@ interface RegisterData {
     email: string;
     password: string;
     fullName: string;
+}
+
+interface RegisterResult {
+    requiresEmailVerification: boolean;
 }
 
 function normalizePreferredPlayDays(value: unknown): UserProfile["preferredPlayDays"] {
@@ -138,10 +143,16 @@ export async function registerUser({
     email,
     password,
     fullName,
-}: RegisterData) {
+}: RegisterData): Promise<RegisterResult> {
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+            data: {
+                full_name: fullName,
+            },
+            emailRedirectTo: buildEmailConfirmationRedirectUrl("/profile"),
+        },
     });
 
     if (authError) throw authError;
@@ -152,18 +163,24 @@ export async function registerUser({
         throw new Error("User could not be created");
     }
 
-    const { error: profileError } = await supabase.from("profiles").insert({
-        id: userId,
-        full_name: fullName,
-        email,
-        role: "player",
-        competitive_rating: DEFAULT_COMPETITIVE_RATING,
-        preferred_language: getPreferredAppLanguage(),
-    });
+    const requiresEmailVerification = !authData.session;
 
-    if (profileError) throw profileError;
+    if (!requiresEmailVerification) {
+        const { error: profileError } = await supabase.from("profiles").insert({
+            id: userId,
+            full_name: fullName,
+            email,
+            role: "player",
+            competitive_rating: DEFAULT_COMPETITIVE_RATING,
+            preferred_language: getPreferredAppLanguage(),
+        });
 
-    return authData;
+        if (profileError) throw profileError;
+    }
+
+    return {
+        requiresEmailVerification,
+    };
 }
 
 export async function loginUser(email: string, password: string) {

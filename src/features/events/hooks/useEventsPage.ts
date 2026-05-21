@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import i18n from "../../../i18n";
 import { getPublicEvents } from "../services/events.service";
 import type { Event } from "../types/event.types";
+import { isFinishedEvent } from "../utils/event-display.utils";
 
 export function useEventsPage() {
     const [events, setEvents] = useState<Event[]>([]);
@@ -17,7 +18,8 @@ export function useEventsPage() {
             const data = await getPublicEvents();
 
             const upcoming = data.filter(
-            (event) => new Date(event.startDate) >= new Date()
+            (event) =>
+                new Date(event.startDate) >= new Date() && !isFinishedEvent(event)
             );
 
             setEvents(upcoming);

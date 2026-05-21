@@ -22,8 +22,11 @@ import { useHomeData } from "../hooks/useHomeData";
 
 gsap.registerPlugin(ScrollTrigger);
 
+const SITE_URL = "https://beach-volley-app-blush.vercel.app";
+const HOME_CANONICAL_URL = `${SITE_URL}/`;
+
 export function HomePage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const {
     totalPlayers,
@@ -41,6 +44,8 @@ export function HomePage() {
   const sectionsRef = useRef<HTMLElement[]>([]);
   const featureCardsRef = useRef<HTMLDivElement[]>([]);
   const upcomingRef = useRef<HTMLDivElement | null>(null);
+  const seoTitle = t("home.seoTitle");
+  const seoDescription = t("home.seoDescription");
 
   const faqItems = [
     { question: t("homeContent.faq1q"), answer: t("homeContent.faq1a") },
@@ -145,15 +150,28 @@ export function HomePage() {
         to: "/register",
       };
 
+  const quickLinks = [
+    { label: t("nav.events"), to: "/events" },
+    { label: t("nav.map"), to: "/map" },
+    { label: t("nav.calendar"), to: "/calendar" },
+    {
+      label: isAuthenticated ? t("nav.profile") : t("nav.login"),
+      to: isAuthenticated ? "/profile" : "/login",
+    },
+  ];
+
   useEffect(() => {
     const previousTitle = document.title;
     const previousDescription = document
       .querySelector('meta[name="description"]')
       ?.getAttribute("content");
+    const canonicalLink = document.querySelector<HTMLLinkElement>(
+      'link[rel="canonical"]'
+    );
+    const previousCanonicalHref = canonicalLink?.getAttribute("href");
     const existingJsonLd = document.getElementById("home-jsonld");
 
-    document.title =
-      "Beach Volley App | Beach volleyball matches, open play, private games and player stats";
+    document.title = seoTitle;
 
     let descriptionTag = document.querySelector('meta[name="description"]');
 
@@ -165,8 +183,18 @@ export function HomePage() {
 
     descriptionTag.setAttribute(
       "content",
-      "Beach Volley App helps players discover beach volleyball matches, open play sessions, private games, competitive ratings and public player profiles in one place."
+      seoDescription
     );
+
+    let nextCanonicalLink = canonicalLink;
+
+    if (!nextCanonicalLink) {
+      nextCanonicalLink = document.createElement("link");
+      nextCanonicalLink.setAttribute("rel", "canonical");
+      document.head.appendChild(nextCanonicalLink);
+    }
+
+    nextCanonicalLink.setAttribute("href", HOME_CANONICAL_URL);
 
     const jsonLdScript = document.createElement("script");
     jsonLdScript.id = "home-jsonld";
@@ -174,23 +202,31 @@ export function HomePage() {
     jsonLdScript.textContent = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      name: "Beach Volley App",
+      "@id": `${HOME_CANONICAL_URL}#software`,
+      name: "SandSet",
+      url: HOME_CANONICAL_URL,
       applicationCategory: "SportsApplication",
       operatingSystem: "Web",
-      description:
-        "Beach Volley App helps players discover beach volleyball matches, open play sessions, private games, competitive ratings and public player profiles.",
+      inLanguage: i18n.language,
+      description: seoDescription,
+      image: `${SITE_URL}/tournament-beach-1.png`,
+      publisher: {
+        "@type": "Organization",
+        name: "SandSet",
+        url: HOME_CANONICAL_URL,
+      },
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "EUR",
       },
       featureList: [
-        "Beach volleyball event discovery",
-        "Open play and match organization",
-        "Private event join requests",
-        "Validated match results",
-        "Competitive player rating",
-        "Public player profiles",
+        t("home.featureList.discovery"),
+        t("home.featureList.organize"),
+        t("home.featureList.privateAccess"),
+        t("home.featureList.validatedResults"),
+        t("home.featureList.competitiveRating"),
+        t("home.featureList.publicProfiles"),
       ],
     });
     document.head.appendChild(jsonLdScript);
@@ -206,13 +242,21 @@ export function HomePage() {
         }
       }
 
+      if (nextCanonicalLink) {
+        if (previousCanonicalHref) {
+          nextCanonicalLink.setAttribute("href", previousCanonicalHref);
+        } else if (!canonicalLink) {
+          nextCanonicalLink.remove();
+        }
+      }
+
       jsonLdScript.remove();
 
       if (existingJsonLd) {
         document.head.appendChild(existingJsonLd);
       }
     };
-  }, []);
+  }, [i18n.language, seoDescription, seoTitle]);
 
   useEffect(() => {
     if (!pageRef.current) {
@@ -307,7 +351,7 @@ export function HomePage() {
           className="min-w-0 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,_rgba(255,255,255,0.9)_0%,_rgba(255,255,255,0.82)_48%,_rgba(239,246,255,0.86)_100%)] px-4 py-5 shadow-[0_24px_70px_rgba(15,23,42,0.08)] ring-1 ring-white/80 backdrop-blur-md sm:px-6 md:rounded-[2.8rem] md:px-8 md:py-10 xl:px-12 xl:py-12"
         >
           <div className="grid min-w-0 gap-6 lg:min-h-[520px] lg:grid-cols-[minmax(0,1.18fr)_minmax(480px,0.82fr)] lg:items-center lg:gap-12 xl:gap-16">
-            <div className="min-w-0 max-w-3xl">
+            <div className="min-w-0 max-w-4xl">
               <p
                 data-hero-item
                 className="inline-flex max-w-full items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-blue-700 sm:text-[11px]"
@@ -318,14 +362,14 @@ export function HomePage() {
 
               <h1
                 data-hero-item
-                className="mt-4 max-w-[14ch] break-words text-[2.35rem] font-black leading-[0.98] tracking-[-0.03em] text-slate-950 sm:max-w-none sm:text-[2.65rem] md:text-[3.35rem] xl:text-[4.4rem]"
+                className="mt-4 max-w-[16ch] text-[2.15rem] font-black leading-[1.02] tracking-[-0.025em] text-slate-950 sm:max-w-[15ch] sm:text-[2.55rem] md:max-w-[14ch] md:text-[3.15rem] xl:max-w-[15.5ch] xl:text-[4rem]"
               >
                 {t("home.heroTitle")}
               </h1>
 
               <p
                 data-hero-item
-                className="mt-4 max-w-2xl text-[0.96rem] leading-7 text-slate-600 sm:text-base xl:text-[1.05rem]"
+                className="mt-4 max-w-2xl text-[0.98rem] leading-7 text-slate-600 sm:text-base xl:max-w-[46rem] xl:text-[1.04rem] xl:leading-8"
               >
                 {t("home.heroBody")}
               </p>
@@ -352,26 +396,17 @@ export function HomePage() {
 
               <div
                 data-hero-item
-                className="mt-3 grid grid-cols-3 gap-2.5 sm:hidden"
+                className="mt-4 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap"
               >
-                <Link
-                  to="/events"
-                  className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center text-xs font-bold text-slate-700 shadow-sm"
-                >
-                  {t("nav.events")}
-                </Link>
-                <Link
-                  to="/map"
-                  className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center text-xs font-bold text-slate-700 shadow-sm"
-                >
-                  {t("nav.map")}
-                </Link>
-                <Link
-                  to="/calendar"
-                  className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center text-xs font-bold text-slate-700 shadow-sm"
-                >
-                  {t("nav.calendar")}
-                </Link>
+                {quickLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center text-xs font-bold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 sm:min-w-[140px]"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
               </div>
 
               <div
@@ -418,7 +453,7 @@ export function HomePage() {
                     SandSet
                   </p>
                   <h3 className="mt-2 text-[1.7rem] font-black sm:text-[2rem]">
-                    Sunset Beach Match
+                    {t("home.heroMockTitle")}
                   </h3>
                   <p className="mt-2 max-w-sm text-[0.92rem] leading-6 text-blue-50/90">
                     {t("home.heroMockBody")}
@@ -428,12 +463,12 @@ export function HomePage() {
                     <MockMetric
                       icon={<MapPin size={16} />}
                       label={t("home.heroMockLocationLabel")}
-                      value="Barceloneta"
+                      value={t("home.heroMockLocationValue")}
                     />
                     <MockMetric
                       icon={<CalendarDays size={16} />}
                       label={t("home.heroMockDateLabel")}
-                      value="21 May | 18:30"
+                      value={t("home.heroMockDateValue")}
                     />
                     <MockMetric
                       icon={<Users size={16} />}
@@ -645,6 +680,20 @@ export function HomePage() {
               <p className="mt-2 text-sm text-slate-500">
                 {t("home.noPublicEventsBody")}
               </p>
+              <div className="mt-4 flex flex-col justify-center gap-3 sm:flex-row">
+                <Link
+                  to="/events"
+                  className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
+                >
+                  {t("home.exploreEvents")}
+                </Link>
+                <Link
+                  to={secondaryCta.to}
+                  className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  {secondaryCta.label}
+                </Link>
+              </div>
             </div>
           ) : null}
 
@@ -728,6 +777,21 @@ export function HomePage() {
                 </article>
               ))}
             </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link
+                to={isAuthenticated ? "/profile" : "/register"}
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"
+              >
+                {isAuthenticated ? t("home.finalCtaProfile") : t("home.joinApp")}
+              </Link>
+              <Link
+                to="/events"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-bold text-emerald-800 transition hover:bg-emerald-100"
+              >
+                {t("home.exploreEvents")}
+              </Link>
+            </div>
           </section>
         </div>
 
@@ -757,6 +821,21 @@ export function HomePage() {
                 title={t("homeContent.metric2t")}
                 description={t("homeContent.metric2d")}
               />
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Link
+                to="/events"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-slate-100"
+              >
+                {t("home.exploreEvents")}
+              </Link>
+              <Link
+                to="/calendar"
+                className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-bold text-white transition hover:bg-white/15"
+              >
+                {t("nav.calendar")}
+              </Link>
             </div>
           </section>
 
@@ -820,6 +899,35 @@ export function HomePage() {
             </div>
           </div>
         </section>
+
+        <footer className="rounded-[1.75rem] border border-slate-200 bg-white/80 px-5 py-5 text-sm text-slate-500 shadow-[0_10px_26px_rgba(15,23,42,0.04)] backdrop-blur-sm sm:px-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-2xl leading-6">
+              {t("home.footerBody")}
+            </p>
+
+            <div className="flex flex-wrap gap-3 text-sm font-semibold">
+              <Link
+                to="/privacy"
+                className="transition hover:text-slate-900"
+              >
+                {t("home.footerPrivacy")}
+              </Link>
+              <Link
+                to="/cookies"
+                className="transition hover:text-slate-900"
+              >
+                {t("home.footerCookies")}
+              </Link>
+              <Link
+                to="/terms"
+                className="transition hover:text-slate-900"
+              >
+                {t("home.footerTerms")}
+              </Link>
+            </div>
+          </div>
+        </footer>
       </div>
     </section>
   );

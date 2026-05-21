@@ -110,6 +110,21 @@ const PublicProfilePage = lazy(() =>
     default: module.PublicProfilePage,
   }))
 );
+const PrivacyPage = lazy(() =>
+  import("../features/legal/pages/PrivacyPage").then((module) => ({
+    default: module.PrivacyPage,
+  }))
+);
+const CookiesPage = lazy(() =>
+  import("../features/legal/pages/CookiesPage").then((module) => ({
+    default: module.CookiesPage,
+  }))
+);
+const TermsPage = lazy(() =>
+  import("../features/legal/pages/TermsPage").then((module) => ({
+    default: module.TermsPage,
+  }))
+);
 const AdminUsersPage = lazy(() =>
   import("../features/admin/pages/AdminUsersPage").then((module) => ({
     default: module.AdminUsersPage,
@@ -189,6 +204,18 @@ export const router = createBrowserRouter([
       {
         path: "/ranking",
         element: withSuspense(<RankingPage />),
+      },
+      {
+        path: "/privacy",
+        element: withSuspense(<PrivacyPage />),
+      },
+      {
+        path: "/cookies",
+        element: withSuspense(<CookiesPage />),
+      },
+      {
+        path: "/terms",
+        element: withSuspense(<TermsPage />),
       },
 
       {

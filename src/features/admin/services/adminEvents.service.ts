@@ -30,6 +30,10 @@ interface MatchResultStatusRow {
   validation_status: EventResultValidationStatus;
 }
 
+interface EventParticipantCountRow {
+  event_id: string;
+}
+
 interface AdminEventCreatorRow {
   id: string;
   full_name: string | null;
@@ -52,6 +56,11 @@ export interface GetAdminEventsParams {
 export interface GetAdminEventsResult {
   items: AdminEventListItem[];
   totalCount: number;
+  summary: {
+    active: number;
+    finished: number;
+    cancelled: number;
+  };
 }
 
 function pickResultValidationStatus(
@@ -100,9 +109,49 @@ async function getMatchResultStatusByEventIds(eventIds: string[]) {
   );
 }
 
+async function getEventParticipantCountByEventIds(rows: AdminEventsRow[]) {
+  const matchEventIds = rows
+    .filter((row) => row.type === "match")
+    .map((row) => row.id);
+  const nonMatchEventIds = rows
+    .filter((row) => row.type !== "match")
+    .map((row) => row.id);
+  const counts = new Map<string, number>();
+
+  if (matchEventIds.length > 0) {
+    const { data, error } = await supabase
+      .from("match_players")
+      .select("event_id")
+      .in("event_id", matchEventIds)
+      .in("status", ["joined", "confirmed"]);
+
+    if (error) throw error;
+
+    for (const row of (data ?? []) as EventParticipantCountRow[]) {
+      counts.set(row.event_id, (counts.get(row.event_id) ?? 0) + 1);
+    }
+  }
+
+  if (nonMatchEventIds.length > 0) {
+    const { data, error } = await supabase
+      .from("registrations")
+      .select("event_id")
+      .in("event_id", nonMatchEventIds);
+
+    if (error) throw error;
+
+    for (const row of (data ?? []) as EventParticipantCountRow[]) {
+      counts.set(row.event_id, (counts.get(row.event_id) ?? 0) + 1);
+    }
+  }
+
+  return counts;
+}
+
 function mapEvent(
   row: AdminEventsRow,
-  resultValidationStatus: EventResultValidationStatus | null = null
+  resultValidationStatus: EventResultValidationStatus | null = null,
+  participantCount?: number
 ): Event {
   return {
     id: row.id,
@@ -122,8 +171,10 @@ function mapEvent(
       status: row.status,
       startDate: row.start_date,
       resultValidationStatus,
+      participantCount,
     }),
     resultValidationStatus,
+    participantCount,
     imageUrl: row.image_url,
     createdBy: row.created_by,
     createdAt: row.created_at,
@@ -166,7 +217,7 @@ export async function getAdminEvents({
   let query = supabase
     .from("events")
     .select("*", { count: "exact" })
-    .order("start_date", { ascending: false })
+    .order("start_date", { ascending: onlyVisibleActive })
     .range(from, to);
 
   if (onlyVisibleActive) {
@@ -197,15 +248,67 @@ export async function getAdminEvents({
   }
 
   const rows = (data ?? []) as AdminEventsRow[];
-  const matchEventIds = rows
+
+  let summaryQuery = supabase
+    .from("events")
+    .select("*")
+    .order("start_date", { ascending: onlyVisibleActive });
+
+  if (onlyVisibleActive) {
+    summaryQuery = summaryQuery
+      .neq("status", "cancelled")
+      .gte("start_date", nowIso);
+  }
+
+  if (normalizedSearch) {
+    const searchClauses = [
+      `title.ilike.%${normalizedSearch}%`,
+      `location_name.ilike.%${normalizedSearch}%`,
+    ];
+
+    if (matchingCreatorIds.length > 0) {
+      searchClauses.push(`created_by.in.(${matchingCreatorIds.join(",")})`);
+    }
+
+    summaryQuery = summaryQuery.or(searchClauses.join(","));
+  }
+
+  const { data: summaryData, error: summaryError } = await summaryQuery;
+
+  if (summaryError) {
+    throw summaryError;
+  }
+
+  const summaryRows = (summaryData ?? []) as AdminEventsRow[];
+  const allRows = [...rows, ...summaryRows];
+  const uniqueRows = new Map<string, AdminEventsRow>();
+
+  for (const row of allRows) {
+    uniqueRows.set(row.id, row);
+  }
+
+  const dedupedRows = Array.from(uniqueRows.values());
+  const matchEventIds = dedupedRows
     .filter((row) => row.type === "match")
     .map((row) => row.id);
   const resultStatuses = await getMatchResultStatusByEventIds(matchEventIds);
-  const events = rows.map((row) =>
-    mapEvent(row, resultStatuses.get(row.id) ?? null)
+  const participantCounts = await getEventParticipantCountByEventIds(dedupedRows);
+  const pageEvents = rows.map((row) =>
+    mapEvent(
+      row,
+      resultStatuses.get(row.id) ?? null,
+      participantCounts.get(row.id) ?? 0
+    )
+  );
+  const summaryEvents = summaryRows.map((row) =>
+    mapEvent(
+      row,
+      resultStatuses.get(row.id) ?? null,
+      participantCounts.get(row.id) ?? 0
+    )
   );
   const creatorIds = Array.from(
-    new Set(events.map((event) => event.createdBy).filter(Boolean))
+    new Set(pageEvents.map((event) => event.createdBy).filter(Boolean))
   );
 
   let creatorMap = new Map<string, AdminEventCreatorRow>();
@@ -229,7 +332,7 @@ export async function getAdminEvents({
   }
 
   return {
-    items: events.map((event) => {
+    items: pageEvents.map((event) => {
       const creator = creatorMap.get(event.createdBy);
 
       return {
@@ -239,5 +342,19 @@ export async function getAdminEvents({
       };
     }),
     totalCount: count ?? 0,
+    summary: summaryEvents.reduce(
+      (acc, event) => {
+        if (event.status === "completed") {
+          acc.finished += 1;
+        } else if (event.status === "cancelled") {
+          acc.cancelled += 1;
+        } else {
+          acc.active += 1;
+        }
+
+        return acc;
+      },
+      { active: 0, finished: 0, cancelled: 0 }
+    ),
   };
 }

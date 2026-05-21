@@ -7,6 +7,7 @@ import type {
 import i18n from "../../../i18n";
 import {
     getResolvedEventDisplayStatus,
+    getResolvedEventStatusReason,
     isPastEventDate,
 } from "./event-status.utils";
 
@@ -15,7 +16,10 @@ export function isPastEvent(event: Event) {
 }
 
 export function isFinishedEvent(event: Event) {
-    return getResolvedEventDisplayStatus(event) === i18n.t("eventStatus.finished");
+    return (
+        event.status === "cancelled" ||
+        getResolvedEventDisplayStatus(event) === i18n.t("eventStatus.finished")
+    );
 }
 
 export function getEventTypeLabel(type: EventType) {
@@ -45,7 +49,7 @@ export function getEventModeLabel(mode: EventMode | null) {
 
 export function getEventModeBadgeClasses(mode: EventMode | null) {
     if (mode === "competitive") {
-        return "bg-blue-100 text-blue-700 ring-1 ring-blue-200";
+        return "bg-violet-100 text-violet-700 ring-1 ring-violet-200";
     }
 
     if (mode === "casual") {
@@ -58,7 +62,7 @@ export function getEventModeBadgeClasses(mode: EventMode | null) {
 export function getEventModeSurfaceClasses(event: Event) {
     if (event.type === "match") {
         if (event.mode === "competitive") {
-            return "bg-[linear-gradient(180deg,_rgba(239,246,255,1)_0%,_rgba(255,255,255,1)_42%)] ring-1 ring-blue-100";
+            return "bg-[linear-gradient(180deg,_rgba(245,243,255,1)_0%,_rgba(255,255,255,1)_42%)] ring-1 ring-violet-100";
         }
 
         if (event.mode === "casual") {
@@ -91,6 +95,10 @@ export function getEventDisplayStatus(event: Event) {
     return getResolvedEventDisplayStatus(event);
 }
 
+export function getEventStatusReason(event: Event) {
+    return getResolvedEventStatusReason(event);
+}
+
 export function getEventColorClasses(event: Event) {
     if (getEventDisplayStatus(event) === i18n.t("eventStatus.pendingResult")) {
         return "bg-amber-500";
@@ -105,7 +113,7 @@ export function getEventColorClasses(event: Event) {
     }
 
     if (event.type === "match") {
-        return event.mode === "competitive" ? "bg-blue-600" : "bg-emerald-500";
+        return event.mode === "competitive" ? "bg-violet-600" : "bg-emerald-500";
     }
 
     return "bg-yellow-500";
@@ -126,7 +134,7 @@ export function getEventBadgeClasses(event: Event) {
 
     if (event.type === "match") {
         return event.mode === "competitive"
-            ? "bg-blue-100 text-blue-700"
+            ? "bg-violet-100 text-violet-700"
             : "bg-emerald-100 text-emerald-700";
     }
 

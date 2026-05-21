@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin, TrendingDown, TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { getEventModeLabel } from "../../events/utils/event-display.utils";
 import {
@@ -14,6 +15,7 @@ interface CompetitiveMatchHistoryCardProps {
 export function CompetitiveMatchHistoryCard({
     match,
 }: CompetitiveMatchHistoryCardProps) {
+    const { t, i18n } = useTranslation();
     const isWin = match.outcome === "win";
     const deltaLabel = formatCompetitiveRatingDelta(match.ratingDelta);
     const modeLabel = getEventModeLabel(match.mode);
@@ -37,7 +39,7 @@ export function CompetitiveMatchHistoryCard({
                                     : "bg-red-600 text-white"
                             }`}
                         >
-                            {isWin ? "Victory" : "Defeat"}
+                            {isWin ? t("profile.won") : t("profile.lost")}
                         </span>
 
                         {modeLabel ? (
@@ -63,7 +65,7 @@ export function CompetitiveMatchHistoryCard({
                             </span>
                         ) : (
                             <span className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-600">
-                                Legacy result
+                                {t("profile.legacyResult")}
                             </span>
                         )}
                     </div>
@@ -75,7 +77,7 @@ export function CompetitiveMatchHistoryCard({
                     <div className="mt-3 space-y-2 text-sm text-slate-500">
                         <p className="flex items-center gap-2">
                             <CalendarDays size={16} />
-                            {new Date(match.startDate).toLocaleString()}
+                            {new Date(match.startDate).toLocaleString(i18n.language)}
                         </p>
 
                         <p className="flex items-center gap-2">
@@ -88,7 +90,7 @@ export function CompetitiveMatchHistoryCard({
                 <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px] xl:min-w-[360px] xl:max-w-[420px]">
                     <div className="rounded-2xl bg-white/90 p-4 ring-1 ring-slate-200">
                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
-                            Rating after match
+                            {t("profile.ratingAfterMatch")}
                         </p>
                         {match.rating != null ? (
                             <>
@@ -109,7 +111,7 @@ export function CompetitiveMatchHistoryCard({
                             </>
                         ) : (
                             <p className="mt-2 text-sm font-semibold text-slate-500">
-                                Rating delta not stored for this older match
+                                {t("profile.olderMatchNoDelta")}
                             </p>
                         )}
                     </div>
@@ -121,7 +123,9 @@ export function CompetitiveMatchHistoryCard({
                                 className="flex items-center justify-between text-sm text-slate-700"
                             >
                                 <span className="font-semibold text-slate-500">
-                                    Set {set.setNumber}
+                                    {t("profile.setLabel", {
+                                        number: set.setNumber,
+                                    })}
                                 </span>
                                 <span className="font-black text-slate-900">
                                     {set.teamAScore} - {set.teamBScore}

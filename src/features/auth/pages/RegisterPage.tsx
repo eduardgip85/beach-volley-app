@@ -4,6 +4,26 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { loginWithGoogle, registerUser } from "../services/auth.service";
 import { normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
 
+function getRegisterErrorMessage(error: unknown, fallback: string, rateLimit: string) {
+    if (
+        typeof error === "object" &&
+        error !== null &&
+        "status" in error &&
+        error.status === 429
+    ) {
+        return rateLimit;
+    }
+
+    if (
+        error instanceof Error &&
+        /too many requests|rate limit|429/i.test(error.message)
+    ) {
+        return rateLimit;
+    }
+
+    return fallback;
+}
+
 export function RegisterPage() {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -16,30 +36,51 @@ export function RegisterPage() {
     const [password, setPassword] = useState("");
 
     const [error, setError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(false);
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
+        if (loading) {
+            return;
+        }
+
         try {
             setLoading(true);
             setError("");
+            setSuccessMessage("");
 
-            await registerUser({
+            const result = await registerUser({
                 fullName,
                 email,
                 password,
             });
 
+            if (result.requiresEmailVerification) {
+                setSuccessMessage(t("auth.registerCheckEmail"));
+                return;
+            }
+
             navigate(redirectTo);
-        } catch {
-            setError(t("auth.registerError"));
+        } catch (error) {
+            setError(
+                getRegisterErrorMessage(
+                    error,
+                    t("auth.registerError"),
+                    t("auth.registerRateLimitError")
+                )
+            );
         } finally {
             setLoading(false);
         }
     }
 
     async function handleGoogleSignup() {
+        if (loading) {
+            return;
+        }
+
         try {
             setLoading(true);
             setError("");
@@ -53,6 +94,15 @@ export function RegisterPage() {
 
     return (
         <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mb-6">
+            <Link
+                to="/"
+                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900"
+            >
+                {t("nav.home")}
+            </Link>
+        </div>
+
         <h1 className="text-2xl font-bold text-slate-900">{t("auth.registerTitle")}</h1>
 
         <p className="mt-2 text-sm text-slate-500">
@@ -62,6 +112,12 @@ export function RegisterPage() {
         {error && (
             <p className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
             {error}
+            </p>
+        )}
+
+        {successMessage && (
+            <p className="mt-4 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {successMessage}
             </p>
         )}
 
@@ -126,6 +182,17 @@ export function RegisterPage() {
                 {t("auth.loginCta")}
             </Link>
         </p>
+
+        {successMessage ? (
+            <p className="mt-3 text-center text-sm text-slate-500">
+                <Link
+                    to={`/login?redirect=${encodeURIComponent(redirectTo)}`}
+                    className="font-medium text-blue-600"
+                >
+                    {t("auth.backToLogin")}
+                </Link>
+            </p>
+        ) : null}
         </section>
     );
 }

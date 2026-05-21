@@ -1,5 +1,7 @@
 import { supabase } from "../../../config/supabase";
 import { DEFAULT_COMPETITIVE_RATING } from "../../ratings/utils/rating-display.utils";
+import { getEvents } from "../../events/services/events.service";
+import type { Event } from "../../events/types/event.types";
 import type {
   AdminAnalyticsData,
   AnalyticsPeakDay,
@@ -24,6 +26,158 @@ function toString(value: unknown, fallback = "") {
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function getRangeStart(filterKey: AnalyticsTimeFilter) {
+  if (filterKey === "all_time") {
+    return null;
+  }
+
+  const now = new Date();
+  const start = new Date(now);
+
+  if (filterKey === "last_7_days") {
+    start.setDate(now.getDate() - 7);
+  } else if (filterKey === "last_30_days") {
+    start.setDate(now.getDate() - 30);
+  } else {
+    start.setDate(now.getDate() - 90);
+  }
+
+  return start;
+}
+
+function isEventInsideFilter(event: Event, filterKey: AnalyticsTimeFilter) {
+  if (filterKey === "all_time") {
+    return true;
+  }
+
+  const start = getRangeStart(filterKey);
+
+  if (!start) {
+    return true;
+  }
+
+  const eventDate = new Date(event.startDate);
+  const now = new Date();
+
+  return eventDate >= start && eventDate <= now;
+}
+
+function groupDateLabel(date: Date, filterKey: AnalyticsTimeFilter) {
+  if (filterKey === "last_90_days" || filterKey === "all_time") {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  }
+
+  return date.toISOString().slice(0, 10);
+}
+
+function toSortedTrendPoints(groupedCounts: Map<string, number>) {
+  return Array.from(groupedCounts.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([label, count]) => ({ label, count }));
+}
+
+function buildEventTrend(events: Event[], filterKey: AnalyticsTimeFilter) {
+  const groupedCounts = new Map<string, number>();
+
+  for (const event of events) {
+    const label = groupDateLabel(new Date(event.startDate), filterKey);
+    groupedCounts.set(label, (groupedCounts.get(label) ?? 0) + 1);
+  }
+
+  return toSortedTrendPoints(groupedCounts);
+}
+
+function buildPeakDays(events: Event[]): AnalyticsPeakDay[] {
+  const dayCounts = new Map<string, number>();
+
+  for (const event of events) {
+    const day = new Date(event.startDate).toLocaleDateString("en-US", {
+      weekday: "long",
+    });
+    dayCounts.set(day, (dayCounts.get(day) ?? 0) + 1);
+  }
+
+  return Array.from(dayCounts.entries())
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .map(([day, count]) => ({ day, count }));
+}
+
+function buildTopLocations(events: Event[]): AnalyticsTopLocation[] {
+  const locationCounts = new Map<string, number>();
+
+  for (const event of events) {
+    const locationName = event.locationName.trim();
+
+    if (!locationName) {
+      continue;
+    }
+
+    locationCounts.set(locationName, (locationCounts.get(locationName) ?? 0) + 1);
+  }
+
+  return Array.from(locationCounts.entries())
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 5)
+    .map(([locationName, eventsCount]) => ({ locationName, eventsCount }));
+}
+
+function buildEventDrivenAnalytics(
+  base: AdminAnalyticsData,
+  events: Event[],
+  filterKey: AnalyticsTimeFilter
+): AdminAnalyticsData {
+  const filteredEvents = events.filter((event) => isEventInsideFilter(event, filterKey));
+  const filteredMatches = filteredEvents.filter((event) => event.type === "match");
+  const casualMatches = filteredMatches.filter((event) => event.mode === "casual");
+  const competitiveMatches = filteredMatches.filter(
+    (event) => event.mode === "competitive"
+  );
+  const publicMatches = filteredMatches.filter((event) => event.visibility === "public");
+  const privateMatches = filteredMatches.filter((event) => event.visibility === "private");
+  const matchesCompleted = filteredMatches.filter(
+    (event) => event.status === "completed"
+  ).length;
+  const cancelledMatches = filteredMatches.filter(
+    (event) => event.status === "cancelled"
+  ).length;
+  const participantTotal = filteredEvents.reduce(
+    (sum, event) => sum + (event.participantCount ?? 0),
+    0
+  );
+
+  return {
+    ...base,
+    matchAnalytics: {
+      ...base.matchAnalytics,
+      totalMatches: filteredMatches.length,
+      casualMatches: casualMatches.length,
+      competitiveMatches: competitiveMatches.length,
+      publicMatches: publicMatches.length,
+      privateMatches: privateMatches.length,
+      matchesCompleted,
+      cancelledMatches,
+      eventsTrend: buildEventTrend(filteredEvents, filterKey),
+      formatRatio: [
+        { name: "Casual", value: casualMatches.length },
+        { name: "Competitive", value: competitiveMatches.length },
+      ],
+      visibilityRatio: [
+        { name: "Public", value: publicMatches.length },
+        { name: "Private", value: privateMatches.length },
+      ],
+    },
+    engagementAnalytics: {
+      ...base.engagementAnalytics,
+      averagePlayersPerEvent:
+        filteredEvents.length > 0
+          ? Number((participantTotal / filteredEvents.length).toFixed(1))
+          : 0,
+      mostActiveLocations: buildTopLocations(filteredEvents),
+      peakActivityDays: buildPeakDays(filteredEvents),
+    },
+  };
 }
 
 function toTrendPoints(value: unknown): AnalyticsTrendPoint[] {
@@ -225,5 +379,13 @@ export async function getStatsData(
 
   if (error) throw error;
 
-  return mapAdminAnalytics(data, filterKey);
+  const base = mapAdminAnalytics(data, filterKey);
+
+  try {
+    const events = await getEvents();
+    return buildEventDrivenAnalytics(base, events, filterKey);
+  } catch (eventsError) {
+    console.error("Could not refresh event-driven admin analytics", eventsError);
+    return base;
+  }
 }

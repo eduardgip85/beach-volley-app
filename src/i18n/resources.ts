@@ -55,6 +55,12 @@ export const resources = {
                 finished: "Finished",
                 cancelled: "Cancelled",
             },
+            eventStatusReasons: {
+                notEnoughPlayers:
+                    "This match was cancelled because it did not reach 4 players before the start time.",
+                unvalidatedResult:
+                    "This match was cancelled because no accepted result was submitted within the validation window.",
+            },
             auth: {
                 loginTitle: "Welcome back",
                 loginBody: "Login to create events or join beach volleyball matches.",
@@ -72,6 +78,10 @@ export const resources = {
                 loginLoading: "Logging in...",
                 registerCta: "Register",
                 registerLoading: "Creating account...",
+                registerCheckEmail:
+                    "Check your email to confirm the account before signing in.",
+                registerRateLimitError:
+                    "Too many signup attempts right now. Please wait a bit before trying again.",
                 forgotPasswordCta: "Forgot password?",
                 forgotPasswordTitle: "Reset your password",
                 forgotPasswordBody:
@@ -228,10 +238,15 @@ export const resources = {
             },
             home: {
                 platformEyebrow: "Beach volleyball platform",
+                seoTitle:
+                    "SandSet | Beach volleyball matches, open play and competitive events",
+                seoDescription:
+                    "Discover beach volleyball matches, open play sessions, private games and competitive events with SandSet.",
                 heroTitle:
-                    "Find beach volleyball matches, join open play sessions and track competitive progress in one place.",
+                    "Find beach volleyball matches, create events and play with your local community.",
                 heroBody:
-                    "Beach Volley App is a web app for local beach volleyball communities that want a cleaner way to discover events, manage private sessions, validate match results and keep player profiles organized beyond chat groups.",
+                    "Beach Volley App helps players discover beach volleyball matches, join open play sessions, manage private games and track competitive progress without relying on scattered chats.",
+                loadError: "Could not load home data",
                 exploreEvents: "Explore events",
                 createEvent: "Create an event",
                 joinApp: "Join the app",
@@ -274,10 +289,13 @@ export const resources = {
                 faqTitle: "Quick answers about the platform",
                 heroMockType: "Competitive match",
                 heroMockVerified: "Verified gear",
+                heroMockTitle: "Sunset Beach Match",
                 heroMockBody:
                     "Organize a clean 2v2 session with a clear location, fixed players and competitive follow-up.",
                 heroMockLocationLabel: "Location",
+                heroMockLocationValue: "Barceloneta",
                 heroMockDateLabel: "Date",
+                heroMockDateValue: "21 May | 18:30",
                 heroMockPlayersLabel: "Players",
                 heroMockEquipmentLabel: "Equipment",
                 heroMockEquipmentValue: "Ball confirmed",
@@ -336,6 +354,19 @@ export const resources = {
                 finalCtaBody:
                     "Explore public events, create your own sessions, track accepted results and keep your player profile organized in one place.",
                 finalCtaProfile: "Go to profile",
+                footerBody:
+                    "SandSet helps organize beach volleyball matches, open play sessions and competitive activity with clearer profiles, results and event flows.",
+                footerPrivacy: "Privacy",
+                footerCookies: "Cookies",
+                footerTerms: "Terms",
+                featureList: {
+                    discovery: "Beach volleyball event discovery",
+                    organize: "Open play and match organization",
+                    privateAccess: "Private event join requests",
+                    validatedResults: "Validated match results",
+                    competitiveRating: "Competitive player rating",
+                    publicProfiles: "Public player profiles",
+                },
             },
             homeContent: {
                 faq1q: "What is Beach Volley App?",
@@ -503,6 +534,14 @@ export const resources = {
                 statsPrivateTitle: "This player keeps match stats private",
                 statsPrivateBody:
                     "Public rating and recent match summaries are hidden in their privacy settings.",
+                recentMatchesSummaryBody:
+                    "Private and public matches can appear here, but only as a safe summary without event detail access.",
+                summaryOnly: "Summary only",
+                noRecentMatches: "No recent match history yet",
+                noRecentMatchesBody:
+                    "Validated matches will appear here when available.",
+                playedInTeamA: "Played in Team A",
+                playedInTeamB: "Played in Team B",
                 safeViewTitle: "Safe profile view",
                 safeViewBody:
                     "Contact details stay hidden. Match history is shown only as a safe summary, without opening private event details.",
@@ -771,6 +810,7 @@ export const resources = {
                 pinLocationBody:
                     "Tap the map to adjust the precise meeting point. The exact coordinates are stored internally.",
                 errors: {
+                    title: "Could not create or update the event",
                     writeLocation: "Write a location to search",
                     locationNotFound: "Location not found",
                     searchFailed: "Could not search location",
@@ -994,6 +1034,9 @@ export const resources = {
                 validated: "Validated",
                 won: "Won",
                 lost: "Lost",
+                legacyResult: "Legacy result",
+                ratingAfterMatch: "Rating after match",
+                olderMatchNoDelta: "Rating delta not stored for this older match",
                 setLabel: "Set {{number}}",
                 historyModes: {
                     all: "All",
@@ -1284,6 +1327,12 @@ export const resources = {
                 finished: "Finalizado",
                 cancelled: "Cancelado",
             },
+            eventStatusReasons: {
+                notEnoughPlayers:
+                    "Este partido se canceló porque no llegó a tener 4 jugadores antes de la hora de inicio.",
+                unvalidatedResult:
+                    "Este partido se canceló porque no hubo un resultado aceptado dentro de la ventana de validación.",
+            },
             auth: {
                 loginTitle: "Bienvenido de nuevo",
                 loginBody:
@@ -1303,6 +1352,10 @@ export const resources = {
                 loginLoading: "Entrando...",
                 registerCta: "Registrarse",
                 registerLoading: "Creando cuenta...",
+                registerRateLimitError:
+                    "Hay demasiados intentos de registro ahora mismo. Espera un poco antes de volver a intentarlo.",
+                registerCheckEmail:
+                    "Revisa tu email para confirmar la cuenta antes de iniciar sesión.",
                 forgotPasswordCta: "He olvidado la contraseña",
                 forgotPasswordTitle: "Restablecer contraseña",
                 forgotPasswordBody:
@@ -1461,10 +1514,15 @@ export const resources = {
             },
             home: {
                 platformEyebrow: "Plataforma de voley playa",
+                seoTitle:
+                    "SandSet | Partidos de voley playa, open play y eventos competitivos",
+                seoDescription:
+                    "Descubre partidos de voley playa, sesiones open play, juegos privados y eventos competitivos con SandSet.",
                 heroTitle:
-                    "Encuentra partidos de voley playa, unete a open plays y sigue tu progreso competitivo en un solo lugar.",
+                    "Encuentra partidos de voley playa, crea eventos y juega con tu comunidad local.",
                 heroBody:
-                    "Beach Volley App es una app web para comunidades locales de voley playa que quieren una forma mas limpia de descubrir eventos, gestionar sesiones privadas, validar resultados y mantener los perfiles de jugador organizados mas alla de los chats.",
+                    "Beach Volley App te ayuda a descubrir partidos de voley playa, unirte a open plays, gestionar eventos privados y seguir tu progreso competitivo sin depender de chats dispersos.",
+                loadError: "No se pudieron cargar los datos del inicio",
                 exploreEvents: "Explorar eventos",
                 createEvent: "Crear evento",
                 joinApp: "Unirme a la app",
@@ -1507,10 +1565,13 @@ export const resources = {
                 faqTitle: "Respuestas rapidas sobre la plataforma",
                 heroMockType: "Partido competitivo",
                 heroMockVerified: "Material verificado",
+                heroMockTitle: "Partido sunset en la playa",
                 heroMockBody:
                     "Organiza una sesion 2v2 mas clara, con ubicacion definida, jugadores cerrados y seguimiento competitivo.",
                 heroMockLocationLabel: "Ubicacion",
+                heroMockLocationValue: "Barceloneta",
                 heroMockDateLabel: "Fecha",
+                heroMockDateValue: "21 may | 18:30",
                 heroMockPlayersLabel: "Jugadores",
                 heroMockEquipmentLabel: "Equipamiento",
                 heroMockEquipmentValue: "Pelota confirmada",
@@ -1569,6 +1630,19 @@ export const resources = {
                 finalCtaBody:
                     "Explora eventos publicos, crea tus propias sesiones, sigue resultados aceptados y manten tu perfil de jugador organizado en un solo lugar.",
                 finalCtaProfile: "Ir al perfil",
+                footerBody:
+                    "SandSet te ayuda a organizar partidos de voley playa, sesiones open play y actividad competitiva con perfiles, resultados y flujos de evento mas claros.",
+                footerPrivacy: "Privacidad",
+                footerCookies: "Cookies",
+                footerTerms: "Términos",
+                featureList: {
+                    discovery: "Descubrimiento de eventos de voley playa",
+                    organize: "Organizacion de open play y partidos",
+                    privateAccess: "Solicitudes para eventos privados",
+                    validatedResults: "Resultados validados",
+                    competitiveRating: "Rating competitivo de jugador",
+                    publicProfiles: "Perfiles publicos de jugador",
+                },
             },
             homeContent: {
                 faq1q: "Que es Beach Volley App?",
@@ -1736,6 +1810,14 @@ export const resources = {
                 statsPrivateTitle: "Este jugador mantiene sus estadisticas privadas",
                 statsPrivateBody:
                     "El rating publico y los resumentes recientes de partidos estan ocultos en sus ajustes de privacidad.",
+                recentMatchesSummaryBody:
+                    "Aquí pueden aparecer partidos privados y públicos, pero solo como un resumen seguro sin acceso al detalle del evento.",
+                summaryOnly: "Solo resumen",
+                noRecentMatches: "Aún no hay historial reciente de partidos",
+                noRecentMatchesBody:
+                    "Los partidos validados aparecerán aquí cuando estén disponibles.",
+                playedInTeamA: "Jugó en el equipo A",
+                playedInTeamB: "Jugó en el equipo B",
                 safeViewTitle: "Vista segura del perfil",
                 safeViewBody:
                     "Los datos de contacto se mantienen ocultos. El historial de partidos se muestra solo como resumen seguro, sin abrir detalles de eventos privados.",
@@ -2004,6 +2086,7 @@ export const resources = {
                 pinLocationBody:
                     "Pulsa en el mapa para ajustar el punto exacto. Las coordenadas precisas se guardan internamente.",
                 errors: {
+                    title: "No se pudo crear o actualizar el evento",
                     writeLocation: "Escribe una ubicacion para buscar",
                     locationNotFound: "No se ha encontrado la ubicacion",
                     searchFailed: "No se pudo buscar la ubicacion",
@@ -2227,6 +2310,9 @@ export const resources = {
                 validated: "Validado",
                 won: "Ganado",
                 lost: "Perdido",
+                legacyResult: "Resultado antiguo",
+                ratingAfterMatch: "Rating después del partido",
+                olderMatchNoDelta: "El delta de rating no quedó guardado en este partido antiguo",
                 setLabel: "Set {{number}}",
                 historyModes: {
                     all: "Todos",
