@@ -3,8 +3,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import {
+    getCountrySuggestions,
+    isKnownCountry,
+} from "../../settings/services/locationSuggestions.service";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
-import { completeRatingPlacement } from "../services/ratingPlacement.service";
+import {
+    completeRatingPlacement,
+    saveOnboardingCountry,
+} from "../services/ratingPlacement.service";
 import type {
     RatingPlacementAnswers,
     RatingPlacementQuestion,
@@ -40,6 +47,8 @@ export function CompetitiveRatingOnboardingPage() {
     const [submitError, setSubmitError] = useState("");
     const [completedResult, setCompletedResult] =
         useState<RatingPlacementResult | null>(null);
+    const [country, setCountry] = useState(profile?.country ?? "");
+    const [countryFocused, setCountryFocused] = useState(false);
     const pageTopRef = useRef<HTMLDivElement | null>(null);
 
     const redirectTarget = useMemo(() => {
@@ -59,9 +68,11 @@ export function CompetitiveRatingOnboardingPage() {
     );
     const canContinue = isStepComplete(currentStep.questionIds, answers);
     const isLastStep = currentStepIndex === ratingPlacementSteps.length - 1;
-    const progress = Math.round(
-        ((currentStepIndex + 1) / ratingPlacementSteps.length) * 100
+    const countrySuggestions = useMemo(
+        () => getCountrySuggestions(country),
+        [country]
     );
+    const isCountryValid = isKnownCountry(country);
 
     useEffect(() => {
         if (completedResult) {
@@ -74,6 +85,10 @@ export function CompetitiveRatingOnboardingPage() {
         });
     }, [completedResult, currentStepIndex]);
 
+    useEffect(() => {
+        setCountry(profile?.country ?? "");
+    }, [profile?.country]);
+
     if (!profile) {
         return (
             <section className="mx-auto flex min-h-[70vh] w-full max-w-3xl items-center justify-center px-4 py-10">
@@ -83,6 +98,15 @@ export function CompetitiveRatingOnboardingPage() {
     }
 
     const currentProfile = profile;
+    const requiresCountryOnly = Boolean(
+        currentProfile.ratingPlacementCompletedAt && !currentProfile.country
+    );
+    const progress = requiresCountryOnly
+        ? 100
+        : Math.round(
+              ((currentStepIndex + 1) / ratingPlacementSteps.length) * 100
+          );
+    const effectiveCanContinue = requiresCountryOnly ? isCountryValid : canContinue;
 
     function updateAnswer(questionId: RatingPlacementQuestion["id"], value: string) {
         setAnswers((current) => ({
@@ -93,7 +117,32 @@ export function CompetitiveRatingOnboardingPage() {
     }
 
     async function handleContinue() {
-        if (!canContinue || submitting) {
+        if (!effectiveCanContinue || submitting) {
+            return;
+        }
+
+        if (!isCountryValid) {
+            setSubmitError(t("onboardingRating.countryRequiredError"));
+            return;
+        }
+
+        if (requiresCountryOnly) {
+            try {
+                setSubmitting(true);
+                setSubmitError("");
+                await saveOnboardingCountry(currentProfile.id, country.trim());
+                await refreshProfile();
+                navigate(redirectTarget, { replace: true });
+            } catch (error) {
+                setSubmitError(
+                    error instanceof Error
+                        ? error.message
+                        : t("onboardingRating.saveError")
+                );
+            } finally {
+                setSubmitting(false);
+            }
+
             return;
         }
 
@@ -108,6 +157,7 @@ export function CompetitiveRatingOnboardingPage() {
             const result = await completeRatingPlacement({
                 userId: currentProfile.id,
                 answers,
+                country: country.trim(),
             });
             await refreshProfile();
             setCompletedResult(result);
@@ -123,7 +173,7 @@ export function CompetitiveRatingOnboardingPage() {
     }
 
     function handleBack() {
-        if (submitting || currentStepIndex === 0) {
+        if (submitting || currentStepIndex === 0 || requiresCountryOnly) {
             return;
         }
 
@@ -157,7 +207,11 @@ export function CompetitiveRatingOnboardingPage() {
                         </div>
 
                         <p className="max-w-3xl text-sm leading-7 text-slate-600">
-                            {t("onboardingRating.body")}
+                            {t(
+                                requiresCountryOnly
+                                    ? "onboardingRating.countryOnlyBody"
+                                    : "onboardingRating.body"
+                            )}
                         </p>
 
                         <div className="h-2 rounded-full bg-slate-100">
@@ -170,69 +224,144 @@ export function CompetitiveRatingOnboardingPage() {
 
                     <div className="mt-8 rounded-[1.75rem] border border-blue-100 bg-[linear-gradient(180deg,_rgba(239,246,255,0.88)_0%,_rgba(255,255,255,0.96)_100%)] p-5">
                         <p className="text-xs font-black uppercase tracking-[0.22em] text-blue-600">
-                            {t(currentStep.eyebrowKey)}
+                            {t(
+                                requiresCountryOnly
+                                    ? "onboardingRating.countryEyebrow"
+                                    : currentStep.eyebrowKey
+                            )}
                         </p>
                         <h2 className="mt-2 text-2xl font-black text-slate-950">
-                            {t(currentStep.titleKey)}
+                            {t(
+                                requiresCountryOnly
+                                    ? "onboardingRating.countryTitle"
+                                    : currentStep.titleKey
+                            )}
                         </h2>
                         <p className="mt-3 text-sm leading-7 text-slate-600">
-                            {t(currentStep.bodyKey)}
+                            {t(
+                                requiresCountryOnly
+                                    ? "onboardingRating.countryBody"
+                                    : currentStep.bodyKey
+                            )}
                         </p>
                     </div>
 
                     <div className="mt-6 space-y-6">
-                        {currentQuestions.map((question) => (
-                            <article
-                                key={question.id}
-                                className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-5"
-                            >
-                                <h3 className="text-lg font-black text-slate-950">
-                                    {t(question.titleKey)}
-                                </h3>
-                                <p className="mt-2 text-sm leading-7 text-slate-600">
-                                    {t(question.descriptionKey)}
-                                </p>
+                        <article className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-5">
+                            <h3 className="text-lg font-black text-slate-950">
+                                {t("onboardingRating.countryQuestionTitle")}
+                            </h3>
+                            <p className="mt-2 text-sm leading-7 text-slate-600">
+                                {t("onboardingRating.countryQuestionBody")}
+                            </p>
 
-                                <div className="mt-4 grid gap-3">
-                                    {question.options.map((option) => {
-                                        const isSelected =
-                                            answers[question.id] === option.value;
-
-                                        return (
-                                            <button
-                                                key={option.value}
-                                                type="button"
-                                                onClick={() =>
-                                                    updateAnswer(question.id, option.value)
-                                                }
-                                                className={[
-                                                    "flex w-full items-start justify-between gap-3 rounded-2xl border px-4 py-4 text-left transition",
-                                                    isSelected
-                                                        ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                                                        : "border-slate-200 bg-white text-slate-800 hover:border-blue-200 hover:bg-blue-50/50",
-                                                ].join(" ")}
-                                            >
-                                                <span className="text-sm font-semibold leading-6">
-                                                    {t(option.labelKey)}
-                                                </span>
-                                                <span
-                                                    className={[
-                                                        "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
-                                                        isSelected
-                                                            ? "border-white bg-white text-blue-700"
-                                                            : "border-slate-300 bg-white text-transparent",
-                                                    ].join(" ")}
-                                                >
-                                                    <span className="text-[10px] font-black">
-                                                        {isSelected ? "OK" : "OK"}
-                                                    </span>
-                                                </span>
-                                            </button>
+                            <div className="relative mt-4">
+                                <input
+                                    value={country}
+                                    onFocus={() => setCountryFocused(true)}
+                                    onBlur={() => {
+                                        window.setTimeout(
+                                            () => setCountryFocused(false),
+                                            120
                                         );
-                                    })}
-                                </div>
-                            </article>
-                        ))}
+                                    }}
+                                    onChange={(event) => {
+                                        setCountry(event.target.value);
+                                        setSubmitError("");
+                                    }}
+                                    className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-semibold text-slate-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100"
+                                    placeholder={t("onboardingRating.countryPlaceholder")}
+                                />
+
+                                {countryFocused &&
+                                country.trim().length > 0 &&
+                                countrySuggestions.length > 0 ? (
+                                    <div className="absolute left-0 right-0 top-full z-20 mt-2 max-h-64 overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-lg">
+                                        {countrySuggestions.map((suggestion) => (
+                                            <button
+                                                key={suggestion}
+                                                type="button"
+                                                onMouseDown={(event) =>
+                                                    event.preventDefault()
+                                                }
+                                                onClick={() => {
+                                                    setCountry(suggestion);
+                                                    setCountryFocused(false);
+                                                    setSubmitError("");
+                                                }}
+                                                className="block w-full px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-50"
+                                            >
+                                                {suggestion}
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </div>
+
+                            <p className="mt-3 text-xs leading-6 text-slate-500">
+                                {t("onboardingRating.countryHelper")}
+                            </p>
+                        </article>
+
+                        {!requiresCountryOnly
+                            ? currentQuestions.map((question) => (
+                                  <article
+                                      key={question.id}
+                                      className="rounded-[1.75rem] border border-slate-200 bg-slate-50/70 p-5"
+                                  >
+                                      <h3 className="text-lg font-black text-slate-950">
+                                          {t(question.titleKey)}
+                                      </h3>
+                                      <p className="mt-2 text-sm leading-7 text-slate-600">
+                                          {t(question.descriptionKey)}
+                                      </p>
+
+                                      <div className="mt-4 grid gap-3">
+                                          {question.options.map((option) => {
+                                              const isSelected =
+                                                  answers[question.id] === option.value;
+
+                                              return (
+                                                  <button
+                                                      key={option.value}
+                                                      type="button"
+                                                      onClick={() =>
+                                                          updateAnswer(
+                                                              question.id,
+                                                              option.value
+                                                          )
+                                                      }
+                                                      className={[
+                                                          "flex w-full items-start justify-between gap-3 rounded-2xl border px-4 py-4 text-left transition",
+                                                          isSelected
+                                                              ? "border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-600/20"
+                                                              : "border-slate-200 bg-white text-slate-800 hover:border-blue-200 hover:bg-blue-50/50",
+                                                      ].join(" ")}
+                                                  >
+                                                      <span className="text-sm font-semibold leading-6">
+                                                          {t(option.labelKey)}
+                                                      </span>
+                                                      <span
+                                                          className={[
+                                                              "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border",
+                                                              isSelected
+                                                                  ? "border-white bg-white text-blue-700"
+                                                                  : "border-slate-300 bg-white text-transparent",
+                                                          ].join(" ")}
+                                                      >
+                                                          <span className="text-[10px] font-black">
+                                                              {isSelected
+                                                                  ? "OK"
+                                                                  : "OK"}
+                                                          </span>
+                                                      </span>
+                                                  </button>
+                                              );
+                                          })}
+                                      </div>
+                                  </article>
+                              ))
+                            : null}
                     </div>
 
                     {submitError ? (
@@ -255,11 +384,13 @@ export function CompetitiveRatingOnboardingPage() {
                         <button
                             type="button"
                             onClick={handleContinue}
-                            disabled={!canContinue || submitting}
+                            disabled={!effectiveCanContinue || submitting}
                             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {submitting
                                 ? t("onboardingRating.saving")
+                                : requiresCountryOnly
+                                ? t("onboardingRating.countryOnlyCta")
                                 : isLastStep
                                 ? t("onboardingRating.finish")
                                 : t("onboardingRating.next")}
@@ -273,13 +404,25 @@ export function CompetitiveRatingOnboardingPage() {
                         <Sparkles size={20} />
                     </div>
                     <p className="mt-5 text-xs font-black uppercase tracking-[0.22em] text-blue-100">
-                        {t("onboardingRating.previewEyebrow")}
+                        {t(
+                            requiresCountryOnly
+                                ? "onboardingRating.countryPreviewEyebrow"
+                                : "onboardingRating.previewEyebrow"
+                        )}
                     </p>
                     <h2 className="mt-2 text-2xl font-black">
-                        {t("onboardingRating.previewTitle")}
+                        {t(
+                            requiresCountryOnly
+                                ? "onboardingRating.countryPreviewTitle"
+                                : "onboardingRating.previewTitle"
+                        )}
                     </h2>
                     <p className="mt-3 text-sm leading-7 text-blue-50/90">
-                        {t("onboardingRating.previewBody")}
+                        {t(
+                            requiresCountryOnly
+                                ? "onboardingRating.countryPreviewBody"
+                                : "onboardingRating.previewBody"
+                        )}
                     </p>
 
                     <div className="mt-6 rounded-[1.75rem] bg-white/8 p-5 backdrop-blur-sm">
@@ -287,12 +430,18 @@ export function CompetitiveRatingOnboardingPage() {
                             <ShieldCheck className="mt-1 shrink-0 text-emerald-300" size={18} />
                             <div>
                                 <p className="text-sm font-black text-white">
-                                    {t("onboardingRating.provisionalTitle", {
-                                        count: PROVISIONAL_MATCHES_TOTAL,
-                                    })}
+                                    {requiresCountryOnly
+                                        ? t("onboardingRating.countryPreviewCardTitle")
+                                        : t("onboardingRating.provisionalTitle", {
+                                              count: PROVISIONAL_MATCHES_TOTAL,
+                                          })}
                                 </p>
                                 <p className="mt-2 text-sm leading-7 text-blue-50/90">
-                                    {t("onboardingRating.provisionalBody")}
+                                    {t(
+                                        requiresCountryOnly
+                                            ? "onboardingRating.countryPreviewCardBody"
+                                            : "onboardingRating.provisionalBody"
+                                    )}
                                 </p>
                             </div>
                         </div>

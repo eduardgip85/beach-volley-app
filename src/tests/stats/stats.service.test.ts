@@ -1,14 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getStatsData } from "../../features/stats/services/stats.service";
 
-const { mockRpc, mockGetEvents } = vi.hoisted(() => ({
+const { mockRpc, mockGetEvents, mockFrom } = vi.hoisted(() => ({
   mockRpc: vi.fn(),
   mockGetEvents: vi.fn(),
+  mockFrom: vi.fn(),
+}));
+
+let profilesQueryResult: { data: unknown[] | null; error: Error | null } = {
+  data: [],
+  error: null,
+};
+
+mockFrom.mockImplementation(() => ({
+  select: vi.fn(() => ({
+    order: vi.fn(() => Promise.resolve(profilesQueryResult)),
+  })),
 }));
 
 vi.mock("../../config/supabase", () => ({
   supabase: {
     rpc: mockRpc,
+    from: mockFrom,
   },
 }));
 
@@ -20,6 +33,10 @@ describe("stats.service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetEvents.mockResolvedValue([]);
+    profilesQueryResult = {
+      data: [],
+      error: null,
+    };
   });
 
   it("should map admin analytics returned by the rpc", async () => {
@@ -98,6 +115,7 @@ describe("stats.service", () => {
       filter_key: "last_30_days",
     });
     expect(result.userAnalytics.totalUsers).toBe(18);
+    expect(result.userAnalytics.recentRegistrations).toEqual([]);
     expect(result.matchAnalytics.totalMatches).toBe(12);
     expect(result.engagementAnalytics.averagePlayersPerEvent).toBe(3.4);
     expect(result.rankingAnalytics.averageRating).toBe(1032.4);
@@ -195,6 +213,32 @@ describe("stats.service", () => {
       },
     ]);
 
+    profilesQueryResult = {
+      data: [
+        {
+          id: "user-1",
+          full_name: "Andrea",
+          avatar_url: null,
+          country: "Spain",
+          city: "Barcelona",
+          created_at: "2026-05-21T08:30:00.000Z",
+          rating_placement_completed_at: "2026-05-21T08:40:00.000Z",
+          competitive_rating: 2.8,
+        },
+        {
+          id: "user-2",
+          full_name: "Jules",
+          avatar_url: null,
+          country: "France",
+          city: "Paris",
+          created_at: "2026-05-15T08:30:00.000Z",
+          rating_placement_completed_at: null,
+          competitive_rating: 2,
+        },
+      ],
+      error: null,
+    };
+
     const result = await getStatsData("last_30_days");
 
     expect(result.matchAnalytics.totalMatches).toBe(2);
@@ -203,6 +247,12 @@ describe("stats.service", () => {
     expect(result.matchAnalytics.cancelledMatches).toBe(1);
     expect(result.matchAnalytics.matchesCompleted).toBe(1);
     expect(result.engagementAnalytics.averagePlayersPerEvent).toBe(3.5);
+    expect(result.userAnalytics.newUsersToday).toBe(1);
+    expect(result.userAnalytics.newUsersWeek).toBe(2);
+    expect(result.userAnalytics.newUsersMonth).toBe(2);
+    expect(result.userAnalytics.onboardingCompletedUsers).toBe(1);
+    expect(result.userAnalytics.onboardingCompletionRate).toBe(50);
+    expect(result.userAnalytics.recentRegistrations[0]?.fullName).toBe("Andrea");
 
     vi.useRealTimers();
   });

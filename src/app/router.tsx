@@ -1,9 +1,9 @@
 import { Suspense, lazy, type ReactNode } from "react";
-import { t } from "i18next";
 import { createBrowserRouter } from "react-router-dom";
 
 import { AuthLayout } from "../layouts/AuthLayout";
 import { AppLayout } from "../layouts/AppLayout";
+import { AppLoadingScreen } from "../components/AppLoadingScreen";
 
 import { ProtectedRoute } from "../routes/ProtectedRoute";
 import { AdminRoute } from "../routes/AdminRoute";
@@ -139,9 +139,7 @@ const AdminEventsPage = lazy(() =>
 function withSuspense(page: ReactNode) {
   return (
     <Suspense
-      fallback={
-        <div className="px-4 py-10 text-sm text-slate-500">{t("common.loadingPage")}</div>
-      }
+      fallback={<AppLoadingScreen compact />}
     >
       {page}
     </Suspense>

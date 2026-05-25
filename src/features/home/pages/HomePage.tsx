@@ -12,9 +12,10 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { AppLoadingScreen } from "../../../components/AppLoadingScreen";
 import { useAuth } from "../../auth/context/AuthContext";
 import { HomeStatCard } from "../components/HomeStatCard";
 import { UpcomingEventItem } from "../components/UpcomingEventItem";
@@ -44,6 +45,7 @@ export function HomePage() {
   const sectionsRef = useRef<HTMLElement[]>([]);
   const featureCardsRef = useRef<HTMLDivElement[]>([]);
   const upcomingRef = useRef<HTMLDivElement | null>(null);
+  const hasAnimatedRef = useRef(false);
   const seoTitle = t("home.seoTitle");
   const seoDescription = t("home.seoDescription");
 
@@ -259,8 +261,12 @@ export function HomePage() {
     };
   }, [i18n.language, seoDescription, seoTitle]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!pageRef.current) {
+      return;
+    }
+
+    if (loading || hasAnimatedRef.current) {
       return;
     }
 
@@ -336,10 +342,19 @@ export function HomePage() {
       }
     }, pageRef);
 
+    hasAnimatedRef.current = true;
+
     return () => {
       ctx.revert();
     };
-  }, [activeMatches, openPlayCount, totalEvents, totalPlayers, upcomingEvents.length]);
+  }, [loading]);
+
+  const isInitialLoading =
+    loading && !error && totalEvents === 0 && totalPlayers === 0;
+
+  if (isInitialLoading) {
+    return <AppLoadingScreen />;
+  }
 
   return (
     <section

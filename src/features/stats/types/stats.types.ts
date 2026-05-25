@@ -21,6 +21,17 @@ export interface AnalyticsTopUser {
   activityCount: number;
 }
 
+export interface AnalyticsRecentRegistration {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+  country: string | null;
+  city: string | null;
+  createdAt: string;
+  ratingPlacementCompletedAt: string | null;
+  competitiveRating: number;
+}
+
 export interface AnalyticsTopLocation {
   locationName: string;
   eventsCount: number;
@@ -54,11 +65,15 @@ export interface AdminAnalyticsData {
   userAnalytics: {
     totalUsers: number;
     activeUsers: number;
+    newUsersToday: number;
     newUsersWeek: number;
     newUsersMonth: number;
+    onboardingCompletedUsers: number;
+    onboardingCompletionRate: number;
     verifiedEquipmentUsers: number;
     competitiveUsers: number;
     newUsersTrend: AnalyticsTrendPoint[];
+    recentRegistrations: AnalyticsRecentRegistration[];
   };
   matchAnalytics: {
     totalMatches: number;

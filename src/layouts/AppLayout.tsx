@@ -69,11 +69,19 @@ export function AppLayout() {
   }, [location.pathname]);
 
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     if (loading || !isAuthenticated || !profile) {
       return;
     }
 
-    if (!profile.ratingPlacementCompletedAt && !isOnboardingRoute) {
+    if ((!profile.ratingPlacementCompletedAt || !profile.country) && !isOnboardingRoute) {
       const redirectTarget = `${location.pathname}${location.search}`;
       navigate(
         `/onboarding/competitive-rating?redirect=${encodeURIComponent(
@@ -84,7 +92,7 @@ export function AppLayout() {
       return;
     }
 
-    if (profile.ratingPlacementCompletedAt && isOnboardingRoute) {
+    if (profile.ratingPlacementCompletedAt && profile.country && isOnboardingRoute) {
       const params = new URLSearchParams(location.search);
       const redirectTarget = params.get("redirect");
 

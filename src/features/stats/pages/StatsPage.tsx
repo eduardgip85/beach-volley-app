@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Activity,
   BarChart3,
@@ -12,23 +13,66 @@ import { AnalyticsBarChartCard } from "../components/AnalyticsBarChartCard";
 import { AnalyticsFilterTabs } from "../components/AnalyticsFilterTabs";
 import { AnalyticsPanel } from "../components/AnalyticsPanel";
 import { AnalyticsPieChartCard } from "../components/AnalyticsPieChartCard";
+import { AnalyticsRecentRegistrationsCard } from "../components/AnalyticsRecentRegistrationsCard";
 import { AnalyticsSummaryCard } from "../components/AnalyticsSummaryCard";
 import { AnalyticsTopListCard } from "../components/AnalyticsTopListCard";
 import { StatsLoadingSkeleton } from "../components/StatsLoadingSkeleton";
 import type { AnalyticsTimeFilter } from "../types/stats.types";
 
 export function StatsPage() {
+  const { t, i18n } = useTranslation();
   const [selectedFilter, setSelectedFilter] =
     useState<AnalyticsTimeFilter>("last_30_days");
   const { stats, loading, error } = useAdminAnalytics(selectedFilter);
 
+  const weekdayLabels = useMemo(
+    () => ({
+      Monday: t("adminStats.weekdays.monday"),
+      Tuesday: t("adminStats.weekdays.tuesday"),
+      Wednesday: t("adminStats.weekdays.wednesday"),
+      Thursday: t("adminStats.weekdays.thursday"),
+      Friday: t("adminStats.weekdays.friday"),
+      Saturday: t("adminStats.weekdays.saturday"),
+      Sunday: t("adminStats.weekdays.sunday"),
+    }),
+    [t]
+  );
+
   const peakDaysChartData = useMemo(
     () =>
       (stats?.engagementAnalytics.peakActivityDays ?? []).map((item) => ({
-        label: item.day,
+        label: weekdayLabels[item.day as keyof typeof weekdayLabels] ?? item.day,
         count: item.count,
       })),
-    [stats]
+    [stats, weekdayLabels]
+  );
+
+  const formatRatioData = useMemo(
+    () =>
+      (stats?.matchAnalytics.formatRatio ?? []).map((item) => ({
+        ...item,
+        name:
+          item.name === "Casual"
+            ? t("eventModes.casual")
+            : item.name === "Competitive"
+              ? t("eventModes.competitive")
+              : item.name,
+      })),
+    [stats, t]
+  );
+
+  const visibilityRatioData = useMemo(
+    () =>
+      (stats?.matchAnalytics.visibilityRatio ?? []).map((item) => ({
+        ...item,
+        name:
+          item.name === "Public"
+            ? t("eventVisibility.public")
+            : item.name === "Private"
+              ? t("eventVisibility.private")
+              : item.name,
+      })),
+    [stats, t]
   );
 
   if (loading) {
@@ -38,7 +82,9 @@ export function StatsPage() {
   if (error || !stats) {
     return (
       <section className="rounded-3xl bg-white p-6 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">Analytics error</h1>
+        <h1 className="text-xl font-bold text-slate-900">
+          {t("adminStats.errorTitle")}
+        </h1>
         <p className="mt-2 text-slate-500">{error}</p>
       </section>
     );
@@ -49,14 +95,13 @@ export function StatsPage() {
       <div className="space-y-4">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.28em] text-blue-600">
-            Admin analytics
+            {t("adminStats.eyebrow")}
           </p>
           <h1 className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl">
-            Platform performance dashboard
+            {t("adminStats.title")}
           </h1>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500 sm:text-base">
-            Track user growth, match mix, engagement and competitive rating
-            health from a single aggregated view.
+            {t("adminStats.body")}
           </p>
         </div>
 
@@ -66,97 +111,120 @@ export function StatsPage() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <AnalyticsSummaryCard
-          label="Total users"
+          label={t("adminStats.cards.totalUsers")}
           value={stats.userAnalytics.totalUsers}
-          helper={`${stats.userAnalytics.activeUsers} active in selected range`}
+          helper={t("adminStats.helpers.activeUsersInRange", {
+            count: stats.userAnalytics.activeUsers,
+          })}
           accent="blue"
         />
         <AnalyticsSummaryCard
-          label="Total matches"
+          label={t("adminStats.cards.totalMatches")}
           value={stats.matchAnalytics.totalMatches}
-          helper={`${stats.matchAnalytics.matchesCompleted} finished · ${stats.matchAnalytics.cancelledMatches} cancelled`}
+          helper={t("adminStats.helpers.matchesFinishedCancelled", {
+            finished: stats.matchAnalytics.matchesCompleted,
+            cancelled: stats.matchAnalytics.cancelledMatches,
+          })}
           accent="emerald"
         />
         <AnalyticsSummaryCard
-          label="Average rating"
+          label={t("adminStats.cards.averageRating")}
           value={stats.rankingAnalytics.averageRating}
-          helper={`${stats.userAnalytics.competitiveUsers} competitive users`}
+          helper={t("adminStats.helpers.competitiveUsers", {
+            count: stats.userAnalytics.competitiveUsers,
+          })}
           accent="amber"
         />
         <AnalyticsSummaryCard
-          label="Verified equipment"
+          label={t("adminStats.cards.verifiedEquipment")}
           value={stats.userAnalytics.verifiedEquipmentUsers}
-          helper="Players with verified ball, net or equipment"
+          helper={t("adminStats.helpers.verifiedEquipmentUsers")}
           accent="slate"
         />
         <AnalyticsSummaryCard
-          label="New users"
+          label={t("adminStats.cards.newUsers")}
           value={stats.userAnalytics.newUsersMonth}
-          helper={`${stats.userAnalytics.newUsersWeek} joined in the last 7 days`}
+          helper={t("adminStats.helpers.joinedLast7Days", {
+            count: stats.userAnalytics.newUsersWeek,
+          })}
           accent="rose"
         />
         <AnalyticsSummaryCard
-          label="Avg players/event"
+          label={t("adminStats.cards.newToday")}
+          value={stats.userAnalytics.newUsersToday}
+          helper={t("adminStats.helpers.freshRegistrationsSinceMidnight")}
+          accent="slate"
+        />
+        <AnalyticsSummaryCard
+          label={t("adminStats.cards.onboardingDone")}
+          value={`${stats.userAnalytics.onboardingCompletionRate}%`}
+          helper={t("adminStats.helpers.onboardingCompletedUsers", {
+            count: stats.userAnalytics.onboardingCompletedUsers,
+          })}
+          accent="emerald"
+        />
+        <AnalyticsSummaryCard
+          label={t("adminStats.cards.avgPlayersPerEvent")}
           value={stats.engagementAnalytics.averagePlayersPerEvent}
-          helper="Across events in the selected range"
+          helper={t("adminStats.helpers.avgPlayersRange")}
           accent="blue"
         />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <AnalyticsBarChartCard
-          title="User growth"
-          description="New users over the selected time range."
+          title={t("adminStats.charts.userGrowthTitle")}
+          description={t("adminStats.charts.userGrowthDescription")}
           data={stats.userAnalytics.newUsersTrend}
           color="#2563eb"
         />
 
         <AnalyticsBarChartCard
-          title="Event activity"
-          description="How many events were scheduled over time."
+          title={t("adminStats.charts.eventActivityTitle")}
+          description={t("adminStats.charts.eventActivityDescription")}
           data={stats.matchAnalytics.eventsTrend}
           color="#0f172a"
         />
 
         <AnalyticsPieChartCard
-          title="Casual vs competitive"
-          description="Distribution of match formats."
-          data={stats.matchAnalytics.formatRatio}
+          title={t("adminStats.charts.casualVsCompetitiveTitle")}
+          description={t("adminStats.charts.casualVsCompetitiveDescription")}
+          data={formatRatioData}
           colors={["#10b981", "#2563eb"]}
         />
 
         <AnalyticsPieChartCard
-          title="Public vs private"
-          description="Visibility mix for matches."
-          data={stats.matchAnalytics.visibilityRatio}
+          title={t("adminStats.charts.publicVsPrivateTitle")}
+          description={t("adminStats.charts.publicVsPrivateDescription")}
+          data={visibilityRatioData}
           colors={["#0f172a", "#f59e0b"]}
         />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
         <AnalyticsTopListCard
-          title="Most active users"
-          description="Top players by event activity in the selected range."
+          title={t("adminStats.charts.mostActiveUsersTitle")}
+          description={t("adminStats.charts.mostActiveUsersDescription")}
           items={stats.engagementAnalytics.mostActiveUsers}
         />
 
         <AnalyticsTopListCard
-          title="Most active locations"
-          description="Courts and locations with the highest event volume."
+          title={t("adminStats.charts.mostActiveLocationsTitle")}
+          description={t("adminStats.charts.mostActiveLocationsDescription")}
           items={stats.engagementAnalytics.mostActiveLocations}
         />
 
         <AnalyticsTopListCard
-          title="Highest rated players"
-          description="Competitive leaderboard snapshot."
+          title={t("adminStats.charts.highestRatedPlayersTitle")}
+          description={t("adminStats.charts.highestRatedPlayersDescription")}
           items={stats.rankingAnalytics.highestRatedPlayers}
         />
 
         <AnalyticsBarChartCard
-          title="Peak activity days"
-          description="Days of the week with the most scheduled events."
+          title={t("adminStats.charts.peakActivityDaysTitle")}
+          description={t("adminStats.charts.peakActivityDaysDescription")}
           data={peakDaysChartData}
           color="#f59e0b"
         />
@@ -164,50 +232,114 @@ export function StatsPage() {
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_minmax(0,1fr)]">
         <AnalyticsBarChartCard
-          title="Rating distribution"
-          description="How competitive ratings are spread across active players."
+          title={t("adminStats.charts.ratingDistributionTitle")}
+          description={t("adminStats.charts.ratingDistributionDescription")}
           data={stats.rankingAnalytics.ratingDistribution}
           color="#8b5cf6"
         />
 
         <AnalyticsPanel
-          title="Quick insights"
-          description="Useful operational takeaways from the current snapshot."
+          title={t("adminStats.panels.quickInsightsTitle")}
+          description={t("adminStats.panels.quickInsightsDescription")}
         >
           <div className="space-y-3">
             <InsightRow
               icon={<Users size={18} />}
-              label="Active users"
-              value={`${stats.userAnalytics.activeUsers} players active in the selected range`}
+              label={t("adminStats.insights.activeUsersLabel")}
+              value={t("adminStats.insights.activeUsersValue", {
+                count: stats.userAnalytics.activeUsers,
+              })}
             />
             <InsightRow
               icon={<Trophy size={18} />}
-              label="Competitive share"
-              value={`${stats.matchAnalytics.competitiveMatches} competitive matches scheduled`}
+              label={t("adminStats.insights.competitiveShareLabel")}
+              value={t("adminStats.insights.competitiveShareValue", {
+                count: stats.matchAnalytics.competitiveMatches,
+              })}
             />
             <InsightRow
               icon={<UserCheck size={18} />}
-              label="Verified equipment"
-              value={`${stats.userAnalytics.verifiedEquipmentUsers} users can bring verified gear`}
+              label={t("adminStats.insights.verifiedEquipmentLabel")}
+              value={t("adminStats.insights.verifiedEquipmentValue", {
+                count: stats.userAnalytics.verifiedEquipmentUsers,
+              })}
             />
             <InsightRow
               icon={<MapPin size={18} />}
-              label="Top location"
+              label={t("adminStats.insights.topLocationLabel")}
               value={
                 stats.engagementAnalytics.mostActiveLocations[0]
-                  ? `${stats.engagementAnalytics.mostActiveLocations[0].locationName} leads with ${stats.engagementAnalytics.mostActiveLocations[0].eventsCount} events`
-                  : "No location activity yet"
+                  ? t("adminStats.insights.topLocationValue", {
+                      location:
+                        stats.engagementAnalytics.mostActiveLocations[0]
+                          .locationName,
+                      count:
+                        stats.engagementAnalytics.mostActiveLocations[0]
+                          .eventsCount,
+                    })
+                  : t("adminStats.insights.noLocationActivity")
               }
             />
             <InsightRow
               icon={<Activity size={18} />}
-              label="Completion"
-              value={`${stats.matchAnalytics.matchesCompleted} matches have finished in the selected range`}
+              label={t("adminStats.insights.completionLabel")}
+              value={t("adminStats.insights.completionValue", {
+                count: stats.matchAnalytics.matchesCompleted,
+              })}
             />
             <InsightRow
               icon={<BarChart3 size={18} />}
-              label="Generated"
-              value={new Date(stats.metadata.generatedAt).toLocaleString()}
+              label={t("adminStats.insights.generatedLabel")}
+              value={new Date(stats.metadata.generatedAt).toLocaleString(
+                i18n.language
+              )}
+            />
+          </div>
+        </AnalyticsPanel>
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <AnalyticsRecentRegistrationsCard
+          title={t("adminStats.recentRegistrations.title")}
+          description={t("adminStats.recentRegistrations.description")}
+          items={stats.userAnalytics.recentRegistrations}
+        />
+
+        <AnalyticsPanel
+          title={t("adminStats.registrationHealth.title")}
+          description={t("adminStats.registrationHealth.description")}
+        >
+          <div className="space-y-3">
+            <InsightRow
+              icon={<Users size={18} />}
+              label={t("adminStats.registrationHealth.newTodayLabel")}
+              value={t("adminStats.registrationHealth.newTodayValue", {
+                count: stats.userAnalytics.newUsersToday,
+              })}
+            />
+            <InsightRow
+              icon={<Activity size={18} />}
+              label={t("adminStats.registrationHealth.last7DaysLabel")}
+              value={t("adminStats.registrationHealth.last7DaysValue", {
+                count: stats.userAnalytics.newUsersWeek,
+              })}
+            />
+            <InsightRow
+              icon={<BarChart3 size={18} />}
+              label={t("adminStats.registrationHealth.last30DaysLabel")}
+              value={t("adminStats.registrationHealth.last30DaysValue", {
+                count: stats.userAnalytics.newUsersMonth,
+              })}
+            />
+            <InsightRow
+              icon={<UserCheck size={18} />}
+              label={t("adminStats.registrationHealth.onboardingConversionLabel")}
+              value={t(
+                "adminStats.registrationHealth.onboardingConversionValue",
+                {
+                  count: stats.userAnalytics.onboardingCompletionRate,
+                }
+              )}
             />
           </div>
         </AnalyticsPanel>

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CountrySetupNotice } from "../../../shared/components/CountrySetupNotice";
 import { EventFilters } from "../../../shared/components/EventFilters";
 import { useAuth } from "../../auth/context/AuthContext";
+import { getCountryCenter } from "../../events/services/eventCountry.service";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
 import type { Event } from "../../events/types/event.types";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
@@ -14,9 +16,13 @@ export function MapPage() {
   const [myEventIds, setMyEventIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [defaultCenter, setDefaultCenter] = useState<[number, number]>([20, 0]);
+  const [defaultZoom, setDefaultZoom] = useState(2);
   const { profile } = useAuth();
-  const visibleEvents = events.filter(
-    (event) => !isFinishedEvent(event) && !isPastEvent(event)
+  const visibleEvents = useMemo(
+    () =>
+      events.filter((event) => !isFinishedEvent(event) && !isPastEvent(event)),
+    [events]
   );
 
   const {
@@ -49,6 +55,37 @@ export function MapPage() {
     loadEvents();
   }, [profile?.id]);
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadCountryCenter() {
+      if (!profile?.country?.trim()) {
+        setDefaultCenter([20, 0]);
+        setDefaultZoom(2);
+        return;
+      }
+
+      try {
+        const center = await getCountryCenter(profile.country);
+
+        if (!isCancelled && center) {
+          setDefaultCenter(center);
+          setDefaultZoom(6);
+        }
+      } catch (centerError) {
+        console.error("Could not load country center for map", centerError);
+      }
+    }
+
+    void loadCountryCenter();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [profile?.country]);
+
+  const isPageLoading = loading;
+
   return (
     <section>
 
@@ -60,7 +97,9 @@ export function MapPage() {
         onClearFilters={clearFilters}
       />
 
-      {loading && <p className="mt-8 text-slate-500">{t("mapPage.loading")}</p>}
+      <CountrySetupNotice visible={Boolean(profile && !profile.country?.trim())} />
+
+      {isPageLoading && <p className="mt-8 text-slate-500">{t("mapPage.loading")}</p>}
 
       {error && (
         <p className="mt-8 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
@@ -68,10 +107,14 @@ export function MapPage() {
         </p>
       )}
 
-      {!loading && !error && (
+      {!isPageLoading && !error && (
         <div className="mt-6 h-[65vh] min-h-[360px] overflow-hidden rounded-3xl bg-white p-2 shadow-sm md:h-[calc(100vh-240px)] md:min-h-[600px]">
 
-          <EventsMap events={filteredEvents} />
+          <EventsMap
+            events={filteredEvents}
+            defaultCenter={defaultCenter}
+            defaultZoom={defaultZoom}
+          />
         </div>
       )}
     </section>

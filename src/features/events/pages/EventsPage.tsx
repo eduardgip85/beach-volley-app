@@ -1,14 +1,22 @@
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { CountrySetupNotice } from "../../../shared/components/CountrySetupNotice";
 import { EventFilters } from "../../../shared/components/EventFilters";
+import { useAuth } from "../../auth/context/AuthContext";
 import { EventCard } from "../components/EventCard";
+import { useCountryScopedEvents } from "../hooks/useCountryScopedEvents";
 import { useEventFilters } from "../hooks/useEventFilters";
 import { useEventsPage } from "../hooks/useEventsPage";
 
 export function EventsPage() {
   const { t } = useTranslation();
   const { events, loading, error } = useEventsPage();
+  const { profile } = useAuth();
+  const { countryScopedEvents, countryScopedLoading } = useCountryScopedEvents(
+    events,
+    profile?.country
+  );
 
   const {
     filteredEvents,
@@ -16,7 +24,8 @@ export function EventsPage() {
     locations,
     updateFilter,
     clearFilters,
-  } = useEventFilters(events);
+  } = useEventFilters(countryScopedEvents);
+  const isPageLoading = loading || countryScopedLoading;
 
   return (
     <section>
@@ -47,7 +56,9 @@ export function EventsPage() {
         onClearFilters={clearFilters}
       />
 
-      {loading && (
+      <CountrySetupNotice visible={Boolean(profile && !profile.country?.trim())} />
+
+      {isPageLoading && (
         <p className="mt-8 text-sm text-slate-500">{t("eventsPage.loading")}</p>
       )}
 
@@ -57,7 +68,7 @@ export function EventsPage() {
         </p>
       )}
 
-      {!loading && !error && filteredEvents.length === 0 && (
+      {!isPageLoading && !error && filteredEvents.length === 0 && (
         <div className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
           <p className="font-medium text-slate-900">{t("eventsPage.emptyTitle")}</p>
           <p className="mt-2 text-sm text-slate-500">
@@ -66,7 +77,7 @@ export function EventsPage() {
         </div>
       )}
 
-      {!loading && !error && filteredEvents.length > 0 && (
+      {!isPageLoading && !error && filteredEvents.length > 0 && (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {filteredEvents.map((event) => (
             <EventCard key={event.id} event={event} />

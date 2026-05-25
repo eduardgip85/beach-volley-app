@@ -1,4 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { useTranslation } from "react-i18next";
 import { AnalyticsPanel } from "./AnalyticsPanel";
 import type { AnalyticsRatioPoint } from "../types/stats.types";
 
@@ -17,6 +18,7 @@ export function AnalyticsPieChartCard({
   data,
   colors = defaultColors,
 }: AnalyticsPieChartCardProps) {
+  const { t } = useTranslation();
   const totalValue = data.reduce((sum, entry) => sum + entry.value, 0);
 
   return (
@@ -50,7 +52,7 @@ export function AnalyticsPieChartCard({
         <div className="space-y-3">
           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
             <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-              Total
+              {t("adminStats.total")}
             </p>
             <p className="mt-1 text-2xl font-black text-slate-950">{totalValue}</p>
           </div>

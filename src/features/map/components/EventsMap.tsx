@@ -2,7 +2,13 @@ import { CalendarDays, MapPin, X } from "lucide-react";
 import { divIcon } from "leaflet";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MapContainer, Marker, TileLayer, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  TileLayer,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
 import {
@@ -18,6 +24,8 @@ import {
 
 interface EventsMapProps {
   events: Event[];
+  defaultCenter?: [number, number];
+  defaultZoom?: number;
 }
 
 function getMarkerIcon(event: Event, isSelected: boolean) {
@@ -52,10 +60,28 @@ function MapSelectionReset({
   return null;
 }
 
-export function EventsMap({ events }: EventsMapProps) {
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+function MapViewportController({
+  defaultCenter,
+  defaultZoom,
+}: {
+  defaultCenter: [number, number];
+  defaultZoom: number;
+}) {
+  const map = useMap();
 
-  const defaultCenter: [number, number] = [41.3851, 2.1734];
+  useEffect(() => {
+    map.setView(defaultCenter, defaultZoom);
+  }, [defaultCenter, defaultZoom, map]);
+
+  return null;
+}
+
+export function EventsMap({
+  events,
+  defaultCenter = [41.3851, 2.1734],
+  defaultZoom = 6,
+}: EventsMapProps) {
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   useEffect(() => {
     if (!selectedEvent) {
@@ -80,6 +106,10 @@ export function EventsMap({ events }: EventsMapProps) {
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        />
+        <MapViewportController
+          defaultCenter={defaultCenter}
+          defaultZoom={defaultZoom}
         />
         <MapSelectionReset onReset={() => setSelectedEvent(null)} />
 

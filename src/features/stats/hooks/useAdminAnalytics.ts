@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { t } from "i18next";
 import { getStatsData } from "../services/stats.service";
 import type { AdminAnalyticsData, AnalyticsTimeFilter } from "../types/stats.types";
 
@@ -87,7 +88,7 @@ export function useAdminAnalytics(filterKey: AnalyticsTimeFilter) {
         console.error(err);
 
         if (!isMounted) return;
-        setError("Could not load admin analytics");
+        setError(t("adminStats.loadError"));
       } finally {
         if (isMounted) {
           setLoading(false);

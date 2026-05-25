@@ -5,6 +5,7 @@ import type { Event } from "../../events/types/event.types";
 import type {
   AdminAnalyticsData,
   AnalyticsPeakDay,
+  AnalyticsRecentRegistration,
   AnalyticsRatioPoint,
   AnalyticsTimeFilter,
   AnalyticsTopLocation,
@@ -15,6 +16,16 @@ import type {
 } from "../types/stats.types";
 
 type JsonRecord = Record<string, unknown>;
+type ProfileAnalyticsRow = {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  country: string | null;
+  city: string | null;
+  created_at: string;
+  rating_placement_completed_at: string | null;
+  competitive_rating: number | null;
+};
 
 function toNumber(value: unknown, fallback = 0) {
   return typeof value === "number" && Number.isFinite(value) ? value : fallback;
@@ -180,6 +191,82 @@ function buildEventDrivenAnalytics(
   };
 }
 
+function startOfToday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function getRecentRegistrationName(profile: ProfileAnalyticsRow) {
+  const normalizedName = profile.full_name?.trim();
+
+  if (normalizedName) {
+    return normalizedName;
+  }
+
+  return "Unnamed player";
+}
+
+function toRecentRegistration(
+  profile: ProfileAnalyticsRow
+): AnalyticsRecentRegistration {
+  return {
+    id: profile.id,
+    fullName: getRecentRegistrationName(profile),
+    avatarUrl: profile.avatar_url ?? null,
+    country: profile.country ?? null,
+    city: profile.city ?? null,
+    createdAt: profile.created_at,
+    ratingPlacementCompletedAt: profile.rating_placement_completed_at ?? null,
+    competitiveRating: toNumber(
+      profile.competitive_rating,
+      DEFAULT_COMPETITIVE_RATING
+    ),
+  };
+}
+
+function buildUserDrivenAnalytics(
+  base: AdminAnalyticsData,
+  profiles: ProfileAnalyticsRow[]
+): AdminAnalyticsData {
+  const todayStart = startOfToday();
+  const last7DaysStart = new Date();
+  last7DaysStart.setDate(last7DaysStart.getDate() - 7);
+  const last30DaysStart = new Date();
+  last30DaysStart.setDate(last30DaysStart.getDate() - 30);
+
+  const newUsersToday = profiles.filter(
+    (profile) => new Date(profile.created_at) >= todayStart
+  ).length;
+  const newUsersWeek = profiles.filter(
+    (profile) => new Date(profile.created_at) >= last7DaysStart
+  ).length;
+  const newUsersMonth = profiles.filter(
+    (profile) => new Date(profile.created_at) >= last30DaysStart
+  ).length;
+  const onboardingCompletedUsers = profiles.filter(
+    (profile) => Boolean(profile.rating_placement_completed_at)
+  ).length;
+  const onboardingCompletionRate =
+    profiles.length > 0
+      ? Number(((onboardingCompletedUsers / profiles.length) * 100).toFixed(1))
+      : 0;
+
+  return {
+    ...base,
+    userAnalytics: {
+      ...base.userAnalytics,
+      totalUsers: Math.max(base.userAnalytics.totalUsers, profiles.length),
+      newUsersToday,
+      newUsersWeek,
+      newUsersMonth,
+      onboardingCompletedUsers,
+      onboardingCompletionRate,
+      recentRegistrations: profiles.slice(0, 10).map(toRecentRegistration),
+    },
+  };
+}
+
 function toTrendPoints(value: unknown): AnalyticsTrendPoint[] {
   if (!Array.isArray(value)) return [];
 
@@ -212,6 +299,29 @@ function toTopUsers(value: unknown): AnalyticsTopUser[] {
       fullName: toString(item.fullName),
       avatarUrl: typeof item.avatarUrl === "string" ? item.avatarUrl : null,
       activityCount: toNumber(item.activityCount),
+    }));
+}
+
+function toRecentRegistrations(value: unknown): AnalyticsRecentRegistration[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(isRecord)
+    .map((item) => ({
+      id: toString(item.id),
+      fullName: toString(item.fullName),
+      avatarUrl: typeof item.avatarUrl === "string" ? item.avatarUrl : null,
+      country: typeof item.country === "string" ? item.country : null,
+      city: typeof item.city === "string" ? item.city : null,
+      createdAt: toString(item.createdAt),
+      ratingPlacementCompletedAt:
+        typeof item.ratingPlacementCompletedAt === "string"
+          ? item.ratingPlacementCompletedAt
+          : null,
+      competitiveRating: toNumber(
+        item.competitiveRating,
+        DEFAULT_COMPETITIVE_RATING
+      ),
     }));
 }
 
@@ -273,11 +383,15 @@ function getEmptyAnalytics(filterKey: AnalyticsTimeFilter): AdminAnalyticsData {
     userAnalytics: {
       totalUsers: 0,
       activeUsers: 0,
+      newUsersToday: 0,
       newUsersWeek: 0,
       newUsersMonth: 0,
+      onboardingCompletedUsers: 0,
+      onboardingCompletionRate: 0,
       verifiedEquipmentUsers: 0,
       competitiveUsers: 0,
       newUsersTrend: [],
+      recentRegistrations: [],
     },
     matchAnalytics: {
       totalMatches: 0,
@@ -332,11 +446,17 @@ function mapAdminAnalytics(
     userAnalytics: {
       totalUsers: toNumber(userAnalytics.totalUsers),
       activeUsers: toNumber(userAnalytics.activeUsers),
+      newUsersToday: toNumber(userAnalytics.newUsersToday),
       newUsersWeek: toNumber(userAnalytics.newUsersWeek),
       newUsersMonth: toNumber(userAnalytics.newUsersMonth),
+      onboardingCompletedUsers: toNumber(userAnalytics.onboardingCompletedUsers),
+      onboardingCompletionRate: toNumber(userAnalytics.onboardingCompletionRate),
       verifiedEquipmentUsers: toNumber(userAnalytics.verifiedEquipmentUsers),
       competitiveUsers: toNumber(userAnalytics.competitiveUsers),
       newUsersTrend: toTrendPoints(userAnalytics.newUsersTrend),
+      recentRegistrations: toRecentRegistrations(
+        userAnalytics.recentRegistrations
+      ),
     },
     matchAnalytics: {
       totalMatches: toNumber(matchAnalytics.totalMatches),
@@ -382,10 +502,51 @@ export async function getStatsData(
   const base = mapAdminAnalytics(data, filterKey);
 
   try {
-    const events = await getEvents();
-    return buildEventDrivenAnalytics(base, events, filterKey);
-  } catch (eventsError) {
-    console.error("Could not refresh event-driven admin analytics", eventsError);
+    const [eventsResult, profilesResult] = await Promise.allSettled([
+      getEvents(),
+      supabase
+        .from("profiles")
+        .select(
+          "id, full_name, avatar_url, country, city, created_at, rating_placement_completed_at, competitive_rating"
+        )
+        .order("created_at", { ascending: false }),
+    ]);
+
+    let nextData = base;
+
+    if (eventsResult.status === "fulfilled") {
+      nextData = buildEventDrivenAnalytics(nextData, eventsResult.value, filterKey);
+    } else {
+      console.error(
+        "Could not refresh event-driven admin analytics",
+        eventsResult.reason
+      );
+    }
+
+    if (profilesResult.status === "fulfilled") {
+      const { data: profiles, error: profilesError } = profilesResult.value;
+
+      if (profilesError) {
+        console.error(
+          "Could not refresh user-driven admin analytics",
+          profilesError
+        );
+      } else {
+        nextData = buildUserDrivenAnalytics(
+          nextData,
+          (profiles ?? []) as ProfileAnalyticsRow[]
+        );
+      }
+    } else {
+      console.error(
+        "Could not refresh user-driven admin analytics",
+        profilesResult.reason
+      );
+    }
+
+    return nextData;
+  } catch (refreshError) {
+    console.error("Could not refresh admin analytics", refreshError);
     return base;
   }
 }

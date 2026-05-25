@@ -8,17 +8,20 @@ import {
 interface CompleteRatingPlacementInput {
     userId: string;
     answers: RatingPlacementAnswers;
+    country: string;
 }
 
 export async function completeRatingPlacement({
     userId,
     answers,
+    country,
 }: CompleteRatingPlacementInput) {
     const result = calculateRatingPlacementResult(answers);
 
     const { error } = await supabase
         .from("profiles")
         .update({
+            country,
             competitive_rating: result.estimatedRating,
             rating_placement_completed_at: new Date().toISOString(),
             rating_placement_estimate: result.estimatedRating,
@@ -33,4 +36,17 @@ export async function completeRatingPlacement({
     }
 
     return result;
+}
+
+export async function saveOnboardingCountry(userId: string, country: string) {
+    const { error } = await supabase
+        .from("profiles")
+        .update({
+            country,
+        })
+        .eq("id", userId);
+
+    if (error) {
+        throw error;
+    }
 }
