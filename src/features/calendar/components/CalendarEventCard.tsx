@@ -10,6 +10,7 @@ import {
     getEventModeLabel,
     getEventModeBadgeClasses,
     getEventModeSurfaceClasses,
+    getEventTournamentPriceLabel,
     getEventTypeLabel,
 } from "../../events/utils/event-display.utils";
 
@@ -25,6 +26,7 @@ export function CalendarEventCard({
     const { t, i18n } = useTranslation();
     const isFinished = isFinishedEvent(event);
     const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+    const tournamentPriceLabel = getEventTournamentPriceLabel(event);
     const cardClasses = `block rounded-3xl shadow-sm transition ${
         isFinished
             ? "cursor-not-allowed ring-1 ring-red-200"
@@ -76,6 +78,12 @@ export function CalendarEventCard({
                     )}`}
                 >
                     {modeLabel}
+                </span>
+                )}
+
+                {tournamentPriceLabel && (
+                <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase text-amber-800">
+                    {tournamentPriceLabel}
                 </span>
                 )}
 

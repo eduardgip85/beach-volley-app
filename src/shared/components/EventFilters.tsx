@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import type {
   EventFiltersState,
   EventModeFilter,
+  EventPriceFilter,
   EventTypeFilter,
 } from "../../features/events/hooks/useEventFilters";
 
@@ -32,6 +33,7 @@ export function EventFilters({
     filters.search.trim() !== "" ||
     filters.type !== "all" ||
     filters.mode !== "all" ||
+    filters.price !== "all" ||
     filters.location !== "all" ||
     filters.date !== "" ||
     filters.myEventsOnly;
@@ -78,7 +80,7 @@ export function EventFilters({
       )}
 
       {/* Desktop filters */}
-      <div className="hidden gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_150px_150px_180px_180px_auto_auto]">
+      <div className="hidden gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_150px_150px_150px_180px_180px_auto_auto]">
         <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
           <Search size={18} className="text-slate-400" />
           <input
@@ -124,6 +126,7 @@ function FiltersContent({
         <option value="all">{t("filters.allTypes")}</option>
         <option value="match">{t("eventTypes.match")}</option>
         <option value="open_play">{t("eventTypes.open_play")}</option>
+        <option value="tournament">{t("eventTypes.tournament")}</option>
       </select>
 
       <select
@@ -136,6 +139,21 @@ function FiltersContent({
         <option value="all">{t("filters.allFormats")}</option>
         <option value="casual">{t("eventModes.casual")}</option>
         <option value="competitive">{t("eventModes.competitive")}</option>
+      </select>
+
+      <select
+        value={filters.price}
+        onChange={(event) =>
+          onFilterChange("price", event.target.value as EventPriceFilter)
+        }
+        className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
+      >
+        <option value="all">{t("filters.allPrices")}</option>
+        <option value="free">{t("filters.freeOnly")}</option>
+        <option value="paid">{t("filters.paidOnly")}</option>
+        <option value="under_10">{t("filters.underTen")}</option>
+        <option value="between_10_25">{t("filters.tenToTwentyFive")}</option>
+        <option value="above_25">{t("filters.aboveTwentyFive")}</option>
       </select>
 
       <select

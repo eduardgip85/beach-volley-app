@@ -4,6 +4,10 @@ import {
     reverseGeocodeLocation,
     searchLocation,
 } from "../services/geocoding.service";
+import {
+    getDefaultEventCoverForType,
+    getEventCoverOptions,
+} from "../constants/eventCoverOptions";
 import { UNLIMITED_EVENT_CAPACITY, isUnlimitedEventCapacity } from "../types/event.types";
 import type {
     CreateEventPayload,
@@ -11,6 +15,10 @@ import type {
     EventMode,
     EventType,
     EventVisibility,
+    TournamentBracketType,
+    TournamentEntryFeeType,
+    TournamentRegistrationType,
+    TournamentTeamFormat,
 } from "../types/event.types";
 
 interface UseEventFormOptions {
@@ -51,6 +59,10 @@ function getInitialMaxParticipants(initialEvent?: Event) {
         return 4;
     }
 
+    if (type === "tournament") {
+        return initialEvent?.tournamentSettings?.maxTeams ?? 8;
+    }
+
     return initialEvent?.maxParticipants ?? 8;
 }
 
@@ -62,6 +74,62 @@ function getInitialUnlimitedParticipants(initialEvent?: Event) {
     }
 
     return isUnlimitedEventCapacity(initialEvent?.maxParticipants ?? 8);
+}
+
+function getInitialTournamentRegistrationType(
+    initialEvent?: Event
+): TournamentRegistrationType {
+    return initialEvent?.tournamentSettings?.registrationType ?? "team";
+}
+
+function getInitialTournamentTeamFormat(
+    initialEvent?: Event
+): TournamentTeamFormat {
+    return initialEvent?.tournamentSettings?.teamFormat ?? "2v2";
+}
+
+function getInitialTournamentBracketType(
+    initialEvent?: Event
+): TournamentBracketType {
+    return initialEvent?.tournamentSettings?.bracketType ?? "single_elimination";
+}
+
+function getInitialTournamentEntryFeeType(
+    initialEvent?: Event
+): TournamentEntryFeeType {
+    return initialEvent?.tournamentSettings?.entryFeeType ?? "free";
+}
+
+function getInitialTournamentEntryFeeAmount(initialEvent?: Event) {
+    return initialEvent?.tournamentSettings?.entryFeeAmount?.toString() ?? "10";
+}
+
+function parseTournamentEntryFeeAmount(value: string) {
+    const normalizedValue = value.trim().replace(",", ".");
+
+    if (!normalizedValue) {
+        return null;
+    }
+
+    const parsedValue = Number(normalizedValue);
+
+    return Number.isFinite(parsedValue) ? parsedValue : null;
+}
+
+function getInitialTournamentMaxTeams(initialEvent?: Event) {
+    return initialEvent?.tournamentSettings?.maxTeams ?? 8;
+}
+
+function getInitialTournamentCourtCount(initialEvent?: Event) {
+    return initialEvent?.tournamentSettings?.courtCount ?? 1;
+}
+
+function getInitialImageUrl(initialEvent?: Event) {
+    if (initialEvent?.imageUrl) {
+        return initialEvent.imageUrl;
+    }
+
+    return getDefaultEventCoverForType(getInitialType(initialEvent));
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -91,6 +159,29 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     const [mode, setModeState] = useState<EventMode | null>(
         getInitialMode(initialEvent)
     );
+    const [tournamentRegistrationType, setTournamentRegistrationType] =
+        useState<TournamentRegistrationType>(
+            getInitialTournamentRegistrationType(initialEvent)
+        );
+    const [tournamentTeamFormat, setTournamentTeamFormat] =
+        useState<TournamentTeamFormat>(getInitialTournamentTeamFormat(initialEvent));
+    const [tournamentBracketType, setTournamentBracketType] =
+        useState<TournamentBracketType>(
+            getInitialTournamentBracketType(initialEvent)
+        );
+    const [tournamentEntryFeeType, setTournamentEntryFeeType] =
+        useState<TournamentEntryFeeType>(
+            getInitialTournamentEntryFeeType(initialEvent)
+        );
+    const [tournamentEntryFeeAmount, setTournamentEntryFeeAmount] = useState(
+        getInitialTournamentEntryFeeAmount(initialEvent)
+    );
+    const [tournamentMaxTeams, setTournamentMaxTeams] = useState(
+        getInitialTournamentMaxTeams(initialEvent)
+    );
+    const [tournamentCourtCount, setTournamentCourtCount] = useState(
+        getInitialTournamentCourtCount(initialEvent)
+    );
 
     const [date, setDate] = useState(
         initialEvent ? getDateValue(initialEvent.startDate) : ""
@@ -116,6 +207,9 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
 
     const [locationSearch, setLocationSearch] = useState("");
     const [searchingLocation, setSearchingLocation] = useState(false);
+    const [imageUrl, setImageUrl] = useState<string | null>(
+        getInitialImageUrl(initialEvent)
+    );
 
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -137,10 +231,30 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
             return;
         }
 
+        if (type === "tournament") {
+            if (unlimitedParticipants) {
+                setUnlimitedParticipants(false);
+            }
+
+            if (mode !== null) {
+                setModeState(null);
+            }
+
+            return;
+        }
+
         if (mode !== null) {
             setModeState(null);
         }
     }, [type, mode, maxParticipants, unlimitedParticipants]);
+
+    useEffect(() => {
+        const validCoverUrls = getEventCoverOptions(type).map((option) => option.imageUrl);
+
+        if (!imageUrl || !validCoverUrls.includes(imageUrl)) {
+            setImageUrl(getDefaultEventCoverForType(type));
+        }
+    }, [type, imageUrl]);
 
     async function handleSearchLocation() {
         if (!locationSearch.trim()) {
@@ -209,11 +323,6 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         return;
         }
 
-        if (type === "tournament") {
-        setError(i18n.t("eventForm.errors.tournamentSoon"));
-        return;
-        }
-
         if (type === "match" && !resolvedMode) {
         setError(i18n.t("eventForm.errors.modeRequired"));
         return;
@@ -233,11 +342,39 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         return;
         }
 
+        if (type === "tournament") {
+            const parsedTournamentEntryFeeAmount = parseTournamentEntryFeeAmount(
+                tournamentEntryFeeAmount
+            );
+
+            if (!Number.isFinite(tournamentMaxTeams) || tournamentMaxTeams < 4) {
+                setError(i18n.t("eventForm.errors.tournamentMinTeams"));
+                return;
+            }
+
+            if (!Number.isFinite(tournamentCourtCount) || tournamentCourtCount < 1) {
+                setError(i18n.t("eventForm.errors.tournamentMinCourts"));
+                return;
+            }
+
+            if (
+                tournamentEntryFeeType === "paid" &&
+                (parsedTournamentEntryFeeAmount === null ||
+                    parsedTournamentEntryFeeAmount <= 0)
+            ) {
+                setError(i18n.t("eventForm.errors.tournamentInvalidEntryFee"));
+                return;
+            }
+        }
+
         try {
         setSubmitting(true);
         setError("");
 
         const startDate = new Date(`${date}T${time}`).toISOString();
+        const parsedTournamentEntryFeeAmount = parseTournamentEntryFeeAmount(
+            tournamentEntryFeeAmount
+        );
 
         await onSubmit({
             title: trimmedTitle,
@@ -250,7 +387,26 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
             longitude,
             startDate,
             maxParticipants: resolvedMaxParticipants,
-            imageUrl: initialEvent?.imageUrl ?? null,
+            imageUrl,
+            tournamentSettings:
+                type === "tournament"
+                    ? {
+                          registrationType: tournamentRegistrationType,
+                          teamFormat: tournamentTeamFormat,
+                          entryFeeType: tournamentEntryFeeType,
+                          entryFeeAmount:
+                              tournamentEntryFeeType === "paid"
+                                  ? parsedTournamentEntryFeeAmount
+                                  : null,
+                          entryFeeCurrency: "EUR",
+                          bracketType: tournamentBracketType,
+                          state: initialEvent?.tournamentSettings?.state ?? "draft",
+                          maxTeams: Math.max(4, Math.trunc(tournamentMaxTeams)),
+                          courtCount: Math.max(1, Math.trunc(tournamentCourtCount)),
+                          matchDurationMinutes: 25,
+                          finalsDurationMinutes: 40,
+                      }
+                    : null,
         });
         } catch (err) {
         console.error(err);
@@ -271,10 +427,18 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         time,
         maxParticipants,
         unlimitedParticipants,
+        tournamentRegistrationType,
+        tournamentTeamFormat,
+        tournamentEntryFeeType,
+        tournamentEntryFeeAmount,
+        tournamentBracketType,
+        tournamentMaxTeams,
+        tournamentCourtCount,
         locationName,
         latitude,
         longitude,
         locationSearch,
+        imageUrl,
         },
 
         setters: {
@@ -287,10 +451,18 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         setTime,
         setMaxParticipants: setMaxParticipantsState,
         setUnlimitedParticipants,
+        setTournamentRegistrationType,
+        setTournamentTeamFormat,
+        setTournamentEntryFeeType,
+        setTournamentEntryFeeAmount,
+        setTournamentBracketType,
+        setTournamentMaxTeams,
+        setTournamentCourtCount,
         setLocationName,
         setLatitude,
         setLongitude,
         setLocationSearch,
+        setImageUrl,
         },
 
         state: {

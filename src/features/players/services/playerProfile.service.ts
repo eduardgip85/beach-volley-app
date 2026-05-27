@@ -22,6 +22,24 @@ interface PublicProfileRow {
     profile_visibility: "public" | "private" | null;
     show_rating: boolean | null;
     show_stats: boolean | null;
+    preferred_hand: "right" | "left" | "both" | null;
+    preferred_court_side: "right" | "left" | "both" | null;
+    preferred_match_mode: "casual" | "competitive" | null;
+    availability_status:
+        | "available"
+        | "looking_for_match"
+        | "busy"
+        | "offline"
+        | null;
+    preferred_play_days: Array<
+        | "monday"
+        | "tuesday"
+        | "wednesday"
+        | "thursday"
+        | "friday"
+        | "saturday"
+        | "sunday"
+    > | null;
 }
 
 interface PublicMatchSummaryRow {
@@ -65,6 +83,11 @@ function mapPublicProfile(
         profileVisibility: row.profile_visibility ?? "public",
         showRating: row.show_rating ?? true,
         showStats: row.show_stats ?? true,
+        preferredHand: row.preferred_hand ?? null,
+        preferredCourtSide: row.preferred_court_side ?? null,
+        preferredMatchMode: row.preferred_match_mode ?? null,
+        availabilityStatus: row.availability_status ?? null,
+        preferredPlayDays: row.preferred_play_days ?? [],
     };
 }
 
@@ -101,7 +124,7 @@ export async function getPublicProfile(
     const { data: profileRow, error: profileError } = await supabase
         .from("profiles")
         .select(
-            "id, full_name, username, avatar_url, country, has_ball, has_net, competitive_rating, matches_played, wins, losses, profile_visibility, show_rating, show_stats"
+            "id, full_name, username, avatar_url, country, has_ball, has_net, competitive_rating, matches_played, wins, losses, profile_visibility, show_rating, show_stats, preferred_hand, preferred_court_side, preferred_match_mode, availability_status, preferred_play_days"
         )
         .eq("id", userId)
         .single<PublicProfileRow>();

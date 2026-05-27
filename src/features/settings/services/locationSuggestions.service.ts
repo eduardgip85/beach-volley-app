@@ -208,6 +208,15 @@ function buildCountryNames() {
 }
 
 const COUNTRY_NAMES = buildCountryNames();
+const COUNTRY_NAME_TO_CODE = new Map<string, string>(
+    COUNTRY_CODES.map((code) => {
+        const displayNames = new Intl.DisplayNames(["en"], {
+            type: "region",
+        });
+
+        return [normalizeValue(displayNames.of(code) ?? code), code];
+    })
+);
 
 interface NominatimCityRow {
     address?: {
@@ -254,6 +263,16 @@ export function isKnownCountry(value: string) {
     return COUNTRY_NAMES.some(
         (countryName) => normalizeValue(countryName) === normalizedValue
     );
+}
+
+export function getCountryCode(value: string) {
+    const normalizedValue = normalizeValue(value);
+
+    if (!normalizedValue) {
+        return null;
+    }
+
+    return COUNTRY_NAME_TO_CODE.get(normalizedValue) ?? null;
 }
 
 export async function searchCitySuggestions(

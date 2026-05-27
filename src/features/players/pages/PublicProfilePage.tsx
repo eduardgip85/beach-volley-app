@@ -1,4 +1,5 @@
 import {
+    Clock3,
     ArrowRight,
     CalendarDays,
     Link as LinkIcon,
@@ -11,6 +12,13 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import type {
+    AvailabilityStatus,
+    PreferredCourtSide,
+    PreferredHand,
+    PreferredMatchMode,
+    PreferredPlayDay,
+} from "../../auth/types/auth.types";
 import { useAuth } from "../../auth/context/AuthContext";
 import { formatCompetitiveRating } from "../../ratings/utils/rating-display.utils";
 import { PublicRecentMatchesSection } from "../components/PublicRecentMatchesSection";
@@ -36,6 +44,63 @@ function getFriendActionLabel(
         default:
             return "none";
     }
+}
+
+function getPreferenceLabel(
+    kind: "hand" | "courtSide" | "matchType" | "availability",
+    value:
+        | PreferredHand
+        | PreferredCourtSide
+        | PreferredMatchMode
+        | AvailabilityStatus,
+    t: (key: string) => string
+) {
+    if (!value) {
+        return null;
+    }
+
+    if (kind === "hand") {
+        return t(
+            `profile.preferences.options.${value === "both" ? "bothHands" : value}`
+        );
+    }
+
+    if (kind === "courtSide") {
+        if (value === "right") {
+            return t("profile.preferences.options.rightSide");
+        }
+
+        if (value === "left") {
+            return t("profile.preferences.options.leftSide");
+        }
+
+        return t("profile.preferences.options.bothSides");
+    }
+
+    if (kind === "matchType") {
+        return value === "competitive"
+            ? t("settings.preferences.competitive")
+            : t("settings.preferences.casual");
+    }
+
+    return t(
+        `settings.preferences.${
+            value === "looking_for_match" ? "lookingForMatch" : value
+        }`
+    );
+}
+
+function formatPreferredPlayDays(
+    preferredPlayDays: PreferredPlayDay[],
+    t: (key: string) => string
+) {
+    if (preferredPlayDays.length === 0) {
+        return null;
+    }
+
+    return preferredPlayDays
+        .map((day) => t(`profile.preferences.days.${day}`))
+        .join(", ");
 }
 
 export function PublicProfilePage() {
@@ -71,6 +136,46 @@ export function PublicProfilePage() {
             </div>
         );
     }
+
+    const preferenceItems = [
+        {
+            key: "hand",
+            label: t("profile.preferences.preferredHand"),
+            value: getPreferenceLabel("hand", publicProfile.preferredHand, t),
+        },
+        {
+            key: "courtSide",
+            label: t("profile.preferences.courtSide"),
+            value: getPreferenceLabel(
+                "courtSide",
+                publicProfile.preferredCourtSide,
+                t
+            ),
+        },
+        {
+            key: "matchType",
+            label: t("profile.preferences.matchType"),
+            value: getPreferenceLabel(
+                "matchType",
+                publicProfile.preferredMatchMode,
+                t
+            ),
+        },
+        {
+            key: "availability",
+            label: t("profile.preferences.availability"),
+            value: getPreferenceLabel(
+                "availability",
+                publicProfile.availabilityStatus,
+                t
+            ),
+        },
+        {
+            key: "days",
+            label: t("profile.preferences.schedule"),
+            value: formatPreferredPlayDays(publicProfile.preferredPlayDays, t),
+        },
+    ].filter((item) => item.value);
 
     return (
         <section className="space-y-8">
@@ -193,6 +298,43 @@ export function PublicProfilePage() {
                     </div>
                 </div>
             </div>
+
+            {preferenceItems.length > 0 ? (
+                <div className="rounded-[2rem] bg-white p-8 shadow-sm">
+                    <div className="flex items-start gap-4">
+                        <span className="flex h-14 w-14 items-center justify-center rounded-[1.5rem] bg-amber-100 text-amber-700">
+                            <Clock3 size={28} />
+                        </span>
+                        <div>
+                            <p className="text-sm font-bold uppercase tracking-[0.2em] text-amber-600">
+                                {t("publicProfile.preferencesEyebrow")}
+                            </p>
+                            <h2 className="mt-2 text-2xl font-black text-slate-900">
+                                {t("publicProfile.preferencesTitle")}
+                            </h2>
+                            <p className="mt-2 text-sm text-slate-500">
+                                {t("publicProfile.preferencesBody")}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                        {preferenceItems.map((item) => (
+                            <div
+                                key={item.key}
+                                className="rounded-3xl bg-slate-50 px-5 py-4"
+                            >
+                                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                                    {item.label}
+                                </p>
+                                <p className="mt-2 text-sm font-bold text-slate-900">
+                                    {item.value}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ) : null}
 
             {publicProfile.showStats ? (
                 <PublicRecentMatchesSection matches={publicProfile.recentMatches} />

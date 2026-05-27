@@ -1,14 +1,23 @@
 import type { Event } from "../types/event.types";
+import { getCountryCode } from "../../settings/services/locationSuggestions.service";
 import {
     reverseGeocodeLocation,
     searchCountryCenter,
 } from "./geocoding.service";
 
-const EVENT_COUNTRY_CACHE_PREFIX = "sandset:event-country:";
+const EVENT_COUNTRY_CACHE_PREFIX = "sandset:event-country:v2:";
 const COUNTRY_CENTER_CACHE_PREFIX = "sandset:country-center:";
 
-const eventCountryCache = new Map<string, string | null>();
-const eventCountryInflight = new Map<string, Promise<string | null>>();
+interface CachedCountryIdentity {
+    name: string | null;
+    code: string | null;
+}
+
+const eventCountryCache = new Map<string, CachedCountryIdentity | null>();
+const eventCountryInflight = new Map<
+    string,
+    Promise<CachedCountryIdentity | null>
+>();
 const countryCenterCache = new Map<string, [number, number] | null>();
 const countryCenterInflight = new Map<string, Promise<[number, number] | null>>();
 
@@ -17,7 +26,35 @@ function buildCoordinateCacheKey(latitude: number, longitude: number) {
 }
 
 function normalizeCountryName(value: string | null | undefined) {
-    return value?.trim().toLocaleLowerCase("en") ?? "";
+    return (
+        value
+            ?.trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLocaleLowerCase("en") ?? ""
+    );
+}
+
+function normalizeCountryKey(
+    countryName: string | null | undefined,
+    countryCode?: string | null
+) {
+    const normalizedCode = countryCode?.trim().toUpperCase();
+
+    if (normalizedCode) {
+        return `code:${normalizedCode}`;
+    }
+
+    const inferredCode =
+        typeof countryName === "string" ? getCountryCode(countryName) : null;
+
+    if (inferredCode) {
+        return `code:${inferredCode}`;
+    }
+
+    const normalizedName = normalizeCountryName(countryName);
+
+    return normalizedName ? `name:${normalizedName}` : "";
 }
 
 function readStorageValue<T>(key: string): T | null {
@@ -54,13 +91,22 @@ export async function getCountryNameForCoordinates(
     latitude: number,
     longitude: number
 ) {
+    const identity = await getCountryIdentityForCoordinates(latitude, longitude);
+
+    return identity?.name ?? null;
+}
+
+async function getCountryIdentityForCoordinates(
+    latitude: number,
+    longitude: number
+) {
     const cacheKey = buildCoordinateCacheKey(latitude, longitude);
 
     if (eventCountryCache.has(cacheKey)) {
         return eventCountryCache.get(cacheKey) ?? null;
     }
 
-    const storedCountry = readStorageValue<string | null>(
+    const storedCountry = readStorageValue<CachedCountryIdentity | null>(
         `${EVENT_COUNTRY_CACHE_PREFIX}${cacheKey}`
     );
 
@@ -76,14 +122,23 @@ export async function getCountryNameForCoordinates(
     }
 
     const request = reverseGeocodeLocation(latitude, longitude)
-        .then((result) => result?.countryName?.trim() ?? null)
-        .then((countryName) => {
-            eventCountryCache.set(cacheKey, countryName);
+        .then((result) => {
+            if (!result) {
+                return null;
+            }
+
+            return {
+                name: result.countryName?.trim() ?? null,
+                code: result.countryCode?.trim().toUpperCase() ?? null,
+            } satisfies CachedCountryIdentity;
+        })
+        .then((identity) => {
+            eventCountryCache.set(cacheKey, identity);
             writeStorageValue(
                 `${EVENT_COUNTRY_CACHE_PREFIX}${cacheKey}`,
-                countryName
+                identity
             );
-            return countryName;
+            return identity;
         });
 
     eventCountryInflight.set(cacheKey, request);
@@ -106,17 +161,24 @@ export async function filterEventsByCountry(events: Event[], country: string) {
         return events;
     }
 
-    const targetCountry = normalizeCountryName(trimmedCountry);
+    const targetCountry = normalizeCountryKey(trimmedCountry);
     const countryMatches = await Promise.all(
         events.map(async (event) => ({
             event,
-            country: await getEventCountryName(event),
+            countryIdentity: await getCountryIdentityForCoordinates(
+                event.latitude,
+                event.longitude
+            ),
         }))
     );
 
     return countryMatches
         .filter(
-            ({ country }) => normalizeCountryName(country) === targetCountry
+            ({ countryIdentity }) =>
+                normalizeCountryKey(
+                    countryIdentity?.name,
+                    countryIdentity?.code
+                ) === targetCountry
         )
         .map(({ event }) => event);
 }

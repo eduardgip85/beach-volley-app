@@ -3,6 +3,7 @@ export interface GeocodingResult {
     latitude: number;
     longitude: number;
     countryName?: string | null;
+    countryCode?: string | null;
 }
 
 function buildShortLocationName(data: any): string | null {
@@ -35,6 +36,18 @@ function buildCountryName(data: any): string | null {
     return typeof address.country === "string" ? address.country : null;
 }
 
+function buildCountryCode(data: any): string | null {
+    const address = data?.address;
+
+    if (!address || typeof address !== "object") {
+        return null;
+    }
+
+    return typeof address.country_code === "string"
+        ? address.country_code.toUpperCase()
+        : null;
+}
+
 async function readGeocodingResponse(
     url: string,
     errorMessage: string
@@ -42,6 +55,7 @@ async function readGeocodingResponse(
     const response = await fetch(url, {
         headers: {
             Accept: "application/json",
+            "Accept-Language": "en",
         },
     });
 
@@ -74,6 +88,7 @@ export async function searchLocation(query: string): Promise<GeocodingResult | n
         latitude: Number(data[0].lat),
         longitude: Number(data[0].lon),
         countryName: buildCountryName(data[0]),
+        countryCode: buildCountryCode(data[0]),
     };
 }
 
@@ -103,6 +118,7 @@ export async function reverseGeocodeLocation(
         latitude: Number(data.lat ?? latitude),
         longitude: Number(data.lon ?? longitude),
         countryName: buildCountryName(data),
+        countryCode: buildCountryCode(data),
     };
 }
 
@@ -134,5 +150,6 @@ export async function searchCountryCenter(country: string): Promise<GeocodingRes
         latitude: Number(data[0].lat),
         longitude: Number(data[0].lon),
         countryName: buildCountryName(data[0]) ?? trimmedCountry,
+        countryCode: buildCountryCode(data[0]),
     };
 }

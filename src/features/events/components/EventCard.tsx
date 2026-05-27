@@ -1,4 +1,5 @@
 import { CalendarDays, MapPin, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { isUnlimitedEventCapacity } from "../types/event.types";
 import type { Event } from "../types/event.types";
@@ -8,6 +9,7 @@ import {
   getEventModeLabel,
   getEventModeBadgeClasses,
   getEventModeSurfaceClasses,
+  getEventTournamentPriceLabel,
   getEventTypeLabel,
   isPastEvent,
 } from "../utils/event-display.utils";
@@ -17,6 +19,7 @@ interface Props {
 }
 
 export function EventCard({ event }: Props) {
+  const { t, i18n } = useTranslation();
   const image = getEventFallbackImage(event);
   const registrationsCount = event.participantCount ?? 0;
   const hasUnlimitedSpots =
@@ -24,6 +27,13 @@ export function EventCard({ event }: Props) {
   const isFull = !hasUnlimitedSpots && registrationsCount >= event.maxParticipants;
   const isPast = isPastEvent(event);
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
+  const tournamentPriceLabel = getEventTournamentPriceLabel(event);
+  const registrationsLabel = hasUnlimitedSpots
+    ? t("eventDetail.joined", { count: registrationsCount })
+    : t("eventDetail.joinedProgress", {
+        joined: registrationsCount,
+        total: event.maxParticipants,
+      });
 
   return (
     <Link
@@ -66,7 +76,10 @@ export function EventCard({ event }: Props) {
 
         <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
           <CalendarDays size={17} className="text-blue-600" />
-          {new Date(event.startDate).toLocaleString()}
+          {new Date(event.startDate).toLocaleString(i18n.language, {
+            dateStyle: "medium",
+            timeStyle: "short",
+          })}
         </div>
 
         <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
@@ -74,21 +87,30 @@ export function EventCard({ event }: Props) {
           {event.locationName}
         </div>
 
-        <div className="mt-6 flex items-center justify-between border-t pt-5">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <Users size={17} />
-            <span>
-              {hasUnlimitedSpots
-                ? `${registrationsCount} joined`
-                : `${registrationsCount}/${event.maxParticipants} ${isFull ? "Full" : "joined"}`}
+        {tournamentPriceLabel ? (
+          <div className="mt-3">
+            <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-800">
+              {tournamentPriceLabel}
             </span>
+          </div>
+        ) : null}
+
+        <div className="mt-6 flex items-center justify-between border-t pt-5">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+            <Users size={17} />
+            <span>{registrationsLabel}</span>
+            {!hasUnlimitedSpots && isFull ? (
+              <span className="rounded-full bg-slate-100 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                {t("eventDetail.eventFull")}
+              </span>
+            ) : null}
           </div>
 
           <div className={`text-sm font-bold ${
               isFull || isPast ? "text-slate-400" : "text-blue-600"
             }`}
           >
-            {isPast || isFull ? "View" : "Join Now"}
+            {isPast || isFull ? t("common.viewDetails") : t("eventCard.joinNow")}
           </div>
 
         </div>

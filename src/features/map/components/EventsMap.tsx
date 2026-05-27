@@ -17,6 +17,7 @@ import {
   getEventDisplayStatus,
   getEventFallbackImage,
   getEventModeLabel,
+  getEventTournamentPriceLabel,
   getEventTypeLabel,
   getEventVisibilityBadgeClasses,
   getEventVisibilityLabel,
@@ -147,6 +148,7 @@ function MapEventPreview({
   const image = getEventFallbackImage(event);
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
   const displayStatus = getEventDisplayStatus(event);
+  const tournamentPriceLabel = getEventTournamentPriceLabel(event);
 
   return (
     <article className="absolute bottom-28 left-3 right-3 z-[1200] overflow-hidden rounded-3xl bg-white shadow-2xl md:bottom-6 md:left-auto md:right-6 md:w-96">
@@ -189,7 +191,7 @@ function MapEventPreview({
           </h2>
 
           <p className="mt-1 text-xs font-semibold text-slate-600">
-            {[modeLabel, displayStatus].filter(Boolean).join(" · ")}
+            {[modeLabel, displayStatus].filter(Boolean).join(" | ")}
           </p>
 
           <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
@@ -204,6 +206,12 @@ function MapEventPreview({
               minute: "2-digit",
             })}
           </p>
+
+          {tournamentPriceLabel ? (
+            <p className="mt-2 inline-flex rounded-full bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase text-amber-800">
+              {tournamentPriceLabel}
+            </p>
+          ) : null}
         </div>
 
         <Link
@@ -292,6 +300,17 @@ function MapEventPreview({
                   })}
               </p>
             </div>
+
+            {tournamentPriceLabel ? (
+              <div className="rounded-2xl bg-amber-50 p-3">
+                <p className="text-[10px] font-bold uppercase text-amber-700">
+                  {t("eventDetail.tournament.entryFeeLabel")}
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-800">
+                  {tournamentPriceLabel}
+                </p>
+              </div>
+            ) : null}
           </div>
 
           <Link
@@ -305,3 +324,4 @@ function MapEventPreview({
     </article>
   );
 }
+

@@ -18,6 +18,10 @@ import { useEventInvitations } from "../../event-invitations/hooks/useEventInvit
 import { useEventJoinRequests } from "../../event-join-requests/hooks/useEventJoinRequests";
 import { useMatchPlayers } from "../../match-players/hooks/useMatchPlayers";
 import { useMatchResult } from "../../match-results/hooks/useMatchResult";
+import { TournamentRegistrationSection } from "../../tournaments/components/TournamentRegistrationSection";
+import { getTournamentCoordinators } from "../../tournaments/services/tournamentManagement.service";
+import { getTournamentEntries } from "../../tournaments/services/tournamentRegistrations.service";
+import type { TournamentEntry } from "../../tournaments/types/tournamentRegistration.types";
 import {
   getEventParticipants,
   registerToEvent,
@@ -123,6 +127,72 @@ function getEventHighlights(event: Event, t: (key: string) => string) {
   ];
 }
 
+function getTournamentRegistrationLabel(
+  registrationType: string,
+  t: (key: string) => string
+) {
+  return registrationType === "individual"
+    ? t("eventDetail.tournament.registrationIndividual")
+    : t("eventDetail.tournament.registrationTeam");
+}
+
+function getTournamentBracketLabel(
+  bracketType: string,
+  t: (key: string) => string
+) {
+  switch (bracketType) {
+    case "round_robin":
+      return t("eventDetail.tournament.bracketRoundRobin");
+    case "group_knockout":
+      return t("eventDetail.tournament.bracketGroupKnockout");
+    case "double_elimination":
+      return t("eventDetail.tournament.bracketDoubleElimination");
+    default:
+      return t("eventDetail.tournament.bracketSingleElimination");
+  }
+}
+
+function getTournamentStateLabel(state: string, t: (key: string) => string) {
+  switch (state) {
+    case "open_registration":
+      return t("eventDetail.tournament.stateOpenRegistration");
+    case "full":
+      return t("eventDetail.tournament.stateFull");
+    case "bracket_ready":
+      return t("eventDetail.tournament.stateBracketReady");
+    case "in_progress":
+      return t("eventDetail.tournament.stateInProgress");
+    case "completed":
+      return t("eventDetail.tournament.stateCompleted");
+    case "cancelled":
+      return t("eventDetail.tournament.stateCancelled");
+    default:
+      return t("eventDetail.tournament.stateDraft");
+  }
+}
+
+function getTournamentEntryFeeLabel(
+  entryFeeType: string,
+  entryFeeAmount: number | null,
+  entryFeeCurrency: string,
+  locale: string,
+  t: (key: string, options?: Record<string, unknown>) => string
+) {
+  if (entryFeeType !== "paid" || !entryFeeAmount) {
+    return t("eventDetail.tournament.entryFeeFree");
+  }
+
+  const formattedAmount = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: entryFeeCurrency || "EUR",
+    maximumFractionDigits: 2,
+  }).format(entryFeeAmount);
+
+  return t("eventDetail.tournament.entryFeePaidValue", {
+    amount: formattedAmount,
+  });
+}
+
 export function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -133,6 +203,7 @@ export function EventDetailPage() {
   const [registrationsCount, setRegistrationsCount] = useState(0);
   const [alreadyJoined, setAlreadyJoined] = useState(false);
   const [registeredParticipants, setRegisteredParticipants] = useState<EventParticipant[]>([]);
+  const [tournamentEntries, setTournamentEntries] = useState<TournamentEntry[]>([]);
   const [showAllParticipants, setShowAllParticipants] = useState(false);
 
   const [loading, setLoading] = useState(true);
@@ -141,11 +212,19 @@ export function EventDetailPage() {
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const [creatorName, setCreatorName] = useState<string | null>(null);
+  const [tournamentCoordinators, setTournamentCoordinators] = useState<
+    Array<{ id: string; fullName: string; avatarUrl: string | null; country: string | null; competitiveRating: number }>
+  >([]);
   const [summaryAnchor, setSummaryAnchor] = useState<HTMLDivElement | null>(null);
 
   const canEdit = Boolean(
     profile && event && (profile.id === event.createdBy || isAdmin)
   );
+  const isTournamentCoordinator = Boolean(
+    profile &&
+      tournamentCoordinators.some((coordinator) => coordinator.id === profile.id)
+  );
+  const canManageTournament = canEdit || isTournamentCoordinator;
 
   const canCopyPrivateLink = Boolean(
     event &&
@@ -236,6 +315,11 @@ export function EventDetailPage() {
     canManageRequests: Boolean(event?.visibility === "private" && canEdit),
   });
 
+  async function loadTournamentCoordinators(currentEventId: string) {
+    const data = await getTournamentCoordinators(currentEventId);
+    setTournamentCoordinators(data);
+  }
+
   async function loadEventSummary(currentEventId: string) {
     const summary = await getEventDetailSummary(currentEventId);
     setEvent(summary.event);
@@ -265,7 +349,7 @@ export function EventDetailPage() {
 
   useEffect(() => {
     async function loadParticipants() {
-      if (!eventId || !event || event.type === "match" || !canViewParticipants) {
+      if (!eventId || !event || event.type === "match" || event.type === "tournament" || !canViewParticipants) {
         setRegisteredParticipants([]);
         setParticipantsLoading(false);
         return;
@@ -285,6 +369,46 @@ export function EventDetailPage() {
 
     loadParticipants();
   }, [canViewParticipants, event?.id, event?.type, eventId]);
+
+  useEffect(() => {
+    async function loadTournamentEntries() {
+      if (!eventId || !event || event.type !== "tournament" || !canViewParticipants) {
+        setTournamentEntries([]);
+        return;
+      }
+
+      try {
+        setParticipantsLoading(true);
+        const data = await getTournamentEntries(eventId);
+        setTournamentEntries(data);
+      } catch (tournamentEntriesError) {
+        console.error(tournamentEntriesError);
+        setTournamentEntries([]);
+      } finally {
+        setParticipantsLoading(false);
+      }
+    }
+
+    void loadTournamentEntries();
+  }, [canViewParticipants, event?.id, event?.type, eventId]);
+
+  useEffect(() => {
+    async function syncTournamentCoordinators() {
+      if (!eventId || !event || event.type !== "tournament") {
+        setTournamentCoordinators([]);
+        return;
+      }
+
+      try {
+        await loadTournamentCoordinators(eventId);
+      } catch (coordinatorError) {
+        console.error(coordinatorError);
+        setTournamentCoordinators([]);
+      }
+    }
+
+    void syncTournamentCoordinators();
+  }, [event?.id, event?.type, eventId]);
 
   async function handleJoinEvent() {
     if (!eventId) return;
@@ -420,6 +544,7 @@ export function EventDetailPage() {
   const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
   const displayStatus = getEventDisplayStatus(event);
   const shouldShowJoinButton =
+    event.type !== "tournament" &&
     !isAcceptedMatch &&
     !displayAlreadyJoined &&
     (!(event.visibility === "private" && !canEdit) || isClosedEvent);
@@ -436,12 +561,28 @@ export function EventDetailPage() {
           },
         }))
       : registeredParticipants;
+  const tournamentSettings = event.tournamentSettings;
+  const tournamentTeams = tournamentEntries.filter((entry) => {
+    if (entry.status !== "confirmed") {
+      return false;
+    }
+
+    if (tournamentSettings?.registrationType === "individual") {
+      return entry.entryKind === "balanced_team";
+    }
+
+    return entry.entryKind === "registration";
+  });
   const visibleParticipants = showAllParticipants
     ? participants
     : participants.slice(0, 5);
+  const visibleTournamentTeams = showAllParticipants
+    ? tournamentTeams
+    : tournamentTeams.slice(0, 5);
   const canAccessEventChat = Boolean(
     profile &&
       !isClosedEvent &&
+      event.type !== "tournament" &&
       (event.type === "match" ? hasActiveMatchChatAccess : alreadyJoined)
   );
   const spotsLeft = hasUnlimitedSpots
@@ -453,7 +594,11 @@ export function EventDetailPage() {
       : null;
   const eventHighlights = getEventHighlights(event, t);
   const shouldShowParticipantsCard =
-    canViewParticipants && (participantsLoading || participants.length > 0);
+    canViewParticipants &&
+    (participantsLoading ||
+      (event.type === "tournament"
+        ? tournamentTeams.length > 0
+        : participants.length > 0));
 
   function scrollToSummary() {
     summaryAnchor?.scrollIntoView({
@@ -600,17 +745,106 @@ export function EventDetailPage() {
               </div>
             </div>
 
+            {event.type === "tournament" && tournamentSettings ? (
+              <div className="rounded-3xl bg-white p-6 shadow-sm">
+                <div className="flex items-center gap-2 text-slate-900">
+                  <Shield size={18} className="text-blue-600" />
+                  <h2 className="text-lg font-black">
+                    {t("eventDetail.tournament.title")}
+                  </h2>
+                </div>
+
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {t("eventDetail.tournament.body")}
+                </p>
+
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.registrationLabel")}
+                    value={getTournamentRegistrationLabel(
+                      tournamentSettings.registrationType,
+                      t
+                    )}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.formatLabel")}
+                    value={tournamentSettings.teamFormat.toUpperCase()}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.entryFeeLabel")}
+                    value={getTournamentEntryFeeLabel(
+                      tournamentSettings.entryFeeType,
+                      tournamentSettings.entryFeeAmount,
+                      tournamentSettings.entryFeeCurrency,
+                      i18n.language,
+                      t
+                    )}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.bracketLabel")}
+                    value={getTournamentBracketLabel(
+                      tournamentSettings.bracketType,
+                      t
+                    )}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.stateLabel")}
+                    value={getTournamentStateLabel(tournamentSettings.state, t)}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.maxTeamsLabel")}
+                    value={t("eventDetail.tournament.maxTeamsValue", {
+                      count: tournamentSettings.maxTeams,
+                    })}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.courtsLabel")}
+                    value={t("eventDetail.tournament.courtsValue", {
+                      count: tournamentSettings.courtCount,
+                    })}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.matchDurationLabel")}
+                    value={t("eventDetail.tournament.matchDurationValue", {
+                      count: tournamentSettings.matchDurationMinutes,
+                    })}
+                  />
+                  <TournamentConfigCard
+                    label={t("eventDetail.tournament.finalsDurationLabel")}
+                    value={t("eventDetail.tournament.finalsDurationValue", {
+                      count: tournamentSettings.finalsDurationMinutes,
+                    })}
+                  />
+                </div>
+
+                <div className="mt-5 rounded-2xl bg-blue-50 px-4 py-4 text-sm text-slate-700">
+                  <p className="font-bold text-slate-900">
+                    {t("eventDetail.tournament.phaseOneTitle")}
+                  </p>
+                  <p className="mt-1 leading-6">
+                    {t("eventDetail.tournament.phaseOneBody")}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
             {shouldShowParticipantsCard ? (
               <div className="rounded-3xl bg-white p-6 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-lg font-black text-slate-900">
-                      {t("eventDetail.participantsTitle")}
-                    </h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {t("eventDetail.joined", { count: participants.length })}
-                    </p>
-                  </div>
+                      <h2 className="text-lg font-black text-slate-900">
+                        {event.type === "tournament" && !canManageTournament
+                          ? t("eventDetail.tournament.teamsTitle")
+                          : t("eventDetail.participantsTitle")}
+                      </h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {event.type === "tournament" && !canManageTournament
+                          ? t("eventDetail.tournament.confirmedTeamsCount", {
+                              count: tournamentTeams.length,
+                            })
+                          : t("eventDetail.joined", { count: participants.length })}
+                      </p>
+                    </div>
 
                   <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-blue-700">
                     {hasUnlimitedSpots
@@ -621,39 +855,51 @@ export function EventDetailPage() {
                   </span>
                 </div>
 
-                {participantsLoading ? (
-                  <div className="mt-5 space-y-3">
-                    {Array.from({ length: 4 }).map((_, index) => (
+                  {participantsLoading ? (
+                    <div className="mt-5 space-y-3">
+                      {Array.from({ length: 4 }).map((_, index) => (
                       <div
                         key={index}
                         className="h-14 animate-pulse rounded-2xl bg-slate-100"
                       />
                     ))}
                   </div>
-                ) : (
-                  <>
-                    <div className="mt-5 space-y-3">
-                      {visibleParticipants.map((participant) => (
-                        <ParticipantRow
-                          key={participant.id}
-                          participant={participant}
-                        />
-                      ))}
-                    </div>
+                  ) : (
+                    <>
+                      <div className="mt-5 space-y-3">
+                        {event.type === "tournament" && !canManageTournament
+                          ? visibleTournamentTeams.map((entry) => (
+                              <TournamentTeamRow
+                                key={entry.id}
+                                entry={entry}
+                              />
+                            ))
+                          : visibleParticipants.map((participant) => (
+                              <ParticipantRow
+                                key={participant.id}
+                                participant={participant}
+                              />
+                            ))}
+                      </div>
 
-                    {participants.length > 5 ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowAllParticipants((current) => !current)}
+                      {(event.type === "tournament" && !canManageTournament
+                        ? tournamentTeams.length > 5
+                        : participants.length > 5) ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllParticipants((current) => !current)}
                         className="mt-5 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-200 hover:text-blue-700"
                       >
-                        {showAllParticipants
-                          ? t("eventDetail.showFewerParticipants")
-                          : t("eventDetail.viewAllParticipants", {
-                              count: participants.length,
-                            })}
-                      </button>
-                    ) : null}
+                          {showAllParticipants
+                            ? t("eventDetail.showFewerParticipants")
+                            : t("eventDetail.viewAllParticipants", {
+                                count:
+                                  event.type === "tournament" && !canManageTournament
+                                    ? tournamentTeams.length
+                                    : participants.length,
+                              })}
+                        </button>
+                      ) : null}
                   </>
                 )}
               </div>
@@ -665,6 +911,25 @@ export function EventDetailPage() {
               eventId={event.id}
               currentUserId={profile.id}
               canSend={!isClosedEvent}
+            />
+          ) : null}
+
+          {event.type === "tournament" && event.tournamentSettings ? (
+            <TournamentRegistrationSection
+              eventId={event.id}
+              currentUser={profile}
+              settings={event.tournamentSettings}
+              isManager={canManageTournament}
+              canEditTournamentSetup={canEdit}
+              coordinators={tournamentCoordinators}
+              isClosedEvent={isClosedEvent}
+              onRequireLogin={() =>
+                navigate(`/login?redirect=/events/${event.id}`)
+              }
+              onRefreshEvent={async () => {
+                await loadEventSummary(event.id);
+                await loadTournamentCoordinators(event.id);
+              }}
             />
           ) : null}
 
@@ -707,7 +972,8 @@ export function EventDetailPage() {
             </Suspense>
           ) : null}
 
-          {event.visibility === "private" &&
+          {event.type !== "tournament" &&
+          event.visibility === "private" &&
           !isClosedEvent &&
           eventInvitations.state.pendingInvitationForCurrentUser ? (
             <Suspense fallback={<SectionLoadingMessage message={t("eventDetail.loadingInvitation")} />}>
@@ -720,7 +986,8 @@ export function EventDetailPage() {
             </Suspense>
           ) : null}
 
-          {event.visibility === "private" &&
+          {event.type !== "tournament" &&
+          event.visibility === "private" &&
           canEdit &&
           !displayIsFull &&
           !isAcceptedMatch &&
@@ -848,6 +1115,15 @@ export function EventDetailPage() {
                         ? t("eventDetail.joining")
                         : t("eventDetail.joinEvent")}
                 </button>
+              ) : event.type === "tournament" ? (
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm text-slate-700">
+                  <p className="font-bold text-slate-900">
+                    {t("eventDetail.tournament.registrationClosedTitle")}
+                  </p>
+                  <p className="mt-1 leading-6">
+                    {t("eventDetail.tournament.registrationClosedBody")}
+                  </p>
+                </div>
               ) : !isAcceptedMatch && !isClosedEvent && displayAlreadyJoined ? (
                 <button
                   onClick={handleLeaveEvent}
@@ -907,7 +1183,8 @@ export function EventDetailPage() {
             ) : null}
           </div>
 
-          {event.visibility === "private" &&
+          {event.type !== "tournament" &&
+          event.visibility === "private" &&
           !canEdit &&
           !displayAlreadyJoined &&
           !isClosedEvent &&
@@ -960,6 +1237,48 @@ function ParticipantRow({ participant }: { participant: EventParticipant }) {
           {participant.profile.country || t("eventDetail.labels.beachPlayer")}
         </p>
       </div>
+    </div>
+  );
+}
+
+function TournamentTeamRow({ entry }: { entry: TournamentEntry }) {
+  const { t } = useTranslation();
+  const label =
+    entry.teamName?.trim() ||
+    entry.members[0]?.profile.fullName ||
+    t("tournamentRegistration.soloEntry");
+
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white">
+        {label.charAt(0).toUpperCase()}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-bold text-slate-900">{label}</p>
+        <p className="truncate text-xs text-slate-500">
+          {entry.registrationType === "team"
+            ? t("eventDetail.tournament.registrationTeam")
+            : t("eventDetail.tournament.registrationIndividual")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TournamentConfigCard({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-slate-50 px-4 py-4">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
 }

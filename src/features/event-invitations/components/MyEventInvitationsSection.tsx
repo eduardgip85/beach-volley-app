@@ -2,19 +2,26 @@ import { CalendarDays, MapPin, Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { EventInvitation } from "../types/eventInvitation.types";
+import type { TournamentTeamInvitation } from "../../tournaments/types/tournamentRegistration.types";
 
 interface MyEventInvitationsSectionProps {
-    invitations: EventInvitation[];
+    eventInvitations: EventInvitation[];
+    tournamentInvitations: TournamentTeamInvitation[];
     loading: boolean;
     error: string;
 }
 
 export function MyEventInvitationsSection({
-    invitations,
+    eventInvitations,
+    tournamentInvitations,
     loading,
     error,
 }: MyEventInvitationsSectionProps) {
     const { t, i18n } = useTranslation();
+    const invitations = [...tournamentInvitations, ...eventInvitations].sort(
+        (left, right) =>
+            new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+    );
 
     return (
         <div className="rounded-[2rem] bg-white p-8 shadow-sm">
@@ -55,32 +62,68 @@ export function MyEventInvitationsSection({
             {!loading && !error && invitations.length > 0 ? (
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                     {invitations.map((invitation) => (
-                        <Link
-                            key={invitation.id}
-                            to={`/events/${invitation.eventId}`}
-                            className="rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:bg-blue-50"
-                        >
-                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
-                                {t("eventInvitations.invitedBy", {
-                                    name: invitation.inviter.fullName,
-                                })}
-                            </p>
-
-                            <h3 className="mt-3 text-lg font-bold text-slate-900">
-                                {invitation.event.title}
-                            </h3>
-
-                            <div className="mt-4 space-y-2 text-sm text-slate-500">
-                                <p className="flex items-center gap-2">
-                                    <CalendarDays size={16} />
-                                    {new Date(invitation.event.startDate).toLocaleString(i18n.language)}
+                        "memberId" in invitation ? (
+                            <Link
+                                key={`tournament:${invitation.memberId}`}
+                                to={`/events/${invitation.eventId}`}
+                                className="rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:bg-blue-50"
+                            >
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-violet-600">
+                                    {t("eventInvitations.tournamentInvitationTitle")}
                                 </p>
-                                <p className="flex items-center gap-2">
-                                    <MapPin size={16} />
-                                    {invitation.event.locationName}
+
+                                <h3 className="mt-3 text-lg font-bold text-slate-900">
+                                    {invitation.event.title}
+                                </h3>
+
+                                <p className="mt-2 text-sm text-slate-600">
+                                    {t("eventInvitations.tournamentInvitationBody", {
+                                        name: invitation.inviter.fullName,
+                                        teamName:
+                                            invitation.teamName ??
+                                            t("eventInvitations.teamFallback"),
+                                    })}
                                 </p>
-                            </div>
-                        </Link>
+
+                                <div className="mt-4 space-y-2 text-sm text-slate-500">
+                                    <p className="flex items-center gap-2">
+                                        <CalendarDays size={16} />
+                                        {new Date(invitation.event.startDate).toLocaleString(i18n.language)}
+                                    </p>
+                                    <p className="flex items-center gap-2">
+                                        <MapPin size={16} />
+                                        {invitation.event.locationName}
+                                    </p>
+                                </div>
+                            </Link>
+                        ) : (
+                            <Link
+                                key={`event:${invitation.id}`}
+                                to={`/events/${invitation.eventId}`}
+                                className="rounded-3xl border border-slate-100 bg-slate-50 p-5 transition hover:bg-blue-50"
+                            >
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-600">
+                                    {t("eventInvitations.invitedBy", {
+                                        name: invitation.inviter.fullName,
+                                    })}
+                                </p>
+
+                                <h3 className="mt-3 text-lg font-bold text-slate-900">
+                                    {invitation.event.title}
+                                </h3>
+
+                                <div className="mt-4 space-y-2 text-sm text-slate-500">
+                                    <p className="flex items-center gap-2">
+                                        <CalendarDays size={16} />
+                                        {new Date(invitation.event.startDate).toLocaleString(i18n.language)}
+                                    </p>
+                                    <p className="flex items-center gap-2">
+                                        <MapPin size={16} />
+                                        {invitation.event.locationName}
+                                    </p>
+                                </div>
+                            </Link>
+                        )
                     ))}
                 </div>
             ) : null}

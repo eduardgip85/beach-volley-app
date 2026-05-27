@@ -162,3 +162,27 @@ export function getEventFallbackImage(event: Event) {
 
     return "/tournament-beach-1.png";
 }
+
+export function getEventTournamentPriceLabel(event: Event) {
+    if (event.type !== "tournament") {
+        return null;
+    }
+
+    const entryFeeType = event.tournamentSettings?.entryFeeType ?? "free";
+    const entryFeeAmount = event.tournamentSettings?.entryFeeAmount ?? 0;
+    const entryFeeCurrency = event.tournamentSettings?.entryFeeCurrency ?? "EUR";
+
+    if (entryFeeType !== "paid" || entryFeeAmount <= 0) {
+        return i18n.t("eventPricing.tournamentFree");
+    }
+
+    const formattedAmount = new Intl.NumberFormat(i18n.language, {
+        style: "currency",
+        currency: entryFeeCurrency,
+        maximumFractionDigits: 2,
+    }).format(entryFeeAmount);
+
+    return i18n.t("eventPricing.tournamentPaid", {
+        amount: formattedAmount,
+    });
+}

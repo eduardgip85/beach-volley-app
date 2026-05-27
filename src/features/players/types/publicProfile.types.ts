@@ -1,4 +1,11 @@
 import type { EventMode } from "../../events/types/event.types";
+import type {
+    AvailabilityStatus,
+    PreferredCourtSide,
+    PreferredHand,
+    PreferredMatchMode,
+    PreferredPlayDay,
+} from "../../auth/types/auth.types";
 
 export interface PublicProfileModeStats {
     matchesPlayed: number;
@@ -38,6 +45,11 @@ export interface PublicPlayerProfile {
     profileVisibility: "public" | "private";
     showRating: boolean;
     showStats: boolean;
+    preferredHand: PreferredHand;
+    preferredCourtSide: PreferredCourtSide;
+    preferredMatchMode: PreferredMatchMode;
+    availabilityStatus: AvailabilityStatus;
+    preferredPlayDays: PreferredPlayDay[];
     competitive: PublicProfileModeStats;
     casual: PublicProfileModeStats;
     recentMatches: PublicProfileRecentMatch[];

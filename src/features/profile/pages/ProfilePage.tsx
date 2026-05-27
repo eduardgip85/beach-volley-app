@@ -23,6 +23,7 @@ import { useMyEventInvitations } from "../../event-invitations/hooks/useMyEventI
 import { MyEventInvitationsSection } from "../../event-invitations/components/MyEventInvitationsSection";
 import { useMyEventJoinRequests } from "../../event-join-requests/hooks/useMyEventJoinRequests";
 import { MyEventJoinRequestsSection } from "../../event-join-requests/components/MyEventJoinRequestsSection";
+import { useMyTournamentInvitations } from "../../tournaments/hooks/useMyTournamentInvitations";
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -42,6 +43,11 @@ export function ProfilePage() {
     loading: invitationsLoading,
     error: invitationsError,
   } = useMyEventInvitations(profile?.id);
+  const {
+    pendingInvitations: pendingTournamentInvitations,
+    loading: tournamentInvitationsLoading,
+    error: tournamentInvitationsError,
+  } = useMyTournamentInvitations(profile?.id);
   const {
     activeRequests: myJoinRequests,
     loading: joinRequestsLoading,
@@ -165,9 +171,10 @@ export function ProfilePage() {
         />
 
         <MyEventInvitationsSection
-          invitations={pendingInvitations}
-          loading={invitationsLoading}
-          error={invitationsError}
+          eventInvitations={pendingInvitations}
+          tournamentInvitations={pendingTournamentInvitations}
+          loading={invitationsLoading || tournamentInvitationsLoading}
+          error={invitationsError || tournamentInvitationsError}
         />
       </div>
 
