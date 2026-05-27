@@ -13,6 +13,7 @@ export function EventsPage() {
   const { t } = useTranslation();
   const { events, loading, error } = useEventsPage();
   const { profile } = useAuth();
+  const hasCountryContext = Boolean(profile?.country?.trim());
   const { countryScopedEvents, countryScopedLoading } = useCountryScopedEvents(
     events,
     profile?.country
@@ -52,6 +53,7 @@ export function EventsPage() {
       <EventFilters
         filters={filters}
         locations={locations}
+        showLocationFilter={hasCountryContext}
         onFilterChange={updateFilter}
         onClearFilters={clearFilters}
       />

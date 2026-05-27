@@ -17,6 +17,7 @@ export function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { profile } = useAuth();
+  const hasCountryContext = Boolean(profile?.country?.trim());
   const { countryScopedEvents, countryScopedLoading } = useCountryScopedEvents(
     events,
     profile?.country
@@ -57,6 +58,7 @@ export function CalendarPage() {
       <EventFilters
         filters={filters}
         locations={locations}
+        showLocationFilter={hasCountryContext}
         showMyEventsFilter={Boolean(profile)}
         onFilterChange={updateFilter}
         onClearFilters={clearFilters}

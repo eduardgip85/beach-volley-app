@@ -11,6 +11,7 @@ import type {
 interface EventFiltersProps {
   filters: EventFiltersState;
   locations: string[];
+  showLocationFilter?: boolean;
   showMyEventsFilter?: boolean;
   onFilterChange: <K extends keyof EventFiltersState>(
     key: K,
@@ -22,6 +23,7 @@ interface EventFiltersProps {
 export function EventFilters({
   filters,
   locations,
+  showLocationFilter = true,
   showMyEventsFilter = false,
   onFilterChange,
   onClearFilters,
@@ -80,7 +82,14 @@ export function EventFilters({
       )}
 
       {/* Desktop filters */}
-      <div className="hidden gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_150px_150px_150px_180px_180px_auto_auto]">
+      <div
+        className={[
+          "hidden gap-3 lg:grid",
+          showLocationFilter
+            ? "lg:grid-cols-[minmax(0,1fr)_150px_150px_150px_180px_180px_auto_auto]"
+            : "lg:grid-cols-[minmax(0,1fr)_150px_150px_150px_180px_auto_auto]",
+        ].join(" ")}
+      >
         <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
           <Search size={18} className="text-slate-400" />
           <input
@@ -94,6 +103,7 @@ export function EventFilters({
         <FiltersContent
           filters={filters}
           locations={locations}
+          showLocationFilter={showLocationFilter}
           showMyEventsFilter={showMyEventsFilter}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}
@@ -108,6 +118,7 @@ export function EventFilters({
 function FiltersContent({
   filters,
   locations,
+  showLocationFilter = true,
   showMyEventsFilter = false,
   onFilterChange,
   onClearFilters,
@@ -156,19 +167,21 @@ function FiltersContent({
         <option value="above_25">{t("filters.aboveTwentyFive")}</option>
       </select>
 
-      <select
-        value={filters.location}
-        onChange={(event) => onFilterChange("location", event.target.value)}
-        className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
-      >
-        <option value="all">{t("filters.allLocations")}</option>
+      {showLocationFilter ? (
+        <select
+          value={filters.location}
+          onChange={(event) => onFilterChange("location", event.target.value)}
+          className="w-full rounded-2xl border-0 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none"
+        >
+          <option value="all">{t("filters.allLocations")}</option>
 
-        {locations.map((location) => (
-          <option key={location} value={location}>
-            {location}
-          </option>
-        ))}
-      </select>
+          {locations.map((location) => (
+            <option key={location} value={location}>
+              {location}
+            </option>
+          ))}
+        </select>
+      ) : null}
 
       <div className="flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3">
         <input
