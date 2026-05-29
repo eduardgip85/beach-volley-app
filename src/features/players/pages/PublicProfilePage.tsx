@@ -1,7 +1,6 @@
 import {
     Clock3,
     ArrowRight,
-    CalendarDays,
     Link as LinkIcon,
     MapPin,
     Rows2,
@@ -351,20 +350,6 @@ export function PublicProfilePage() {
                     </p>
                 </div>
             )}
-
-            <div className="rounded-[2rem] bg-slate-900 p-8 text-white shadow-sm">
-                <div className="flex items-start gap-4">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-[1.5rem] bg-white/10 text-blue-300">
-                        <CalendarDays size={28} />
-                    </span>
-                    <div>
-                        <h2 className="text-2xl font-bold">{t("publicProfile.safeViewTitle")}</h2>
-                        <p className="mt-2 max-w-2xl text-slate-300">
-                            {t("publicProfile.safeViewBody")}
-                        </p>
-                    </div>
-                </div>
-            </div>
         </section>
     );
 }

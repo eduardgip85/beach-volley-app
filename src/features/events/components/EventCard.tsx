@@ -69,6 +69,12 @@ export function EventCard({ event }: Props) {
             {modeLabel}
           </span>
         )}
+
+        {tournamentPriceLabel ? (
+          <span className="absolute bottom-4 right-4 inline-flex rounded-full bg-amber-100/95 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-800 shadow-sm backdrop-blur-sm">
+            {tournamentPriceLabel}
+          </span>
+        ) : null}
       </div>
 
       <div className="p-6">
@@ -86,14 +92,6 @@ export function EventCard({ event }: Props) {
           <MapPin size={17} className="text-blue-600" />
           {event.locationName}
         </div>
-
-        {tournamentPriceLabel ? (
-          <div className="mt-3">
-            <span className="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-wide text-amber-800">
-              {tournamentPriceLabel}
-            </span>
-          </div>
-        ) : null}
 
         <div className="mt-6 flex items-center justify-between border-t pt-5">
           <div className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
