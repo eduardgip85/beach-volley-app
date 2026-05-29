@@ -39,6 +39,15 @@ export const resources = {
                     "Choose your main country in onboarding or Settings so events, the calendar and the map can focus on your local scene.",
                 countryRequiredCta: "Open settings",
             },
+            cookieConsent: {
+                eyebrow: "Privacy",
+                title: "Can we use analytics cookies?",
+                body:
+                    "Sandset would like to use analytics cookies to understand usage and improve the product. You can accept or reject them now.",
+                more: "Cookie policy",
+                accept: "Accept analytics",
+                reject: "Reject",
+            },
             adminStats: {
                 total: "Total",
                 errorTitle: "Analytics error",
@@ -1827,6 +1836,15 @@ export const resources = {
                 countryRequiredBody:
                     "Elige tu pais principal en el onboarding o en Settings para que eventos, calendario y mapa se enfoquen en tu escena local.",
                 countryRequiredCta: "Abrir ajustes",
+            },
+            cookieConsent: {
+                eyebrow: "Privacidad",
+                title: "Podemos usar cookies de analitica?",
+                body:
+                    "Sandset quiere usar cookies de analitica para entender mejor el uso de la app y mejorar el producto. Puedes aceptarlas o rechazarlas ahora.",
+                more: "Politica de cookies",
+                accept: "Aceptar analitica",
+                reject: "Rechazar",
             },
             adminStats: {
                 total: "Total",

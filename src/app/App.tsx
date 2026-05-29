@@ -3,6 +3,10 @@ import { useTranslation } from "react-i18next";
 import { RouterProvider } from "react-router-dom";
 import { router } from "../app/router";
 import { AuthProvider } from "../features/auth/context/AuthContext";
+import {
+  applyGoogleConsentMode,
+  getStoredCookieConsent,
+} from "../shared/analytics/cookieConsent";
 
 function AppDocumentLanguageSync() {
   const { i18n } = useTranslation();
@@ -18,10 +22,19 @@ function AppDocumentLanguageSync() {
   return null;
 }
 
+function AppConsentBoot() {
+  useEffect(() => {
+    applyGoogleConsentMode(getStoredCookieConsent());
+  }, []);
+
+  return null;
+}
+
 export function App() {
   return (
     <AuthProvider>
       <AppDocumentLanguageSync />
+      <AppConsentBoot />
       <RouterProvider router={router} />
     </AuthProvider>
   );

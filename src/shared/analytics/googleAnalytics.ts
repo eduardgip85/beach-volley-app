@@ -1,21 +1,22 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { isAnalyticsConsentGranted } from "./cookieConsent";
 
 export const GA_MEASUREMENT_ID = "G-8PP1DH9CRD";
 
 declare global {
   interface Window {
     dataLayer?: unknown[];
-    gtag?: (
-      command: "config" | "event" | "js",
-      targetId: string | Date,
-      config?: Record<string, unknown>
-    ) => void;
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
 export function trackGoogleAnalyticsPageView(path: string) {
-  if (typeof window === "undefined" || typeof window.gtag !== "function") {
+  if (
+    typeof window === "undefined" ||
+    typeof window.gtag !== "function" ||
+    !isAnalyticsConsentGranted()
+  ) {
     return;
   }
 

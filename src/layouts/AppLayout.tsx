@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useGoogleAnalyticsPageTracking } from "../shared/analytics/googleAnalytics";
+import { CookieConsentBanner } from "../shared/components/CookieConsentBanner";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { usePendingIncomingFriendRequests } from "../features/friends/hooks/usePendingIncomingFriendRequests";
 
@@ -431,6 +432,8 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+
+      <CookieConsentBanner />
     </div>
   );
 }
