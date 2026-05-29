@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { useGoogleAnalyticsPageTracking } from "../shared/analytics/googleAnalytics";
 
 export function AuthLayout() {
   const location = useLocation();
+  useGoogleAnalyticsPageTracking();
 
   useEffect(() => {
     window.scrollTo({

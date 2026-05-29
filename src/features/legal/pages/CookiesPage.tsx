@@ -9,7 +9,7 @@ export function CookiesPage() {
     ? {
         title: "Política de cookies",
         description:
-          "Información sobre cookies y tecnologías similares utilizadas por SandSet.",
+          "Información sobre cookies y tecnologías similares utilizadas por Sandset.",
         updated: "Última actualización: 21 de mayo de 2026",
         whatTitle: "Qué son las cookies",
         whatBody:
@@ -22,7 +22,7 @@ export function CookiesPage() {
         ],
         consentTitle: "Consentimiento",
         consentBody:
-          "Las cookies técnicas necesarias pueden utilizarse para que la app funcione correctamente. Si SandSet usa cookies analíticas o similares no necesarias, deben cargarse solo tras el consentimiento válido del usuario.",
+          "Las cookies técnicas necesarias pueden utilizarse para que la app funcione correctamente. Si Sandset usa cookies analíticas o similares no necesarias, deben cargarse solo tras el consentimiento válido del usuario.",
         managementTitle: "Cómo gestionarlas",
         managementBody:
           "Puedes aceptar o rechazar determinadas cookies desde el banner o panel de preferencias que implemente la app, y también configurar el navegador para bloquearlas o eliminarlas.",
@@ -36,7 +36,7 @@ export function CookiesPage() {
     : {
         title: "Cookie Policy",
         description:
-          "Information about cookies and similar technologies used by SandSet.",
+          "Information about cookies and similar technologies used by Sandset.",
         updated: "Last updated: May 21, 2026",
         whatTitle: "What cookies are",
         whatBody:
@@ -49,7 +49,7 @@ export function CookiesPage() {
         ],
         consentTitle: "Consent",
         consentBody:
-          "Necessary technical cookies may be used so the app can function properly. If SandSet uses analytics or other non-essential cookies, they should only load after valid user consent.",
+          "Necessary technical cookies may be used so the app can function properly. If Sandset uses analytics or other non-essential cookies, they should only load after valid user consent.",
         managementTitle: "How to manage them",
         managementBody:
           "You may accept or reject certain cookies through the banner or preferences panel implemented by the app, and you can also configure your browser to block or remove them.",
@@ -62,7 +62,11 @@ export function CookiesPage() {
       };
 
   return (
-    <LegalPageLayout title={copy.title} description={copy.description}>
+    <LegalPageLayout
+      title={copy.title}
+      description={copy.description}
+      canonicalPath="/cookies"
+    >
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
         {copy.updated}
       </p>
@@ -97,4 +101,3 @@ export function CookiesPage() {
     </LegalPageLayout>
   );
 }
-

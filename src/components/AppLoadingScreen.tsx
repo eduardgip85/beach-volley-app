@@ -1,4 +1,4 @@
-import { Sparkles, Volleyball } from "lucide-react";
+import { Volleyball } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 type AppLoadingScreenProps = {
@@ -23,8 +23,12 @@ export function AppLoadingScreen({
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-center">
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-200 bg-white/80 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.22em] text-blue-700">
-                <Sparkles size={14} className="animate-pulse" />
-                SandSet
+                <img
+                  src="/logo.png"
+                  alt={t("app.name")}
+                  className="h-5 w-5 rounded-full object-cover"
+                />
+                {t("app.name")}
               </div>
 
               <div className="mt-5 space-y-3">

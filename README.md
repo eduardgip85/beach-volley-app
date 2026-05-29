@@ -1,10 +1,10 @@
-# Beach Volley App
+# Sandset
 
-Beach Volley App is a React + TypeScript + Supabase project for organizing beach volleyball matches, open play sessions, player profiles, private access flows, and competitive tracking.
+Sandset is a React + TypeScript + Supabase project for organizing beach volleyball matches, open play sessions, player profiles, private access flows, and competitive tracking.
 
 Live app:
 
-- https://beach-volley-app-blush.vercel.app/
+- https://sandset.app/
 
 ## What The App Does
 

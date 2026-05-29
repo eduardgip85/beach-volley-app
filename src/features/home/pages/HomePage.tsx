@@ -12,10 +12,16 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react";
+import { useLayoutEffect, useMemo, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { AppLoadingScreen } from "../../../components/AppLoadingScreen";
+import {
+  DEFAULT_OG_IMAGE,
+  SITE_URL,
+  buildSeoTitle,
+} from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../../auth/context/AuthContext";
 import { HomeStatCard } from "../components/HomeStatCard";
 import { UpcomingEventItem } from "../components/UpcomingEventItem";
@@ -23,7 +29,6 @@ import { useHomeData } from "../hooks/useHomeData";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const SITE_URL = "https://beach-volley-app-blush.vercel.app";
 const HOME_CANONICAL_URL = `${SITE_URL}/`;
 
 export function HomePage() {
@@ -48,6 +53,64 @@ export function HomePage() {
   const hasAnimatedRef = useRef(false);
   const seoTitle = t("home.seoTitle");
   const seoDescription = t("home.seoDescription");
+  const structuredData = useMemo(
+    () => [
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": `${HOME_CANONICAL_URL}#software`,
+        name: "Sandset",
+        url: HOME_CANONICAL_URL,
+        applicationCategory: "SportsApplication",
+        operatingSystem: "Web",
+        inLanguage: i18n.language,
+        description: seoDescription,
+        image: DEFAULT_OG_IMAGE,
+        publisher: {
+          "@type": "Organization",
+          name: "Sandset",
+          url: HOME_CANONICAL_URL,
+        },
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "EUR",
+        },
+        featureList: [
+          t("home.featureList.discovery"),
+          t("home.featureList.organize"),
+          t("home.featureList.privateAccess"),
+          t("home.featureList.eventChat"),
+          t("home.featureList.validatedResults"),
+          t("home.featureList.competitiveRating"),
+          t("home.featureList.publicProfiles"),
+        ],
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": `${HOME_CANONICAL_URL}#website`,
+        name: "Sandset",
+        url: HOME_CANONICAL_URL,
+        inLanguage: i18n.language,
+        description: seoDescription,
+        publisher: {
+          "@type": "Organization",
+          name: "Sandset",
+          url: HOME_CANONICAL_URL,
+        },
+      },
+    ],
+    [i18n.language, seoDescription, t]
+  );
+
+  usePageSeo({
+    title: buildSeoTitle(seoTitle),
+    description: seoDescription,
+    canonicalPath: "/",
+    image: DEFAULT_OG_IMAGE,
+    structuredData,
+  });
 
   const faqItems = [
     { question: t("homeContent.faq1q"), answer: t("homeContent.faq1a") },
@@ -161,105 +224,6 @@ export function HomePage() {
       to: isAuthenticated ? "/profile" : "/login",
     },
   ];
-
-  useEffect(() => {
-    const previousTitle = document.title;
-    const previousDescription = document
-      .querySelector('meta[name="description"]')
-      ?.getAttribute("content");
-    const canonicalLink = document.querySelector<HTMLLinkElement>(
-      'link[rel="canonical"]'
-    );
-    const previousCanonicalHref = canonicalLink?.getAttribute("href");
-    const existingJsonLd = document.getElementById("home-jsonld");
-
-    document.title = seoTitle;
-
-    let descriptionTag = document.querySelector('meta[name="description"]');
-
-    if (!descriptionTag) {
-      descriptionTag = document.createElement("meta");
-      descriptionTag.setAttribute("name", "description");
-      document.head.appendChild(descriptionTag);
-    }
-
-    descriptionTag.setAttribute(
-      "content",
-      seoDescription
-    );
-
-    let nextCanonicalLink = canonicalLink;
-
-    if (!nextCanonicalLink) {
-      nextCanonicalLink = document.createElement("link");
-      nextCanonicalLink.setAttribute("rel", "canonical");
-      document.head.appendChild(nextCanonicalLink);
-    }
-
-    nextCanonicalLink.setAttribute("href", HOME_CANONICAL_URL);
-
-    const jsonLdScript = document.createElement("script");
-    jsonLdScript.id = "home-jsonld";
-    jsonLdScript.type = "application/ld+json";
-    jsonLdScript.textContent = JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "@id": `${HOME_CANONICAL_URL}#software`,
-      name: "SandSet",
-      url: HOME_CANONICAL_URL,
-      applicationCategory: "SportsApplication",
-      operatingSystem: "Web",
-      inLanguage: i18n.language,
-      description: seoDescription,
-      image: `${SITE_URL}/tournament-beach-1.png`,
-      publisher: {
-        "@type": "Organization",
-        name: "SandSet",
-        url: HOME_CANONICAL_URL,
-      },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "EUR",
-      },
-      featureList: [
-        t("home.featureList.discovery"),
-        t("home.featureList.organize"),
-        t("home.featureList.privateAccess"),
-        t("home.featureList.eventChat"),
-        t("home.featureList.validatedResults"),
-        t("home.featureList.competitiveRating"),
-        t("home.featureList.publicProfiles"),
-      ],
-    });
-    document.head.appendChild(jsonLdScript);
-
-    return () => {
-      document.title = previousTitle;
-
-      if (descriptionTag) {
-        if (previousDescription) {
-          descriptionTag.setAttribute("content", previousDescription);
-        } else {
-          descriptionTag.remove();
-        }
-      }
-
-      if (nextCanonicalLink) {
-        if (previousCanonicalHref) {
-          nextCanonicalLink.setAttribute("href", previousCanonicalHref);
-        } else if (!canonicalLink) {
-          nextCanonicalLink.remove();
-        }
-      }
-
-      jsonLdScript.remove();
-
-      if (existingJsonLd) {
-        document.head.appendChild(existingJsonLd);
-      }
-    };
-  }, [i18n.language, seoDescription, seoTitle]);
 
   useLayoutEffect(() => {
     if (!pageRef.current) {
@@ -466,7 +430,7 @@ export function HomePage() {
 
                 <div className="mt-3 rounded-[1.75rem] bg-[linear-gradient(160deg,_#0f172a_0%,_#1d4ed8_58%,_#0f766e_100%)] p-4 text-white shadow-[0_24px_60px_rgba(29,78,216,0.28)] sm:rounded-[2rem] sm:p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-100">
-                    SandSet
+                    Sandset
                   </p>
                   <h3 className="mt-2 text-[1.7rem] font-black sm:text-[2rem]">
                     {t("home.heroMockTitle")}

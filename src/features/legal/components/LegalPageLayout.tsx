@@ -1,36 +1,26 @@
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 
 interface LegalPageLayoutProps {
   title: string;
   description: string;
+  canonicalPath: string;
   children: ReactNode;
 }
 
 export function LegalPageLayout({
   title,
   description,
+  canonicalPath,
   children,
 }: LegalPageLayoutProps) {
-  useEffect(() => {
-    const previousTitle = document.title;
-    const descriptionTag = document.querySelector('meta[name="description"]');
-    const previousDescription = descriptionTag?.getAttribute("content") ?? null;
-
-    document.title = title;
-
-    if (descriptionTag) {
-      descriptionTag.setAttribute("content", description);
-    }
-
-    return () => {
-      document.title = previousTitle;
-
-      if (descriptionTag && previousDescription) {
-        descriptionTag.setAttribute("content", previousDescription);
-      }
-    };
-  }, [description, title]);
+  usePageSeo({
+    title: buildSeoTitle(title),
+    description,
+    canonicalPath,
+  });
 
   return (
     <section className="mx-auto w-full max-w-4xl px-3 py-3 sm:px-5 md:px-0">
@@ -38,9 +28,14 @@ export function LegalPageLayout({
         <div className="flex flex-col gap-4 border-b border-slate-200 pb-6">
           <Link
             to="/"
-            className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-600 transition hover:bg-slate-100"
+            className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-slate-600 transition hover:bg-slate-100"
           >
-            SandSet
+            <img
+              src="/logo.png"
+              alt="Sandset"
+              className="h-5 w-5 rounded-full object-cover"
+            />
+            Sandset
           </Link>
           <div>
             <h1 className="text-3xl font-black text-slate-950 md:text-4xl">
@@ -74,4 +69,3 @@ export function LegalSection({
     </section>
   );
 }
-

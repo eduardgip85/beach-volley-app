@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { CountrySetupNotice } from "../../../shared/components/CountrySetupNotice";
 import { EventFilters } from "../../../shared/components/EventFilters";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../../auth/context/AuthContext";
 import { EventCard } from "../components/EventCard";
 import { useCountryScopedEvents } from "../hooks/useCountryScopedEvents";
@@ -13,6 +15,13 @@ export function EventsPage() {
   const { t } = useTranslation();
   const { events, loading, error } = useEventsPage();
   const { profile } = useAuth();
+
+  usePageSeo({
+    title: buildSeoTitle(t("eventsPage.title")),
+    description: t("eventsPage.seoDescription"),
+    canonicalPath: "/events",
+  });
+
   const hasCountryContext = Boolean(profile?.country?.trim());
   const { countryScopedEvents, countryScopedLoading } = useCountryScopedEvents(
     events,

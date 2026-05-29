@@ -2,7 +2,7 @@ export const resources = {
     en: {
         translation: {
             app: {
-                name: "Beach Volley App",
+                name: "Sandset",
                 tagline: "Play. Meet. Repeat.",
             },
             nav: {
@@ -226,6 +226,13 @@ export const resources = {
                     "This recovery link is invalid or has expired. Request a new one to continue.",
                 requestAnotherReset: "Request another reset link",
                 backToLogin: "Back to login",
+                googleCallbackTitle: "Google sign-in",
+                googleCallbackLoadingTitle: "Finishing sign in",
+                googleCallbackLoadingBody:
+                    "We are completing your Google login and preparing your profile.",
+                googleCallbackErrorTitle: "Could not complete Google sign in",
+                googleCallbackErrorBody:
+                    "Try again or continue with email and password.",
                 noAccount: "Don't have an account?",
                 alreadyHaveAccount: "Already have an account?",
                 invalidCredentials: "Invalid email or password",
@@ -358,13 +365,13 @@ export const resources = {
             home: {
                 platformEyebrow: "Beach volleyball platform",
                 seoTitle:
-                    "SandSet | Beach volleyball matches, open play and competitive events",
+                    "Sandset | Beach volleyball matches, open play and competitive events",
                 seoDescription:
-                    "Discover beach volleyball matches, open play sessions, private games and competitive events with SandSet.",
+                    "Discover beach volleyball matches, open play sessions, private games and competitive events with Sandset.",
                 heroTitle:
                     "Find beach volleyball matches, create events and play with your local community.",
                 heroBody:
-                    "Beach Volley App helps players discover beach volleyball matches, join open play sessions, manage private games, coordinate through event chats and track competitive progress without relying on scattered tools.",
+                    "Sandset helps players discover beach volleyball matches, join open play sessions, manage private games, coordinate through event chats and track competitive progress without relying on scattered tools.",
                 loadError: "Could not load home data",
                 exploreEvents: "Explore events",
                 createEvent: "Create an event",
@@ -387,7 +394,7 @@ export const resources = {
                 whatEyebrow: "What you can do",
                 whatTitle: "A clearer workflow for beach volleyball communities",
                 whatBody:
-                    "Beach Volley App combines event discovery, private coordination, player profiles and validated results in one place, so both casual communities and competitive players can manage games with less friction.",
+                    "Sandset combines event discovery, private coordination, player profiles and validated results in one place, so both casual communities and competitive players can manage games with less friction.",
                 howEyebrow: "How it works",
                 howTitle: "A simple flow from discovery to game day",
                 bestForEyebrow: "Best for",
@@ -403,7 +410,7 @@ export const resources = {
                 competitiveEyebrow: "Competitive layer",
                 competitiveTitle: "More than just event listings",
                 competitiveBody:
-                    "Beach Volley App is also prepared for competitive play. Match events support team assignment, joined-player event chat, set-based results, opposing-side validation and competitive rating updates when the final result is accepted.",
+                    "Sandset is also prepared for competitive play. Match events support team assignment, joined-player event chat, set-based results, opposing-side validation and competitive rating updates when the final result is accepted.",
                 faqEyebrow: "Frequently asked",
                 faqTitle: "Quick answers about the platform",
                 heroMockType: "Competitive match",
@@ -431,7 +438,7 @@ export const resources = {
                     "Private sessions are harder to coordinate and access safely.",
                 problemItemThree:
                     "Results and player progress are difficult to revisit later.",
-                solutionCardTitle: "With Beach Volley App",
+                solutionCardTitle: "With Sandset",
                 solutionItemOne:
                     "Players see clear event details, capacity, location and mode in one place.",
                 solutionItemTwo:
@@ -474,7 +481,7 @@ export const resources = {
                     "Explore public events, create your own sessions, track accepted results and keep your player profile organized in one place.",
                 finalCtaProfile: "Go to profile",
                 footerBody:
-                    "SandSet helps organize beach volleyball matches, open play sessions and competitive activity with clearer profiles, results and event flows.",
+                    "Sandset helps organize beach volleyball matches, open play sessions and competitive activity with clearer profiles, results and event flows.",
                 footerPrivacy: "Privacy",
                 footerCookies: "Cookies",
                 footerTerms: "Terms",
@@ -489,9 +496,9 @@ export const resources = {
                 },
             },
             homeContent: {
-                faq1q: "What is Beach Volley App?",
+                faq1q: "What is Sandset?",
                 faq1a:
-                    "Beach Volley App is a platform to discover beach volleyball matches, open play sessions, private games and competitive events in one place.",
+                    "Sandset is a platform to discover beach volleyball matches, open play sessions, private games and competitive events in one place.",
                 faq2q: "Who is it for?",
                 faq2a:
                     "It is built for casual players, competitive duos, local communities and organizers who want a cleaner way to coordinate beach volleyball games.",
@@ -539,6 +546,8 @@ export const resources = {
             },
             eventsPage: {
                 title: "Events",
+                seoDescription:
+                    "Browse public beach volleyball matches, open play sessions and tournaments on Sandset.",
                 createEvent: "Create event",
                 loading: "Loading events...",
                 loadError: "Could not load events",
@@ -701,6 +710,8 @@ export const resources = {
                     "Your public and private events will appear here once you create one.",
             },
             mapPage: {
+                seoDescription:
+                    "Explore beach volleyball events on the Sandset map view.",
                 loading: "Loading map...",
                 loadError: "Could not load map events",
                 details: "Details",
@@ -712,6 +723,8 @@ export const resources = {
                 notAvailableInDetails: "Not available in details",
             },
             calendar: {
+                seoDescription:
+                    "Review upcoming beach volleyball events in the Sandset calendar view.",
                 loading: "Loading calendar...",
                 loadError: "Could not load calendar events",
                 weekDaySun: "Sun",
@@ -1778,7 +1791,7 @@ export const resources = {
     es: {
         translation: {
             app: {
-                name: "Beach Volley App",
+                name: "Sandset",
                 tagline: "Juega. Conoce gente. Repite.",
             },
             nav: {
@@ -2005,6 +2018,14 @@ export const resources = {
                     "Este enlace de recuperación no es válido o ha caducado. Solicita uno nuevo para continuar.",
                 requestAnotherReset: "Solicitar otro enlace",
                 backToLogin: "Volver al login",
+                googleCallbackTitle: "Acceso con Google",
+                googleCallbackLoadingTitle: "Terminando inicio de sesion",
+                googleCallbackLoadingBody:
+                    "Estamos completando tu acceso con Google y preparando tu perfil.",
+                googleCallbackErrorTitle:
+                    "No se pudo completar el acceso con Google",
+                googleCallbackErrorBody:
+                    "Prueba otra vez o continua con email y contrasena.",
                 noAccount: "¿No tienes cuenta?",
                 alreadyHaveAccount: "¿Ya tienes cuenta?",
                 invalidCredentials: "Correo o contraseña incorrectos",
@@ -2138,13 +2159,13 @@ export const resources = {
             home: {
                 platformEyebrow: "Plataforma de voley playa",
                 seoTitle:
-                    "SandSet | Partidos de voley playa, open play y eventos competitivos",
+                    "Sandset | Partidos de voley playa, open play y eventos competitivos",
                 seoDescription:
-                    "Descubre partidos de voley playa, sesiones open play, juegos privados y eventos competitivos con SandSet.",
+                    "Descubre partidos de voley playa, sesiones open play, juegos privados y eventos competitivos con Sandset.",
                 heroTitle:
                     "Encuentra partidos de voley playa, crea eventos y juega con tu comunidad local.",
                 heroBody:
-                    "Beach Volley App te ayuda a descubrir partidos de voley playa, unirte a open plays, gestionar eventos privados, coordinarte con chats dentro del evento y seguir tu progreso competitivo sin depender de herramientas dispersas.",
+                    "Sandset te ayuda a descubrir partidos de voley playa, unirte a open plays, gestionar eventos privados, coordinarte con chats dentro del evento y seguir tu progreso competitivo sin depender de herramientas dispersas.",
                 loadError: "No se pudieron cargar los datos del inicio",
                 exploreEvents: "Explorar eventos",
                 createEvent: "Crear evento",
@@ -2167,7 +2188,7 @@ export const resources = {
                 whatEyebrow: "Que puedes hacer",
                 whatTitle: "Un flujo mas claro para comunidades de voley playa",
                 whatBody:
-                    "Beach Volley App reune descubrimiento de eventos, coordinacion privada, perfiles de jugador y resultados validados en un solo sitio, para que tanto comunidades casuales como jugadores competitivos gestionen sus partidos con menos friccion.",
+                    "Sandset reune descubrimiento de eventos, coordinacion privada, perfiles de jugador y resultados validados en un solo sitio, para que tanto comunidades casuales como jugadores competitivos gestionen sus partidos con menos friccion.",
                 howEyebrow: "Como funciona",
                 howTitle: "Un flujo simple desde descubrir hasta jugar",
                 bestForEyebrow: "Ideal para",
@@ -2183,7 +2204,7 @@ export const resources = {
                 competitiveEyebrow: "Capa competitiva",
                 competitiveTitle: "Mucho mas que un listado de eventos",
                 competitiveBody:
-                    "Beach Volley App tambien esta preparada para juego competitivo. Los partidos permiten asignacion de equipos, chat del evento para jugadores unidos, resultados por sets, validacion del rival y actualizacion del rating competitivo cuando el resultado final es aceptado.",
+                    "Sandset tambien esta preparada para juego competitivo. Los partidos permiten asignacion de equipos, chat del evento para jugadores unidos, resultados por sets, validacion del rival y actualizacion del rating competitivo cuando el resultado final es aceptado.",
                 faqEyebrow: "Preguntas frecuentes",
                 faqTitle: "Respuestas rapidas sobre la plataforma",
                 heroMockType: "Partido competitivo",
@@ -2211,7 +2232,7 @@ export const resources = {
                     "Las sesiones privadas son mas dificiles de coordinar y controlar.",
                 problemItemThree:
                     "Cuesta volver a ver resultados y progreso de jugadores despues del partido.",
-                solutionCardTitle: "Con Beach Volley App",
+                solutionCardTitle: "Con Sandset",
                 solutionItemOne:
                     "Los jugadores ven en un solo sitio los detalles del evento, plazas, ubicacion y formato.",
                 solutionItemTwo:
@@ -2254,7 +2275,7 @@ export const resources = {
                     "Explora eventos publicos, crea tus propias sesiones, sigue resultados aceptados y manten tu perfil de jugador organizado en un solo lugar.",
                 finalCtaProfile: "Ir al perfil",
                 footerBody:
-                    "SandSet te ayuda a organizar partidos de voley playa, sesiones open play y actividad competitiva con perfiles, resultados y flujos de evento mas claros.",
+                    "Sandset te ayuda a organizar partidos de voley playa, sesiones open play y actividad competitiva con perfiles, resultados y flujos de evento mas claros.",
                 footerPrivacy: "Privacidad",
                 footerCookies: "Cookies",
                 footerTerms: "Términos",
@@ -2269,9 +2290,9 @@ export const resources = {
                 },
             },
             homeContent: {
-                faq1q: "Que es Beach Volley App?",
+                faq1q: "Que es Sandset?",
                 faq1a:
-                    "Beach Volley App es una plataforma para descubrir partidos de voley playa, sesiones open play, juegos privados y eventos competitivos en un mismo lugar.",
+                    "Sandset es una plataforma para descubrir partidos de voley playa, sesiones open play, juegos privados y eventos competitivos en un mismo lugar.",
                 faq2q: "Para quien es?",
                 faq2a:
                     "Esta pensada para jugadores casuales, parejas competitivas, comunidades locales y organizadores que quieran una forma mas limpia de coordinar partidos de voley playa.",
@@ -2319,6 +2340,8 @@ export const resources = {
             },
             eventsPage: {
                 title: "Eventos",
+                seoDescription:
+                    "Explora partidos publicos, quedadas y torneos de voley playa en Sandset.",
                 createEvent: "Crear evento",
                 loading: "Cargando eventos...",
                 loadError: "No se pudieron cargar los eventos",
@@ -2481,6 +2504,8 @@ export const resources = {
                     "Tus eventos publicos y privados apareceran aqui cuando crees uno.",
             },
             mapPage: {
+                seoDescription:
+                    "Explora eventos de voley playa en la vista de mapa de Sandset.",
                 loading: "Cargando mapa...",
                 loadError: "No se pudieron cargar los eventos del mapa",
                 details: "Detalles",
@@ -2492,6 +2517,8 @@ export const resources = {
                 notAvailableInDetails: "No disponible en detalles",
             },
             calendar: {
+                seoDescription:
+                    "Revisa los proximos eventos de voley playa en la vista de calendario de Sandset.",
                 loading: "Cargando calendario...",
                 loadError: "No se pudieron cargar los eventos del calendario",
                 weekDaySun: "Dom",

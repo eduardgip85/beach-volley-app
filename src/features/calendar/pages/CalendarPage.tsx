@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CountrySetupNotice } from "../../../shared/components/CountrySetupNotice";
 import { EventFilters } from "../../../shared/components/EventFilters";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../../auth/context/AuthContext";
 import { useCountryScopedEvents } from "../../events/hooks/useCountryScopedEvents";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
@@ -17,6 +19,14 @@ export function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const { profile } = useAuth();
+
+  usePageSeo({
+    title: buildSeoTitle(t("nav.calendar")),
+    description: t("calendar.seoDescription"),
+    canonicalPath: "/calendar",
+    noindex: true,
+  });
+
   const hasCountryContext = Boolean(profile?.country?.trim());
   const { countryScopedEvents, countryScopedLoading } = useCountryScopedEvents(
     events,

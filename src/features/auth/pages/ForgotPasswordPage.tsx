@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { requestPasswordReset } from "../services/auth.service";
 
 export function ForgotPasswordPage() {
@@ -9,6 +11,13 @@ export function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+    usePageSeo({
+        title: buildSeoTitle(t("auth.forgotPasswordTitle")),
+        description: t("auth.forgotPasswordBody"),
+        canonicalPath: "/forgot-password",
+        noindex: true,
+    });
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();

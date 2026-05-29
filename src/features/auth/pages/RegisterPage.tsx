@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { loginWithGoogle, registerUser } from "../services/auth.service";
 import { normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
 
@@ -38,6 +40,13 @@ export function RegisterPage() {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [loading, setLoading] = useState(false);
+
+    usePageSeo({
+        title: buildSeoTitle(t("auth.registerTitle")),
+        description: t("auth.registerBody"),
+        canonicalPath: "/register",
+        noindex: true,
+    });
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();

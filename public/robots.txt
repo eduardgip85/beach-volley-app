@@ -13,4 +13,4 @@ Disallow: /onboarding
 Disallow: /stats
 Disallow: /admin
 
-Sitemap: https://beach-volley-app-blush.vercel.app/sitemap.xml
+Sitemap: https://sandset.app/sitemap.xml

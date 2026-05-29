@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CountrySetupNotice } from "../../../shared/components/CountrySetupNotice";
 import { EventFilters } from "../../../shared/components/EventFilters";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../../auth/context/AuthContext";
 import { getCountryCenter } from "../../events/services/eventCountry.service";
 import { getAccessibleEventsForUser } from "../../events/services/events.service";
@@ -19,6 +21,14 @@ export function MapPage() {
   const [defaultCenter, setDefaultCenter] = useState<[number, number]>([20, 0]);
   const [defaultZoom, setDefaultZoom] = useState(2);
   const { profile } = useAuth();
+
+  usePageSeo({
+    title: buildSeoTitle(t("nav.map")),
+    description: t("mapPage.seoDescription"),
+    canonicalPath: "/map",
+    noindex: true,
+  });
+
   const visibleEvents = useMemo(
     () =>
       events.filter((event) => !isFinishedEvent(event) && !isPastEvent(event)),

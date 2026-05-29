@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { loginUser, loginWithGoogle } from "../services/auth.service";
 import { normalizeAuthRedirectPath } from "../utils/authRedirect.utils";
 
@@ -17,6 +19,13 @@ export function LoginPage() {
 
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    usePageSeo({
+        title: buildSeoTitle(t("auth.loginTitle")),
+        description: t("auth.loginBody"),
+        canonicalPath: "/login",
+        noindex: true,
+    });
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();

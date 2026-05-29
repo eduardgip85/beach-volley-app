@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../context/AuthContext";
 import { updateRecoveredPassword } from "../services/auth.service";
 
@@ -12,6 +14,13 @@ export function ResetPasswordPage() {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
+
+    usePageSeo({
+        title: buildSeoTitle(t("auth.resetPasswordTitle")),
+        description: t("auth.resetPasswordBody"),
+        canonicalPath: "/reset-password",
+        noindex: true,
+    });
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();

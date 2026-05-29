@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import type {
     AvailabilityStatus,
     PreferredCourtSide,
@@ -115,6 +117,21 @@ export function PublicProfilePage() {
         canSendFriendRequest,
         actions,
     } = usePublicProfile(userId);
+    const seoTitle = publicProfile
+        ? buildSeoTitle(`${publicProfile.fullName} - ${t("publicProfile.eyebrow")}`)
+        : buildSeoTitle(t("publicProfile.eyebrow"));
+    const seoDescription = publicProfile
+        ? publicProfile.country
+            ? `${publicProfile.fullName} · ${publicProfile.country}. ${t("publicProfile.preferencesBody")}`
+            : `${publicProfile.fullName}. ${t("publicProfile.preferencesBody")}`
+        : error || t("publicProfile.notFound");
+
+    usePageSeo({
+        title: seoTitle,
+        description: seoDescription,
+        canonicalPath: userId ? `/players/${userId}` : "/",
+        noindex: true,
+    });
 
     if (loading) {
         return <p className="text-slate-500">{t("publicProfile.loading")}</p>;

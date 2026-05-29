@@ -9,11 +9,11 @@ export function PrivacyPage() {
     ? {
         title: "Política de privacidad",
         description:
-          "Así explica SandSet cómo recoge, usa y protege los datos personales dentro de la app.",
+          "Así explica Sandset cómo recoge, usa y protege los datos personales dentro de la app.",
         updated: "Última actualización: 21 de mayo de 2026",
         controllerTitle: "Responsable del tratamiento",
         controllerBody:
-          "SandSet / Beach Volley App actúa como responsable del tratamiento de los datos personales recogidos a través de la web y de la app, incluyendo registro, gestión de perfil, participación en eventos y comunicación operativa del servicio.",
+          "Sandset actúa como responsable del tratamiento de los datos personales recogidos a través de la web y de la app, incluyendo registro, gestión de perfil, participación en eventos y comunicación operativa del servicio.",
         dataTitle: "Qué datos tratamos",
         dataItems: [
           "Datos de cuenta como email, nombre completo y proveedor de acceso.",
@@ -50,11 +50,11 @@ export function PrivacyPage() {
     : {
         title: "Privacy Policy",
         description:
-          "This page explains how SandSet collects, uses and protects personal data across the app.",
+          "This page explains how Sandset collects, uses and protects personal data across the app.",
         updated: "Last updated: May 21, 2026",
         controllerTitle: "Data controller",
         controllerBody:
-          "SandSet / Beach Volley App acts as the controller for personal data collected through the website and app, including registration, profile management, event participation and operational service communications.",
+          "Sandset acts as the controller for personal data collected through the website and app, including registration, profile management, event participation and operational service communications.",
         dataTitle: "What data we process",
         dataItems: [
           "Account data such as email, full name and sign-in provider.",
@@ -90,7 +90,11 @@ export function PrivacyPage() {
       };
 
   return (
-    <LegalPageLayout title={copy.title} description={copy.description}>
+    <LegalPageLayout
+      title={copy.title}
+      description={copy.description}
+      canonicalPath="/privacy"
+    >
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
         {copy.updated}
       </p>
@@ -141,4 +145,3 @@ export function PrivacyPage() {
     </LegalPageLayout>
   );
 }
-

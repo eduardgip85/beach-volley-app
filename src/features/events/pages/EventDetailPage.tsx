@@ -9,9 +9,11 @@ import {
   Shield,
   UserCircle2,
 } from "lucide-react";
-import { Suspense, lazy, useEffect, useState, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { buildSeoTitle, getAbsoluteUrl } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../../auth/context/AuthContext";
 import { EventChatSection } from "../../event-chat/components/EventChatSection";
 import { useEventInvitations } from "../../event-invitations/hooks/useEventInvitations";
@@ -193,6 +195,37 @@ function getTournamentEntryFeeLabel(
   });
 }
 
+function getEventSeoDescription(event: Event, language: string) {
+  const description = event.description?.trim();
+
+  if (description) {
+    return description;
+  }
+
+  const formattedDate = new Date(event.startDate).toLocaleString(language, {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+
+  if (language.startsWith("es")) {
+    return `${getEventTypeLabel(event.type)} de voley playa en ${event.locationName} el ${formattedDate}.`;
+  }
+
+  return `Beach volleyball ${getEventTypeLabel(event.type).toLowerCase()} in ${event.locationName} on ${formattedDate}.`;
+}
+
+function getSchemaEventStatus(event: Event) {
+  if (event.status === "cancelled") {
+    return "https://schema.org/EventCancelled";
+  }
+
+  if (event.status === "completed" || isPastEvent(event)) {
+    return "https://schema.org/EventCompleted";
+  }
+
+  return "https://schema.org/EventScheduled";
+}
+
 export function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
@@ -216,6 +249,79 @@ export function EventDetailPage() {
     Array<{ id: string; fullName: string; avatarUrl: string | null; country: string | null; competitiveRating: number }>
   >([]);
   const [summaryAnchor, setSummaryAnchor] = useState<HTMLDivElement | null>(null);
+  const seoImage = event ? getAbsoluteUrl(getEventFallbackImage(event)) : undefined;
+  const seoDescription = event
+    ? getEventSeoDescription(event, i18n.language)
+    : error || t("eventDetail.noDescription");
+  const seoTitle = event
+    ? buildSeoTitle(event.title)
+    : buildSeoTitle(error ? t("eventDetail.notFoundTitle") : t("eventDetail.loading"));
+  const eventStructuredData = useMemo(() => {
+    if (!event || event.visibility !== "public" || !eventId) {
+      return null;
+    }
+
+    const entryFeeAmount = event.tournamentSettings?.entryFeeAmount ?? 0;
+    const entryFeeCurrency = event.tournamentSettings?.entryFeeCurrency ?? "EUR";
+    const isPaidTournament =
+      event.type === "tournament" &&
+      event.tournamentSettings?.entryFeeType === "paid" &&
+      entryFeeAmount > 0;
+    const schemaEvent: Record<string, unknown> = {
+      "@context": "https://schema.org",
+      "@type": "SportsEvent",
+      name: event.title,
+      description: seoDescription,
+      url: getAbsoluteUrl(`/events/${eventId}`),
+      startDate: event.startDate,
+      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      eventStatus: getSchemaEventStatus(event),
+      image: seoImage,
+      location: {
+        "@type": "Place",
+        name: event.locationName,
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: event.latitude,
+          longitude: event.longitude,
+        },
+      },
+      organizer: {
+        "@type": "Organization",
+        name: "Sandset",
+        url: getAbsoluteUrl("/"),
+      },
+      isAccessibleForFree: !isPaidTournament,
+    };
+
+    if (event.endDate) {
+      schemaEvent.endDate = event.endDate;
+    }
+
+    if (!isUnlimitedEventCapacity(event.maxParticipants)) {
+      schemaEvent.maximumAttendeeCapacity = event.maxParticipants;
+    }
+
+    if (isPaidTournament) {
+      schemaEvent.offers = {
+        "@type": "Offer",
+        price: entryFeeAmount.toFixed(2),
+        priceCurrency: entryFeeCurrency,
+        url: getAbsoluteUrl(`/events/${eventId}`),
+      };
+    }
+
+    return schemaEvent;
+  }, [event, eventId, seoDescription, seoImage, i18n.language]);
+
+  usePageSeo({
+    title: seoTitle,
+    description: seoDescription,
+    canonicalPath: eventId ? `/events/${eventId}` : "/events",
+    image: seoImage,
+    noindex: !event || event.visibility !== "public",
+    structuredData: eventStructuredData,
+  });
 
   const canEdit = Boolean(
     profile && event && (profile.id === event.createdBy || isAdmin)

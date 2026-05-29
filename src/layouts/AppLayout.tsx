@@ -17,6 +17,7 @@ import {
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useGoogleAnalyticsPageTracking } from "../shared/analytics/googleAnalytics";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { usePendingIncomingFriendRequests } from "../features/friends/hooks/usePendingIncomingFriendRequests";
 
@@ -50,6 +51,7 @@ export function AppLayout() {
   const { isAuthenticated, isAdmin, loading, profile, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  useGoogleAnalyticsPageTracking();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOnboardingRoute = location.pathname === "/onboarding/competitive-rating";
   const pendingFriendRequestCount = usePendingIncomingFriendRequests(profile?.id);
@@ -147,13 +149,20 @@ export function AppLayout() {
       <header className="fixed inset-x-0 top-0 z-[2100] overflow-hidden border-b border-white/10 bg-slate-950 md:hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.3),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,1)_0%,_rgba(2,6,23,1)_100%)]" />
         <div className="relative flex items-center justify-between px-3 py-3">
-          <Link to="/" className="min-w-0">
-            <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
-              {t("app.name")}
-            </p>
-            <h1 className="truncate text-base font-black text-white">
-              {t("app.tagline")}
-            </h1>
+          <Link to="/" className="flex min-w-0 items-center gap-3">
+            <img
+              src="/logo.png"
+              alt={t("app.name")}
+              className="h-11 w-11 rounded-2xl object-cover shadow-lg shadow-slate-950/30"
+            />
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.28em] text-blue-300">
+                {t("app.name")}
+              </p>
+              <h1 className="truncate text-base font-black text-white">
+                {t("app.tagline")}
+              </h1>
+            </div>
           </Link>
 
           {!isMobileMenuOpen ? (
@@ -177,13 +186,20 @@ export function AppLayout() {
 
         <div className="relative flex min-h-full flex-col p-6">
           <div className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 backdrop-blur">
-            <Link to="/" className="block">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-300">
-                {t("app.name")}
-              </p>
-              <h1 className="mt-3 text-2xl font-black text-white">
-                {t("app.tagline")}
-              </h1>
+            <Link to="/" className="flex items-center gap-4">
+              <img
+                src="/logo.png"
+                alt={t("app.name")}
+                className="h-14 w-14 rounded-[1.25rem] object-cover shadow-lg shadow-slate-950/30"
+              />
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-blue-300">
+                  {t("app.name")}
+                </p>
+                <h1 className="mt-1 text-2xl font-black text-white">
+                  {t("app.tagline")}
+                </h1>
+              </div>
             </Link>
           </div>
 
@@ -299,12 +315,21 @@ export function AppLayout() {
           <div className="relative border-b border-white/10 px-4 py-4">
             <div className="mb-4 flex items-center justify-between">
               <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-300">
-                  {t("app.name")}
-                </p>
-                <h2 className="truncate text-lg font-black text-white">
-                  {t("app.tagline")}
-                </h2>
+                <div className="flex items-center gap-3">
+                  <img
+                    src="/logo.png"
+                    alt={t("app.name")}
+                    className="h-11 w-11 rounded-2xl object-cover shadow-lg shadow-slate-950/30"
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-300">
+                      {t("app.name")}
+                    </p>
+                    <h2 className="truncate text-lg font-black text-white">
+                      {t("app.tagline")}
+                    </h2>
+                  </div>
+                </div>
               </div>
 
               <button
