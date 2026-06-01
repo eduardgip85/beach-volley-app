@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Sandset",
+  "short_name": "Sandset",
+  "description": "Discover beach volleyball matches, quedadas and tournaments with Sandset.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f172a",
+  "background_color": "#f8fafc",
+  "categories": ["sports", "social", "events"],
+  "icons": [
+    {
+      "src": "/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
