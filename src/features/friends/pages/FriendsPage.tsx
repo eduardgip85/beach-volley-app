@@ -17,17 +17,17 @@ export function FriendsPage() {
 
     return (
         <section className="space-y-8">
-            <div className="rounded-[2rem] bg-white p-8 shadow-sm">
-                <div className="flex items-center gap-4">
-                    <span className="flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-slate-900 text-white">
+            <div className="rounded-[2rem] bg-white p-5 shadow-sm sm:p-8">
+                <div className="flex items-start gap-4 sm:items-center">
+                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.5rem] bg-slate-900 text-white sm:h-16 sm:w-16">
                         <Users size={30} />
                     </span>
 
-                    <div>
+                    <div className="min-w-0">
                         <p className="text-sm font-bold uppercase tracking-[0.2em] text-blue-600">
                             {t("friends.eyebrow")}
                         </p>
-                        <h1 className="mt-2 text-3xl font-black text-slate-900">
+                        <h1 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">
                             {t("friends.title")}
                         </h1>
                         <p className="mt-2 max-w-2xl text-sm text-slate-500">

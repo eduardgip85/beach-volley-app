@@ -54,14 +54,16 @@ export function FriendsSearchSection({
     }
 
     return (
-        <div className="rounded-[2rem] bg-white p-8 shadow-sm">
-            <div className="flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+        <div className="overflow-hidden rounded-[2rem] bg-white p-5 shadow-sm sm:p-8">
+            <div className="flex items-start gap-3 sm:items-center">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
                     <Search size={22} />
                 </span>
 
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-900">{t("friends.findPlayers")}</h2>
+                <div className="min-w-0">
+                    <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">
+                        {t("friends.findPlayers")}
+                    </h2>
                     <p className="mt-1 text-sm text-slate-500">
                         {t("friends.findPlayersBody")}
                     </p>
@@ -102,7 +104,7 @@ export function FriendsSearchSection({
             ) : null}
 
             {searchResults.length > 0 ? (
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                     {searchResults.map((profile) => {
                         const relationshipStatus = getRelationshipStatus(profile.id);
                         const isActionable = relationshipStatus === "none";
@@ -111,20 +113,20 @@ export function FriendsSearchSection({
                         return (
                             <div
                                 key={profile.id}
-                                className="rounded-3xl border border-slate-100 bg-slate-50 p-5"
+                                className="w-full max-w-full overflow-hidden rounded-3xl border border-slate-100 bg-slate-50 p-4 sm:p-5"
                             >
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="min-w-0">
+                                <div className="flex items-start justify-between gap-3 sm:gap-4">
+                                    <div className="min-w-0 flex-1">
                                         <Link
                                             to={`/players/${profile.id}`}
-                                            className="flex items-center gap-3"
+                                            className="flex min-w-0 items-center gap-3"
                                         >
-                                            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-lg font-black text-white">
+                                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-lg font-black text-white">
                                                 {profile.fullName.charAt(0).toUpperCase()}
                                             </div>
 
-                                            <div className="min-w-0">
-                                                <h3 className="truncate font-bold text-slate-900">
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="truncate text-base font-bold text-slate-900">
                                                     {profile.fullName}
                                                 </h3>
                                                 <p className="truncate text-sm text-slate-500">
@@ -147,14 +149,14 @@ export function FriendsSearchSection({
                                         </div>
                                     </div>
 
-                                    <Users className="text-slate-300" />
+                                    <Users className="hidden shrink-0 text-slate-300 sm:block" />
                                 </div>
 
                                 <button
                                     type="button"
                                     disabled={!isActionable || isLoading}
                                     onClick={() => onSendRequest(profile.id)}
-                                    className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+                                    className="mt-4 flex w-full max-w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:mt-5"
                                 >
                                     <UserPlus size={18} />
                                     {isLoading
