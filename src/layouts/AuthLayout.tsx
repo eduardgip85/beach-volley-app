@@ -17,7 +17,7 @@ export function AuthLayout() {
 
   return (
     <>
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      <main className="app-min-h-screen app-safe-top app-safe-bottom app-safe-x flex items-center justify-center bg-slate-50 px-4">
         <Outlet />
       </main>
       <CookieConsentBanner />

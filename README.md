@@ -198,6 +198,31 @@ npm run test -- --run
 npm run build
 ```
 
+## Mobile Phase 1
+
+Capacitor is now wired into the project so Sandset can be packaged as a native app while keeping the current React + Vite codebase.
+
+Current mobile setup:
+
+- Android project scaffolded in `android/`
+- Capacitor config at `capacitor.config.ts`
+- Native-safe boot for Android back button handling
+- Service worker disabled inside native builds to avoid app-shell cache conflicts
+
+Useful commands:
+
+```bash
+npm run build:mobile
+npm run cap:sync
+npm run cap:android
+```
+
+Current assumptions:
+
+- Temporary app id: `app.sandset.mobile`
+- Android is the first target
+- Deep links and mobile auth callback flow are not part of this phase yet
+
 ## SQL Notes
 
 This repo keeps project SQL that still needs to be applied manually in Supabase inside:

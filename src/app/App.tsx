@@ -7,6 +7,7 @@ import {
   applyGoogleConsentMode,
   getStoredCookieConsent,
 } from "../shared/analytics/cookieConsent";
+import { AppNativeBoot } from "../shared/mobile/AppNativeBoot";
 
 function AppDocumentLanguageSync() {
   const { i18n } = useTranslation();
@@ -33,6 +34,7 @@ function AppConsentBoot() {
 export function App() {
   return (
     <AuthProvider>
+      <AppNativeBoot />
       <AppDocumentLanguageSync />
       <AppConsentBoot />
       <RouterProvider router={router} />

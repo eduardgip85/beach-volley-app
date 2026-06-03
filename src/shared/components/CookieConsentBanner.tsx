@@ -34,7 +34,7 @@ export function CookieConsentBanner() {
   }
 
   return (
-    <div className="fixed inset-x-3 bottom-3 z-[2300] mx-auto max-w-3xl rounded-[1.75rem] border border-slate-200 bg-white/95 p-4 shadow-[0_22px_60px_rgba(15,23,42,0.18)] backdrop-blur-md sm:inset-x-5 sm:bottom-5 sm:p-5">
+    <div className="cookie-consent-safe fixed z-[2300] mx-auto max-w-3xl rounded-[1.75rem] border border-slate-200 bg-white/95 p-4 shadow-[0_22px_60px_rgba(15,23,42,0.18)] backdrop-blur-md sm:p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-2xl">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-blue-600">

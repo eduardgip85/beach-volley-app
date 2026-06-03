@@ -72,6 +72,20 @@ export function AppLayout() {
   }, [location.pathname]);
 
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = previousOverflow;
+    }
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
     window.scrollTo({
       top: 0,
       left: 0,
@@ -146,10 +160,10 @@ export function AppLayout() {
   const showFriendsNotification = pendingFriendRequestCount > 0;
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-slate-100 md:flex">
-      <header className="fixed inset-x-0 top-0 z-[2100] overflow-hidden border-b border-white/10 bg-slate-950 md:hidden">
+    <div className="app-min-h-screen overflow-x-hidden bg-slate-100 md:flex">
+      <header className="app-safe-top app-safe-x fixed inset-x-0 top-0 z-[2100] overflow-hidden border-b border-white/10 bg-slate-950 md:hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.3),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,1)_0%,_rgba(2,6,23,1)_100%)]" />
-        <div className="relative flex items-center justify-between px-3 py-3">
+        <div className="relative flex items-center justify-between px-3 pb-3 pt-3">
           <Link to="/" className="flex min-w-0 items-center gap-3">
             <img
               src="/logo.png"
@@ -307,12 +321,12 @@ export function AppLayout() {
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-[2200] w-[min(20rem,84vw)] overflow-hidden bg-slate-950 shadow-2xl transition-transform duration-300 md:hidden",
+          "app-safe-top app-safe-bottom fixed inset-y-0 left-0 z-[2200] w-[min(20rem,84vw)] overflow-hidden bg-slate-950 shadow-2xl transition-transform duration-300 md:hidden",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
         ].join(" ")}
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.3),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,1)_0%,_rgba(2,6,23,1)_100%)]" />
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col overscroll-contain">
           <div className="relative border-b border-white/10 px-4 py-4">
             <div className="mb-4 flex items-center justify-between">
               <div className="min-w-0">
@@ -368,7 +382,7 @@ export function AppLayout() {
             )}
           </div>
 
-          <nav className="relative flex-1 space-y-2 overflow-y-auto px-4 py-5">
+          <nav className="relative flex-1 space-y-2 overflow-y-auto px-4 py-5 [scrollbar-gutter:stable]">
             {mobileNavItems.map((item) => {
               const Icon = item.icon;
               const shouldShowNotification =
@@ -427,8 +441,8 @@ export function AppLayout() {
         </div>
       </aside>
 
-      <main className="min-h-screen flex-1 md:ml-72">
-        <div className="px-3 pb-5 pt-20 sm:px-4 md:px-8 md:py-8">
+      <main className="app-min-h-screen flex-1 md:ml-72">
+        <div className="app-safe-bottom px-3 pb-6 pt-20 sm:px-4 md:px-8 md:py-8">
           <Outlet />
         </div>
       </main>

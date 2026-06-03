@@ -491,54 +491,6 @@ export function EventForm({
                         </div>
                     </FormSectionCard>
 
-                    <FormSectionCard
-                        title={t("eventForm.covers.title")}
-                        body={t("eventForm.covers.body")}
-                    >
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            {coverOptions.map((coverOption) => {
-                                const isSelected = imageUrl === coverOption.imageUrl;
-
-                                return (
-                                    <button
-                                        key={coverOption.id}
-                                        type="button"
-                                        onClick={() => setImageUrl(coverOption.imageUrl)}
-                                        aria-label={t(coverOption.titleKey)}
-                                        className={`group relative overflow-hidden rounded-3xl border bg-white text-left transition ${
-                                            isSelected
-                                                ? "border-blue-500 shadow-[0_16px_36px_rgba(37,99,235,0.18)] ring-2 ring-blue-200"
-                                                : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
-                                        }`}
-                                    >
-                                        <div
-                                            className="h-48 bg-cover bg-center transition duration-300 group-hover:scale-[1.02]"
-                                            style={{
-                                                backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.06) 0%, rgba(15,23,42,0.18) 100%), url('${coverOption.imageUrl}')`,
-                                            }}
-                                        >
-                                            <div
-                                                className={`absolute inset-0 transition ${
-                                                    isSelected
-                                                        ? "bg-blue-950/10"
-                                                        : "bg-slate-950/0 group-hover:bg-slate-950/5"
-                                                }`}
-                                            />
-
-                                            {isSelected ? (
-                                                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-slate-950/60 via-slate-950/15 to-transparent p-4">
-                                                    <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700 shadow-sm">
-                                                        {t("eventForm.covers.selected")}
-                                                    </span>
-                                                </div>
-                                            ) : null}
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </FormSectionCard>
-
                     <section
                         className={`space-y-6 rounded-3xl p-5 ${eventConfigurationSurface.wrapper}`}
                     >
@@ -599,6 +551,65 @@ export function EventForm({
                             <p className="mt-2 text-xs text-slate-500">
                                 {typeHelperText}
                             </p>
+                        </div>
+
+                        <div>
+                            <div>
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-slate-900">
+                                    {t("eventForm.covers.title")}
+                                </h4>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">
+                                    {t("eventForm.covers.body")}
+                                </p>
+                            </div>
+
+                            <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                {coverOptions.map((coverOption) => {
+                                    const isSelected =
+                                        imageUrl === coverOption.imageUrl;
+
+                                    return (
+                                        <button
+                                            key={coverOption.id}
+                                            type="button"
+                                            onClick={() =>
+                                                setImageUrl(coverOption.imageUrl)
+                                            }
+                                            aria-label={t(coverOption.titleKey)}
+                                            className={`group relative overflow-hidden rounded-3xl border bg-white text-left transition ${
+                                                isSelected
+                                                    ? "border-blue-500 shadow-[0_16px_36px_rgba(37,99,235,0.18)] ring-2 ring-blue-200"
+                                                    : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
+                                            }`}
+                                        >
+                                            <div
+                                                className="h-48 bg-cover bg-center transition duration-300 group-hover:scale-[1.02]"
+                                                style={{
+                                                    backgroundImage: `linear-gradient(180deg, rgba(15,23,42,0.06) 0%, rgba(15,23,42,0.18) 100%), url('${coverOption.imageUrl}')`,
+                                                }}
+                                            >
+                                                <div
+                                                    className={`absolute inset-0 transition ${
+                                                        isSelected
+                                                            ? "bg-blue-950/10"
+                                                            : "bg-slate-950/0 group-hover:bg-slate-950/5"
+                                                    }`}
+                                                />
+
+                                                {isSelected ? (
+                                                    <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-gradient-to-t from-slate-950/60 via-slate-950/15 to-transparent p-4">
+                                                        <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-700 shadow-sm">
+                                                            {t(
+                                                                "eventForm.covers.selected"
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                ) : null}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
 
                         <div className="grid gap-4 sm:grid-cols-2">

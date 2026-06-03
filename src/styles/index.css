@@ -1,5 +1,74 @@
 @import "tailwindcss";
 
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  touch-action: manipulation;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.app-min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.app-safe-top {
+  padding-top: var(--safe-area-top);
+}
+
+.app-safe-bottom {
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.app-safe-x {
+  padding-left: var(--safe-area-left);
+  padding-right: var(--safe-area-right);
+}
+
+.cookie-consent-safe {
+  left: calc(0.75rem + var(--safe-area-left));
+  right: calc(0.75rem + var(--safe-area-right));
+  bottom: calc(0.75rem + var(--safe-area-bottom));
+}
+
+@media (min-width: 640px) {
+  .cookie-consent-safe {
+    left: calc(1.25rem + var(--safe-area-left));
+    right: calc(1.25rem + var(--safe-area-right));
+    bottom: calc(1.25rem + var(--safe-area-bottom));
+  }
+}
+
 @keyframes landingFadeUp {
   from {
     opacity: 0;
@@ -83,6 +152,15 @@
   }
 }
 
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea,
+  button {
+    font-size: 16px;
+  }
+}
+
 .fc {
   font-family: inherit;
 }
@@ -125,4 +203,74 @@
   color: #475569;
   font-size: 0.8rem;
   text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  .fc .fc-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .fc .fc-toolbar-chunk {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .fc .fc-button {
+    padding: 0.55rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .fc .fc-daygrid-day-number {
+    font-size: 0.85rem;
+  }
+
+  .fc .fc-col-header-cell-cushion {
+    font-size: 0.7rem;
+  }
+}
+
+.leaflet-container {
+  font: inherit;
+}
+
+@media (max-width: 768px) {
+  .leaflet-control-container .leaflet-top,
+  .leaflet-control-container .leaflet-bottom {
+    z-index: 500;
+  }
+
+  .leaflet-control-zoom {
+    border-radius: 1rem !important;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+  }
+
+  .leaflet-control-zoom a {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    line-height: 2.5rem !important;
+    font-size: 1.1rem !important;
+  }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 1.25rem;
+  }
+
+  .leaflet-popup-content {
+    margin: 0.9rem 1rem;
+    min-width: 0;
+    max-width: min(72vw, 18rem);
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
 }
