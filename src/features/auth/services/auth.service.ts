@@ -11,6 +11,8 @@ import {
     getPreferredAppLanguage,
     normalizePreferredLanguage,
 } from "../../../i18n/detection";
+import { openNativeBrowser } from "../../../shared/mobile/browser";
+import { isNativePlatform } from "../../../shared/mobile/capacitor";
 
 const preferredPlayDays = new Set([
     "monday",
@@ -204,16 +206,20 @@ export async function loginUser(email: string, password: string) {
 }
 
 export async function loginWithGoogle(redirectTo = "/events") {
+    const normalizedRedirectTo = normalizeAuthRedirectPath(redirectTo);
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-            redirectTo: buildOAuthRedirectUrl(
-                normalizeAuthRedirectPath(redirectTo)
-            ),
+            redirectTo: buildOAuthRedirectUrl(normalizedRedirectTo),
+            ...(isNativePlatform() ? { skipBrowserRedirect: true } : {}),
         },
     });
 
     if (error) throw error;
+
+    if (isNativePlatform() && data.url) {
+        await openNativeBrowser(data.url);
+    }
 
     return data;
 }

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { RouterProvider } from "react-router-dom";
 import { router } from "../app/router";
 import { AuthProvider } from "../features/auth/context/AuthContext";
+import { AuthNativeLinkBoot } from "../features/auth/components/AuthNativeLinkBoot";
 import {
   applyGoogleConsentMode,
   getStoredCookieConsent,
@@ -35,6 +36,7 @@ export function App() {
   return (
     <AuthProvider>
       <AppNativeBoot />
+      <AuthNativeLinkBoot />
       <AppDocumentLanguageSync />
       <AppConsentBoot />
       <RouterProvider router={router} />

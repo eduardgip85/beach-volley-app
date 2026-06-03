@@ -221,7 +221,33 @@ Current assumptions:
 
 - Temporary app id: `app.sandset.mobile`
 - Android is the first target
-- Deep links and mobile auth callback flow are not part of this phase yet
+
+## Mobile Phase 2
+
+Native auth redirects are now wired for Android using the custom scheme:
+
+- `app.sandset.mobile://auth/callback`
+- `app.sandset.mobile://reset-password`
+
+What this phase adds:
+
+- Google OAuth opens in the native browser on mobile
+- The app restores the Supabase session when it is reopened by a deep link
+- Password reset and email confirmation redirects can return to the app
+
+Supabase dashboard setup still required:
+
+1. Go to `Authentication > URL Configuration`
+2. Add these redirect URLs:
+   - `app.sandset.mobile://**`
+   - `https://sandset.app/**`
+   - your local preview URLs if needed
+3. If you customized Supabase email templates, make sure links use `{{ .RedirectTo }}` where appropriate
+
+Notes:
+
+- Android deep links are configured in `android/app/src/main/AndroidManifest.xml`
+- The same custom scheme should be reused on iOS when we add that platform
 
 ## SQL Notes
 

@@ -23,6 +23,11 @@ const mocks = vi.hoisted(() => ({
     mockMaybeSingle: vi.fn(),
 }));
 
+const mobileMocks = vi.hoisted(() => ({
+    mockIsNativePlatform: vi.fn(),
+    mockOpenNativeBrowser: vi.fn(),
+}));
+
 vi.mock("../../config/supabase", () => ({
     supabase: {
         auth: {
@@ -39,6 +44,15 @@ vi.mock("../../config/supabase", () => ({
         select: mocks.mockSelect,
         })),
     },
+}));
+
+vi.mock("../../shared/mobile/capacitor", () => ({
+    isNativePlatform: mobileMocks.mockIsNativePlatform,
+    nativeAppScheme: "app.sandset.mobile",
+}));
+
+vi.mock("../../shared/mobile/browser", () => ({
+    openNativeBrowser: mobileMocks.mockOpenNativeBrowser,
 }));
 
 const profileRow = {
@@ -77,6 +91,7 @@ describe("auth.service", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         window.localStorage.setItem("beach-volley-app-language", "en");
+        mobileMocks.mockIsNativePlatform.mockReturnValue(false);
 
         mocks.mockSelect.mockReturnValue({
         eq: mocks.mockEq,
@@ -261,6 +276,35 @@ describe("auth.service", () => {
             });
 
             vi.unstubAllGlobals();
+        });
+
+        it("should start Google OAuth in the native browser on mobile", async () => {
+            mobileMocks.mockIsNativePlatform.mockReturnValue(true);
+            mocks.mockSignInWithOAuth.mockResolvedValue({
+                data: {
+                    provider: "google",
+                    url: "https://accounts.google.com/o/oauth2/auth",
+                },
+                error: null,
+            });
+
+            const result = await loginWithGoogle("/profile");
+
+            expect(mocks.mockSignInWithOAuth).toHaveBeenCalledWith({
+                provider: "google",
+                options: {
+                    redirectTo:
+                        "app.sandset.mobile://auth/callback?redirect=%2Fprofile",
+                    skipBrowserRedirect: true,
+                },
+            });
+            expect(mobileMocks.mockOpenNativeBrowser).toHaveBeenCalledWith(
+                "https://accounts.google.com/o/oauth2/auth"
+            );
+            expect(result).toEqual({
+                provider: "google",
+                url: "https://accounts.google.com/o/oauth2/auth",
+            });
         });
     });
 
