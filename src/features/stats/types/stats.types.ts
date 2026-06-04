@@ -57,6 +57,14 @@ export interface RatingDistributionBucket {
   count: number;
 }
 
+export interface AnalyticsTopIdea {
+  id: string;
+  title: string;
+  voteCount: number;
+  status: string;
+  moderationStatus: string;
+}
+
 export interface AdminAnalyticsData {
   metadata: {
     filterKey: AnalyticsTimeFilter;
@@ -97,5 +105,23 @@ export interface AdminAnalyticsData {
     averageRating: number;
     highestRatedPlayers: AnalyticsTopRatedPlayer[];
     ratingDistribution: RatingDistributionBucket[];
+  };
+  ideaAnalytics: {
+    totalIdeas: number;
+    ideasSubmittedInRange: number;
+    pendingIdeas: number;
+    approvedIdeas: number;
+    hiddenIdeas: number;
+    plannedIdeas: number;
+    inProgressIdeas: number;
+    doneIdeas: number;
+    rejectedIdeas: number;
+    duplicateIdeas: number;
+    totalVotes: number;
+    averageVotesPerIdea: number;
+    ideasTrend: AnalyticsTrendPoint[];
+    statusRatio: AnalyticsRatioPoint[];
+    moderationRatio: AnalyticsRatioPoint[];
+    topVotedIdeas: AnalyticsTopIdea[];
   };
 }

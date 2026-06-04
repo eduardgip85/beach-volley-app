@@ -52,7 +52,7 @@ export function AdminUsersPage() {
         </div>
 
         <Link
-          to="/profile"
+          to="/admin"
           className="rounded-xl bg-blue-600 px-4 py-3 text-center text-sm font-medium text-white"
         >
           {t("adminUsers.back")}

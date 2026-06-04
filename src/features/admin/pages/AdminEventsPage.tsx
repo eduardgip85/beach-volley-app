@@ -9,7 +9,7 @@ import {
   Trash2,
   UserCircle2,
 } from "lucide-react";
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { deleteEvent } from "../../events/services/events.service";
@@ -41,10 +41,6 @@ export function AdminEventsPage() {
     search: deferredSearch,
     onlyVisibleActive: hideInactive,
   });
-
-  useEffect(() => {
-    setPage(1);
-  }, [deferredSearch, hideInactive]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const visibleFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -91,10 +87,10 @@ export function AdminEventsPage() {
           </div>
 
           <Link
-            to="/profile"
+            to="/admin"
             className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-bold text-white"
         >
-          {t("adminEvents.backToProfile")}
+          {t("adminEvents.backToAdmin")}
         </Link>
       </div>
 
@@ -114,7 +110,10 @@ export function AdminEventsPage() {
             <input
               type="search"
               value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
+              onChange={(event) => {
+                setSearchInput(event.target.value);
+                setPage(1);
+              }}
               placeholder={t("adminEvents.searchPlaceholder")}
               className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
             />
@@ -125,7 +124,10 @@ export function AdminEventsPage() {
               <input
                 type="checkbox"
                 checked={hideInactive}
-                onChange={(event) => setHideInactive(event.target.checked)}
+                onChange={(event) => {
+                  setHideInactive(event.target.checked);
+                  setPage(1);
+                }}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
               {t("adminEvents.hideInactive")}

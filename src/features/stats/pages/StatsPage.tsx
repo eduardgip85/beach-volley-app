@@ -3,10 +3,14 @@ import { useTranslation } from "react-i18next";
 import {
   Activity,
   BarChart3,
+  CheckCircle2,
+  Lightbulb,
   MapPin,
+  MessageSquareWarning,
   Trophy,
   UserCheck,
   Users,
+  Vote,
 } from "lucide-react";
 import { useAdminAnalytics } from "../hooks/useAdminAnalytics";
 import { AnalyticsBarChartCard } from "../components/AnalyticsBarChartCard";
@@ -73,6 +77,51 @@ export function StatsPage() {
               : item.name,
       })),
     [stats, t]
+  );
+
+  const ideaStatusLabels = useMemo(
+    () => ({
+      open: t("adminStats.ideas.status.open"),
+      planned: t("adminStats.ideas.status.planned"),
+      in_progress: t("adminStats.ideas.status.inProgress"),
+      done: t("adminStats.ideas.status.done"),
+      rejected: t("adminStats.ideas.status.rejected"),
+      duplicate: t("adminStats.ideas.status.duplicate"),
+      hidden: t("adminStats.ideas.status.hidden"),
+    }),
+    [t]
+  );
+
+  const ideaModerationLabels = useMemo(
+    () => ({
+      pending: t("adminStats.ideas.moderation.pending"),
+      approved: t("adminStats.ideas.moderation.approved"),
+      hidden: t("adminStats.ideas.moderation.hidden"),
+    }),
+    [t]
+  );
+
+  const ideaStatusRatioData = useMemo(
+    () =>
+      (stats?.ideaAnalytics.statusRatio ?? []).map((item) => ({
+        ...item,
+        name:
+          ideaStatusLabels[item.name as keyof typeof ideaStatusLabels] ??
+          item.name,
+      })),
+    [ideaStatusLabels, stats]
+  );
+
+  const ideaModerationRatioData = useMemo(
+    () =>
+      (stats?.ideaAnalytics.moderationRatio ?? []).map((item) => ({
+        ...item,
+        name:
+          ideaModerationLabels[
+            item.name as keyof typeof ideaModerationLabels
+          ] ?? item.name,
+      })),
+    [ideaModerationLabels, stats]
   );
 
   if (loading) {
@@ -171,6 +220,37 @@ export function StatsPage() {
           helper={t("adminStats.helpers.avgPlayersRange")}
           accent="blue"
         />
+        <AnalyticsSummaryCard
+          label={t("adminStats.cards.productIdeas")}
+          value={stats.ideaAnalytics.totalIdeas}
+          helper={t("adminStats.helpers.pendingIdeas", {
+            count: stats.ideaAnalytics.pendingIdeas,
+          })}
+          accent="amber"
+        />
+        <AnalyticsSummaryCard
+          label={t("adminStats.cards.newIdeas")}
+          value={stats.ideaAnalytics.ideasSubmittedInRange}
+          helper={t("adminStats.helpers.ideasInSelectedRange")}
+          accent="blue"
+        />
+        <AnalyticsSummaryCard
+          label={t("adminStats.cards.ideaVotes")}
+          value={stats.ideaAnalytics.totalVotes}
+          helper={t("adminStats.helpers.averageIdeaVotes", {
+            count: stats.ideaAnalytics.averageVotesPerIdea,
+          })}
+          accent="emerald"
+        />
+        <AnalyticsSummaryCard
+          label={t("adminStats.cards.ideaDone")}
+          value={stats.ideaAnalytics.doneIdeas}
+          helper={t("adminStats.helpers.ideaPipeline", {
+            planned: stats.ideaAnalytics.plannedIdeas,
+            inProgress: stats.ideaAnalytics.inProgressIdeas,
+          })}
+          accent="slate"
+        />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2">
@@ -228,6 +308,49 @@ export function StatsPage() {
           data={peakDaysChartData}
           color="#f59e0b"
         />
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-2">
+        <AnalyticsBarChartCard
+          title={t("adminStats.ideas.trendTitle")}
+          description={t("adminStats.ideas.trendDescription")}
+          data={stats.ideaAnalytics.ideasTrend}
+          color="#f59e0b"
+        />
+
+        <AnalyticsPieChartCard
+          title={t("adminStats.ideas.statusTitle")}
+          description={t("adminStats.ideas.statusDescription")}
+          data={ideaStatusRatioData}
+          colors={[
+            "#2563eb",
+            "#f59e0b",
+            "#10b981",
+            "#ef4444",
+            "#64748b",
+            "#0f172a",
+          ]}
+        />
+
+        <AnalyticsPieChartCard
+          title={t("adminStats.ideas.moderationTitle")}
+          description={t("adminStats.ideas.moderationDescription")}
+          data={ideaModerationRatioData}
+          colors={["#f59e0b", "#10b981", "#0f172a"]}
+        />
+
+        <AnalyticsPanel
+          title={t("adminStats.ideas.topIdeasTitle")}
+          description={t("adminStats.ideas.topIdeasDescription")}
+        >
+          <TopIdeasList
+            items={stats.ideaAnalytics.topVotedIdeas}
+            emptyLabel={t("adminStats.ideas.noTopIdeas")}
+            votesLabel={t("adminStats.ideas.votes")}
+            statusLabels={ideaStatusLabels}
+            moderationLabels={ideaModerationLabels}
+          />
+        </AnalyticsPanel>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.35fr_minmax(0,1fr)]">
@@ -288,6 +411,13 @@ export function StatsPage() {
               })}
             />
             <InsightRow
+              icon={<Lightbulb size={18} />}
+              label={t("adminStats.insights.pendingIdeasLabel")}
+              value={t("adminStats.insights.pendingIdeasValue", {
+                count: stats.ideaAnalytics.pendingIdeas,
+              })}
+            />
+            <InsightRow
               icon={<BarChart3 size={18} />}
               label={t("adminStats.insights.generatedLabel")}
               value={new Date(stats.metadata.generatedAt).toLocaleString(
@@ -345,6 +475,69 @@ export function StatsPage() {
         </AnalyticsPanel>
       </div>
     </section>
+  );
+}
+
+function TopIdeasList({
+  items,
+  emptyLabel,
+  votesLabel,
+  statusLabels,
+  moderationLabels,
+}: {
+  items: {
+    id: string;
+    title: string;
+    voteCount: number;
+    status: string;
+    moderationStatus: string;
+  }[];
+  emptyLabel: string;
+  votesLabel: string;
+  statusLabels: Record<string, string>;
+  moderationLabels: Record<string, string>;
+}) {
+  if (items.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500">
+        {emptyLabel}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map((item, index) => (
+        <div
+          key={item.id}
+          className="flex items-start gap-3 rounded-2xl bg-slate-50 px-3 py-3 sm:px-4"
+        >
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-sm font-black text-amber-700 sm:h-10 sm:w-10">
+            {index + 1}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-black text-slate-950">
+              {item.title}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200">
+                <Vote size={12} />
+                {item.voteCount} {votesLabel}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700">
+                <CheckCircle2 size={12} />
+                {statusLabels[item.status] ?? item.status}
+              </span>
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                <MessageSquareWarning size={12} />
+                {moderationLabels[item.moderationStatus] ??
+                  item.moderationStatus}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 

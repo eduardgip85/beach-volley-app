@@ -2,6 +2,7 @@ import {
   CalendarDays,
   Home,
   LayoutDashboard,
+  Lightbulb,
   LogIn,
   LogOut,
   Map,
@@ -66,10 +67,6 @@ export function AppLayout() {
       console.error("Logout error:", error);
     }
   }
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -139,15 +136,14 @@ export function AppLayout() {
   ];
 
   const authenticatedNavItems: NavItem[] = [
+    { label: t("nav.ideas"), path: "/feature-requests", icon: Lightbulb },
     { label: t("nav.friends"), path: "/friends", icon: Users },
     { label: t("nav.profile"), path: "/profile", icon: User },
     { label: t("nav.settings"), path: "/settings", icon: Settings },
   ];
 
   const adminNavItems: NavItem[] = [
-    { label: t("nav.stats"), path: "/stats", icon: LayoutDashboard },
-    { label: t("Admin Users"), path: "/admin/users", icon: UserPlus },
-    { label: t("Admin Events"), path: "/admin/events", icon: User },
+    { label: t("nav.admin"), path: "/admin", icon: LayoutDashboard },
   ];
 
   const desktopNavItems = [
@@ -393,6 +389,7 @@ export function AppLayout() {
                   key={item.path}
                   to={item.path}
                   end={item.end}
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) => getMobileNavClasses(isActive)}
                   aria-label={item.label}
                 >
@@ -422,6 +419,7 @@ export function AppLayout() {
               <div className="space-y-2">
                 <NavLink
                   to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) => getMobileNavClasses(isActive)}
                 >
                   <LogIn size={18} />
@@ -430,6 +428,7 @@ export function AppLayout() {
 
                 <NavLink
                   to="/register"
+                  onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) => getMobileNavClasses(isActive)}
                 >
                   <UserPlus size={18} />

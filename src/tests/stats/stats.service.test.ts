@@ -11,10 +11,20 @@ let profilesQueryResult: { data: unknown[] | null; error: Error | null } = {
   data: [],
   error: null,
 };
+let featureRequestsQueryResult: { data: unknown[] | null; error: Error | null } = {
+  data: [],
+  error: null,
+};
 
-mockFrom.mockImplementation(() => ({
+mockFrom.mockImplementation((tableName: string) => ({
   select: vi.fn(() => ({
-    order: vi.fn(() => Promise.resolve(profilesQueryResult)),
+    order: vi.fn(() =>
+      Promise.resolve(
+        tableName === "feature_requests"
+          ? featureRequestsQueryResult
+          : profilesQueryResult
+      )
+    ),
   })),
 }));
 
@@ -34,6 +44,10 @@ describe("stats.service", () => {
     vi.clearAllMocks();
     mockGetEvents.mockResolvedValue([]);
     profilesQueryResult = {
+      data: [],
+      error: null,
+    };
+    featureRequestsQueryResult = {
       data: [],
       error: null,
     };
@@ -120,6 +134,7 @@ describe("stats.service", () => {
     expect(result.engagementAnalytics.averagePlayersPerEvent).toBe(3.4);
     expect(result.rankingAnalytics.averageRating).toBe(1032.4);
     expect(result.rankingAnalytics.highestRatedPlayers[0]?.fullName).toBe("Marta");
+    expect(result.ideaAnalytics.totalIdeas).toBe(0);
   });
 
   it("should recompute match analytics from resolved events when available", async () => {
@@ -238,6 +253,27 @@ describe("stats.service", () => {
       ],
       error: null,
     };
+    featureRequestsQueryResult = {
+      data: [
+        {
+          id: "idea-1",
+          title: "Tournament brackets",
+          status: "planned",
+          moderation_status: "approved",
+          vote_count: 8,
+          created_at: "2026-05-20T08:30:00.000Z",
+        },
+        {
+          id: "idea-2",
+          title: "Better chat",
+          status: "open",
+          moderation_status: "pending",
+          vote_count: 2,
+          created_at: "2026-04-01T08:30:00.000Z",
+        },
+      ],
+      error: null,
+    };
 
     const result = await getStatsData("last_30_days");
 
@@ -253,6 +289,15 @@ describe("stats.service", () => {
     expect(result.userAnalytics.onboardingCompletedUsers).toBe(1);
     expect(result.userAnalytics.onboardingCompletionRate).toBe(50);
     expect(result.userAnalytics.recentRegistrations[0]?.fullName).toBe("Andrea");
+    expect(result.ideaAnalytics.totalIdeas).toBe(2);
+    expect(result.ideaAnalytics.ideasSubmittedInRange).toBe(1);
+    expect(result.ideaAnalytics.pendingIdeas).toBe(1);
+    expect(result.ideaAnalytics.approvedIdeas).toBe(1);
+    expect(result.ideaAnalytics.totalVotes).toBe(10);
+    expect(result.ideaAnalytics.averageVotesPerIdea).toBe(5);
+    expect(result.ideaAnalytics.topVotedIdeas[0]?.title).toBe(
+      "Tournament brackets"
+    );
 
     vi.useRealTimers();
   });
@@ -269,6 +314,7 @@ describe("stats.service", () => {
     expect(result.userAnalytics.totalUsers).toBe(0);
     expect(result.matchAnalytics.eventsTrend).toEqual([]);
     expect(result.rankingAnalytics.ratingDistribution).toEqual([]);
+    expect(result.ideaAnalytics.topVotedIdeas).toEqual([]);
   });
 
   it("should throw when the rpc fails", async () => {

@@ -261,6 +261,7 @@ Current SQL files include:
 
 - `2026-05-19_profile_player_preferences.sql`
 - `2026-05-19_stale_match_cancellation_rule.sql`
+- `2026-06-04_feature_requests.sql`
 
 Use these for:
 

@@ -8,6 +8,7 @@ import type {
   AnalyticsRecentRegistration,
   AnalyticsRatioPoint,
   AnalyticsTimeFilter,
+  AnalyticsTopIdea,
   AnalyticsTopLocation,
   AnalyticsTopRatedPlayer,
   AnalyticsTopUser,
@@ -25,6 +26,14 @@ type ProfileAnalyticsRow = {
   created_at: string;
   rating_placement_completed_at: string | null;
   competitive_rating: number | null;
+};
+type FeatureRequestAnalyticsRow = {
+  id: string;
+  title: string;
+  status: string;
+  moderation_status: string;
+  vote_count: number | null;
+  created_at: string;
 };
 
 function toNumber(value: unknown, fallback = 0) {
@@ -59,6 +68,10 @@ function getRangeStart(filterKey: AnalyticsTimeFilter) {
 }
 
 function isEventInsideFilter(event: Event, filterKey: AnalyticsTimeFilter) {
+  return isDateInsideFilter(event.startDate, filterKey);
+}
+
+function isDateInsideFilter(dateValue: string, filterKey: AnalyticsTimeFilter) {
   if (filterKey === "all_time") {
     return true;
   }
@@ -69,7 +82,7 @@ function isEventInsideFilter(event: Event, filterKey: AnalyticsTimeFilter) {
     return true;
   }
 
-  const eventDate = new Date(event.startDate);
+  const eventDate = new Date(dateValue);
   const now = new Date();
 
   return eventDate >= start && eventDate <= now;
@@ -267,6 +280,79 @@ function buildUserDrivenAnalytics(
   };
 }
 
+function buildIdeaAnalytics(
+  base: AdminAnalyticsData,
+  ideas: FeatureRequestAnalyticsRow[],
+  filterKey: AnalyticsTimeFilter
+): AdminAnalyticsData {
+  const totalVotes = ideas.reduce(
+    (sum, idea) => sum + toNumber(idea.vote_count),
+    0
+  );
+  const filteredIdeas = ideas.filter((idea) =>
+    isDateInsideFilter(idea.created_at, filterKey)
+  );
+  const statusCounts = new Map<string, number>();
+  const moderationCounts = new Map<string, number>();
+  const trendCounts = new Map<string, number>();
+
+  for (const idea of ideas) {
+    statusCounts.set(idea.status, (statusCounts.get(idea.status) ?? 0) + 1);
+    moderationCounts.set(
+      idea.moderation_status,
+      (moderationCounts.get(idea.moderation_status) ?? 0) + 1
+    );
+  }
+
+  for (const idea of filteredIdeas) {
+    const label = groupDateLabel(new Date(idea.created_at), filterKey);
+    trendCounts.set(label, (trendCounts.get(label) ?? 0) + 1);
+  }
+
+  const statusCount = (status: string) => statusCounts.get(status) ?? 0;
+  const moderationCount = (status: string) => moderationCounts.get(status) ?? 0;
+
+  return {
+    ...base,
+    ideaAnalytics: {
+      totalIdeas: ideas.length,
+      ideasSubmittedInRange: filteredIdeas.length,
+      pendingIdeas: moderationCount("pending"),
+      approvedIdeas: moderationCount("approved"),
+      hiddenIdeas: moderationCount("hidden"),
+      plannedIdeas: statusCount("planned"),
+      inProgressIdeas: statusCount("in_progress"),
+      doneIdeas: statusCount("done"),
+      rejectedIdeas: statusCount("rejected"),
+      duplicateIdeas: statusCount("duplicate"),
+      totalVotes,
+      averageVotesPerIdea:
+        ideas.length > 0 ? Number((totalVotes / ideas.length).toFixed(1)) : 0,
+      ideasTrend: toSortedTrendPoints(trendCounts),
+      statusRatio: Array.from(statusCounts.entries())
+        .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+        .map(([name, value]) => ({ name, value })),
+      moderationRatio: Array.from(moderationCounts.entries())
+        .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+        .map(([name, value]) => ({ name, value })),
+      topVotedIdeas: [...ideas]
+        .sort(
+          (left, right) =>
+            toNumber(right.vote_count) - toNumber(left.vote_count) ||
+            right.created_at.localeCompare(left.created_at)
+        )
+        .slice(0, 5)
+        .map((idea) => ({
+          id: idea.id,
+          title: idea.title,
+          voteCount: toNumber(idea.vote_count),
+          status: idea.status,
+          moderationStatus: idea.moderation_status,
+        })),
+    },
+  };
+}
+
 function toTrendPoints(value: unknown): AnalyticsTrendPoint[] {
   if (!Array.isArray(value)) return [];
 
@@ -363,6 +449,20 @@ function toTopRatedPlayers(value: unknown): AnalyticsTopRatedPlayer[] {
     }));
 }
 
+function toTopIdeas(value: unknown): AnalyticsTopIdea[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(isRecord)
+    .map((item) => ({
+      id: toString(item.id),
+      title: toString(item.title),
+      voteCount: toNumber(item.voteCount),
+      status: toString(item.status),
+      moderationStatus: toString(item.moderationStatus),
+    }));
+}
+
 function toRatingDistribution(value: unknown): RatingDistributionBucket[] {
   if (!Array.isArray(value)) return [];
 
@@ -416,6 +516,24 @@ function getEmptyAnalytics(filterKey: AnalyticsTimeFilter): AdminAnalyticsData {
       highestRatedPlayers: [],
       ratingDistribution: [],
     },
+    ideaAnalytics: {
+      totalIdeas: 0,
+      ideasSubmittedInRange: 0,
+      pendingIdeas: 0,
+      approvedIdeas: 0,
+      hiddenIdeas: 0,
+      plannedIdeas: 0,
+      inProgressIdeas: 0,
+      doneIdeas: 0,
+      rejectedIdeas: 0,
+      duplicateIdeas: 0,
+      totalVotes: 0,
+      averageVotesPerIdea: 0,
+      ideasTrend: [],
+      statusRatio: [],
+      moderationRatio: [],
+      topVotedIdeas: [],
+    },
   };
 }
 
@@ -436,6 +554,7 @@ function mapAdminAnalytics(
   const rankingAnalytics = isRecord(value.rankingAnalytics)
     ? value.rankingAnalytics
     : {};
+  const ideaAnalytics = isRecord(value.ideaAnalytics) ? value.ideaAnalytics : {};
 
   return {
     metadata: {
@@ -487,6 +606,24 @@ function mapAdminAnalytics(
         rankingAnalytics.ratingDistribution
       ),
     },
+    ideaAnalytics: {
+      totalIdeas: toNumber(ideaAnalytics.totalIdeas),
+      ideasSubmittedInRange: toNumber(ideaAnalytics.ideasSubmittedInRange),
+      pendingIdeas: toNumber(ideaAnalytics.pendingIdeas),
+      approvedIdeas: toNumber(ideaAnalytics.approvedIdeas),
+      hiddenIdeas: toNumber(ideaAnalytics.hiddenIdeas),
+      plannedIdeas: toNumber(ideaAnalytics.plannedIdeas),
+      inProgressIdeas: toNumber(ideaAnalytics.inProgressIdeas),
+      doneIdeas: toNumber(ideaAnalytics.doneIdeas),
+      rejectedIdeas: toNumber(ideaAnalytics.rejectedIdeas),
+      duplicateIdeas: toNumber(ideaAnalytics.duplicateIdeas),
+      totalVotes: toNumber(ideaAnalytics.totalVotes),
+      averageVotesPerIdea: toNumber(ideaAnalytics.averageVotesPerIdea),
+      ideasTrend: toTrendPoints(ideaAnalytics.ideasTrend),
+      statusRatio: toRatioPoints(ideaAnalytics.statusRatio),
+      moderationRatio: toRatioPoints(ideaAnalytics.moderationRatio),
+      topVotedIdeas: toTopIdeas(ideaAnalytics.topVotedIdeas),
+    },
   };
 }
 
@@ -502,7 +639,7 @@ export async function getStatsData(
   const base = mapAdminAnalytics(data, filterKey);
 
   try {
-    const [eventsResult, profilesResult] = await Promise.allSettled([
+    const [eventsResult, profilesResult, ideasResult] = await Promise.allSettled([
       getEvents(),
       supabase
         .from("profiles")
@@ -510,6 +647,12 @@ export async function getStatsData(
           "id, full_name, avatar_url, country, city, created_at, rating_placement_completed_at, competitive_rating"
         )
         .order("created_at", { ascending: false }),
+      supabase
+        .from("feature_requests")
+        .select(
+          "id, title, status, moderation_status, vote_count, created_at"
+        )
+        .order("vote_count", { ascending: false }),
     ]);
 
     let nextData = base;
@@ -541,6 +684,25 @@ export async function getStatsData(
       console.error(
         "Could not refresh user-driven admin analytics",
         profilesResult.reason
+      );
+    }
+
+    if (ideasResult.status === "fulfilled") {
+      const { data: ideas, error: ideasError } = ideasResult.value;
+
+      if (ideasError) {
+        console.error("Could not refresh idea admin analytics", ideasError);
+      } else {
+        nextData = buildIdeaAnalytics(
+          nextData,
+          (ideas ?? []) as FeatureRequestAnalyticsRow[],
+          filterKey
+        );
+      }
+    } else {
+      console.error(
+        "Could not refresh idea admin analytics",
+        ideasResult.reason
       );
     }
 

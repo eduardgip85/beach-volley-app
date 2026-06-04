@@ -1,5 +1,5 @@
 import { Suspense, lazy, type ComponentType, type ReactNode } from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 
 import { AuthLayout } from "../layouts/AuthLayout";
 import { AppLayout } from "../layouts/AppLayout";
@@ -10,7 +10,7 @@ import { AdminRoute } from "../routes/AdminRoute";
 
 const LAZY_RELOAD_GUARD_KEY = "sandset:lazy-import-reload";
 
-function lazyWithReload<T extends ComponentType<any>>(
+function lazyWithReload<T extends ComponentType<Record<string, never>>>(
   importer: () => Promise<{ default: T }>
 ) {
   return lazy(async () => {
@@ -143,6 +143,13 @@ const RankingPage = lazyWithReload(() =>
     default: module.RankingPage,
   }))
 );
+const FeatureRequestsPage = lazyWithReload(() =>
+  import("../features/feature-requests/pages/FeatureRequestsPage").then(
+    (module) => ({
+      default: module.FeatureRequestsPage,
+    })
+  )
+);
 const SettingsPage = lazyWithReload(() =>
   import("../features/settings/pages/SettingsPage").then((module) => ({
     default: module.SettingsPage,
@@ -173,9 +180,24 @@ const AdminUsersPage = lazyWithReload(() =>
     default: module.AdminUsersPage,
   }))
 );
+const AdminDashboardPage = lazyWithReload(() =>
+  import("../features/admin/pages/AdminDashboardPage").then((module) => ({
+    default: module.AdminDashboardPage,
+  }))
+);
+const AdminSectionLayout = lazyWithReload(() =>
+  import("../features/admin/layouts/AdminSectionLayout").then((module) => ({
+    default: module.AdminSectionLayout,
+  }))
+);
 const AdminEventsPage = lazyWithReload(() =>
   import("../features/admin/pages/AdminEventsPage").then((module) => ({
     default: module.AdminEventsPage,
+  }))
+);
+const AdminIdeasPage = lazyWithReload(() =>
+  import("../features/admin/pages/AdminIdeasPage").then((module) => ({
+    default: module.AdminIdeasPage,
   }))
 );
 
@@ -287,6 +309,10 @@ export const router = createBrowserRouter([
             element: withSuspense(<FriendsPage />),
           },
           {
+            path: "/feature-requests",
+            element: withSuspense(<FeatureRequestsPage />),
+          },
+          {
             path: "/settings",
             element: withSuspense(<SettingsPage />),
           },
@@ -298,15 +324,33 @@ export const router = createBrowserRouter([
         children: [
           {
             path: "/stats",
-            element: withSuspense(<StatsPage />),
+            element: <Navigate to="/admin/stats" replace />,
           },
           {
-            path: "/admin/users",
-            element: withSuspense(<AdminUsersPage />),
-          },
-          {
-            path: "/admin/events",
-            element: withSuspense(<AdminEventsPage />),
+            path: "/admin",
+            element: withSuspense(<AdminSectionLayout />),
+            children: [
+              {
+                index: true,
+                element: withSuspense(<AdminDashboardPage />),
+              },
+              {
+                path: "stats",
+                element: withSuspense(<StatsPage />),
+              },
+              {
+                path: "users",
+                element: withSuspense(<AdminUsersPage />),
+              },
+              {
+                path: "events",
+                element: withSuspense(<AdminEventsPage />),
+              },
+              {
+                path: "ideas",
+                element: withSuspense(<AdminIdeasPage />),
+              },
+            ],
           },
         ],
       },
