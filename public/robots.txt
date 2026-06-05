@@ -8,6 +8,7 @@ Disallow: /auth/callback
 Disallow: /events/create
 Disallow: /profile
 Disallow: /friends
+Disallow: /feature-requests
 Disallow: /settings
 Disallow: /onboarding
 Disallow: /stats

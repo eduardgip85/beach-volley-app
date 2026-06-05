@@ -6,6 +6,7 @@ import {
   Map,
   MessageCircle,
   Plus,
+  Rows2,
   ShieldCheck,
   Trophy,
   Users,
@@ -51,6 +52,18 @@ interface HomeCopy {
   competeBody: string;
   privateTitle: string;
   privateBody: string;
+  tournamentsEyebrow: string;
+  tournamentsTitle: string;
+  tournamentsBody: string;
+  tournamentsCta: string;
+  tournamentsSchedule: string;
+  tournamentsScheduleBody: string;
+  tournamentsBracket: string;
+  tournamentsBracketBody: string;
+  tournamentsStandings: string;
+  tournamentsStandingsBody: string;
+  tournamentsConfig: string;
+  tournamentsConfigBody: string;
   ecosystemEyebrow: string;
   ecosystemTitle: string;
   ecosystemBody: string;
@@ -89,14 +102,17 @@ interface HomeCopy {
   finalCta: string;
   profileCta: string;
   footer: string;
+  footerPrivacy: string;
+  footerCookies: string;
+  footerTerms: string;
 }
 
 function getHomeCopy(isSpanish: boolean): HomeCopy {
   if (isSpanish) {
     return {
-      seoTitle: "Sandset | Encuentra y organiza voley playa",
+      seoTitle: "Sandset | Voley playa, torneos y open plays",
       seoDescription:
-        "Encuentra partidos de voley playa, crea eventos, coordina jugadores y valida resultados con Sandset.",
+        "Encuentra partidos de voley playa, crea torneos con cuadros y horarios, coordina jugadores y valida resultados con Sandset.",
       eyebrow: "Voley playa local, sin caos",
       heroTitle: "Encuentra partido. Llena pista. Juega.",
       heroBody:
@@ -120,6 +136,19 @@ function getHomeCopy(isSpanish: boolean): HomeCopy {
       competeBody: "Resultados aceptados, historial y rating.",
       privateTitle: "Controlar acceso",
       privateBody: "Links privados, solicitudes e invitaciones.",
+      tournamentsEyebrow: "Torneos sin hojas de calculo",
+      tournamentsTitle: "Crea torneos con cuadro, horarios y equipos",
+      tournamentsBody:
+        "Configura formato, plazas, pistas, inscripcion y tipo de cuadro. Sandset prepara la base para gestionar equipos, rondas, horarios y clasificacion.",
+      tournamentsCta: "Crear torneo",
+      tournamentsSchedule: "Horarios",
+      tournamentsScheduleBody: "Genera orden de partidos con pistas y duracion estimada.",
+      tournamentsBracket: "Cuadros",
+      tournamentsBracketBody: "Elige eliminatoria, liga, grupos o doble eliminacion.",
+      tournamentsStandings: "Clasificacion",
+      tournamentsStandingsBody: "Resultados y standings quedan conectados al torneo.",
+      tournamentsConfig: "Equipos",
+      tournamentsConfigBody: "Inscripcion individual o por equipo, 2v2 o 4v4.",
       ecosystemEyebrow: "Mucho mas que crear partidos",
       ecosystemTitle: "Tu club social y competitivo de voley playa",
       ecosystemBody:
@@ -161,13 +190,16 @@ function getHomeCopy(isSpanish: boolean): HomeCopy {
       profileCta: "Ir a mi perfil",
       footer:
         "Sandset organiza partidos, open plays, torneos y resultados de voley playa en un solo sitio.",
+      footerPrivacy: "Privacidad",
+      footerCookies: "Cookies",
+      footerTerms: "Terminos",
     };
   }
 
   return {
-    seoTitle: "Sandset | Find and organize beach volleyball",
+    seoTitle: "Sandset | Beach volleyball, tournaments and open play",
     seoDescription:
-      "Find beach volleyball matches, create events, coordinate players and validate results with Sandset.",
+      "Find beach volleyball matches, create tournaments with brackets and schedules, coordinate players and validate results with Sandset.",
     eyebrow: "Local beach volleyball, less chaos",
     heroTitle: "Find a match. Fill the court. Play.",
     heroBody:
@@ -191,6 +223,19 @@ function getHomeCopy(isSpanish: boolean): HomeCopy {
     competeBody: "Accepted results, history and rating.",
     privateTitle: "Control access",
     privateBody: "Private links, requests and invitations.",
+    tournamentsEyebrow: "Tournaments without spreadsheets",
+    tournamentsTitle: "Create tournaments with brackets, schedules and teams",
+    tournamentsBody:
+      "Configure format, spots, courts, registration and bracket type. Sandset prepares the base to manage teams, rounds, schedules and standings.",
+    tournamentsCta: "Create tournament",
+    tournamentsSchedule: "Schedules",
+    tournamentsScheduleBody: "Generate match order with courts and estimated duration.",
+    tournamentsBracket: "Brackets",
+    tournamentsBracketBody: "Choose knockout, round robin, groups or double elimination.",
+    tournamentsStandings: "Standings",
+    tournamentsStandingsBody: "Results and standings stay connected to the tournament.",
+    tournamentsConfig: "Teams",
+    tournamentsConfigBody: "Individual or team registration, 2v2 or 4v4.",
     ecosystemEyebrow: "More than creating matches",
     ecosystemTitle: "Your social and competitive beach volleyball club",
     ecosystemBody:
@@ -232,6 +277,9 @@ function getHomeCopy(isSpanish: boolean): HomeCopy {
     profileCta: "Go to my profile",
     footer:
       "Sandset organizes beach volleyball matches, open plays, tournaments and results in one place.",
+    footerPrivacy: "Privacy",
+    footerCookies: "Cookies",
+    footerTerms: "Terms",
   };
 }
 
@@ -276,9 +324,26 @@ export function HomePage() {
         featureList: [
           copy.findTitle,
           copy.createTitle,
+          copy.tournamentsTitle,
+          copy.tournamentsBracket,
+          copy.tournamentsSchedule,
           copy.privateTitle,
           copy.competeTitle,
         ],
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": `${HOME_CANONICAL_URL}#website`,
+        name: "Sandset",
+        url: HOME_CANONICAL_URL,
+        inLanguage: i18n.language,
+        description: copy.seoDescription,
+        publisher: {
+          "@type": "Organization",
+          name: "Sandset",
+          url: HOME_CANONICAL_URL,
+        },
       },
     ],
     [copy, i18n.language]
@@ -305,6 +370,9 @@ export function HomePage() {
   const finalProfileCta = isAuthenticated
     ? { label: copy.profileCta, to: "/profile" }
     : { label: copy.secondaryCta, to: "/register" };
+  const tournamentCreateLink = isAuthenticated
+    ? "/events/create?type=tournament"
+    : "/login?redirect=%2Fevents%2Fcreate%3Ftype%3Dtournament";
   const ideasLink = isAuthenticated
     ? "/feature-requests"
     : "/login?redirect=%2Ffeature-requests";
@@ -431,6 +499,61 @@ export function HomePage() {
             tone="slate"
             actionLabel={copy.actionCta}
           />
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-5 text-white shadow-sm sm:p-7 lg:p-8">
+        <div className="absolute -left-28 top-10 h-80 w-80 rounded-full bg-amber-400/20 blur-3xl" />
+        <div className="absolute -right-20 bottom-0 h-96 w-96 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="relative grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(520px,1.1fr)] lg:items-stretch">
+          <div className="flex min-h-[460px] flex-col justify-between rounded-[1.75rem] bg-white/8 p-6 ring-1 ring-white/10 backdrop-blur-sm sm:p-8">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.24em] text-amber-200">
+                {copy.tournamentsEyebrow}
+              </p>
+              <h2 className="mt-5 max-w-[12ch] text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl lg:text-6xl">
+                {copy.tournamentsTitle}
+              </h2>
+              <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+                {copy.tournamentsBody}
+              </p>
+            </div>
+
+            <Link
+              to={tournamentCreateLink}
+              className="mt-8 inline-flex min-h-12 w-fit items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-100"
+            >
+              <Plus size={17} />
+              {copy.tournamentsCta}
+            </Link>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TournamentFeatureCard
+              icon={<CalendarDays size={22} />}
+              title={copy.tournamentsSchedule}
+              body={copy.tournamentsScheduleBody}
+              tone="blue"
+            />
+            <TournamentFeatureCard
+              icon={<Rows2 size={22} />}
+              title={copy.tournamentsBracket}
+              body={copy.tournamentsBracketBody}
+              tone="amber"
+            />
+            <TournamentFeatureCard
+              icon={<Trophy size={22} />}
+              title={copy.tournamentsStandings}
+              body={copy.tournamentsStandingsBody}
+              tone="emerald"
+            />
+            <TournamentFeatureCard
+              icon={<Users size={22} />}
+              title={copy.tournamentsConfig}
+              body={copy.tournamentsConfigBody}
+              tone="slate"
+            />
+          </div>
         </div>
       </section>
 
@@ -611,7 +734,20 @@ export function HomePage() {
       </section>
 
       <footer className="rounded-[1.5rem] bg-slate-950/95 px-5 py-4 text-sm text-slate-300 shadow-sm ring-1 ring-slate-900">
-        {copy.footer}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-3xl leading-6">{copy.footer}</p>
+          <div className="flex flex-wrap gap-3 text-sm font-black">
+            <Link to="/privacy" className="transition hover:text-white">
+              {copy.footerPrivacy}
+            </Link>
+            <Link to="/cookies" className="transition hover:text-white">
+              {copy.footerCookies}
+            </Link>
+            <Link to="/terms" className="transition hover:text-white">
+              {copy.footerTerms}
+            </Link>
+          </div>
+        </div>
       </footer>
     </section>
   );
@@ -658,6 +794,40 @@ function EcosystemCard({
         <p className="mt-2 text-sm leading-6 opacity-90">{body}</p>
       </div>
     </Link>
+  );
+}
+
+function TournamentFeatureCard({
+  icon,
+  title,
+  body,
+  tone,
+}: {
+  icon: ReactNode;
+  title: string;
+  body: string;
+  tone: "blue" | "amber" | "emerald" | "slate";
+}) {
+  const tones = {
+    blue: "bg-blue-400 text-blue-950",
+    amber: "bg-amber-300 text-amber-950",
+    emerald: "bg-emerald-300 text-emerald-950",
+    slate: "bg-white text-slate-950",
+  };
+
+  return (
+    <article className="relative min-h-56 overflow-hidden rounded-[1.5rem] bg-white/10 p-5 ring-1 ring-white/10 backdrop-blur-md">
+      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl ${tones[tone]}`}>
+        {icon}
+      </div>
+      <h3 className="mt-6 text-2xl font-black tracking-[-0.03em] text-white">
+        {title}
+      </h3>
+      <p className="mt-3 text-sm leading-7 text-slate-300">{body}</p>
+      <div className="absolute -right-8 -top-8 text-white/5">
+        <span className="block scale-[5]">{icon}</span>
+      </div>
+    </article>
   );
 }
 

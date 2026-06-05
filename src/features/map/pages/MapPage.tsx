@@ -10,6 +10,7 @@ import { getAccessibleEventsForUser } from "../../events/services/events.service
 import type { Event } from "../../events/types/event.types";
 import { useEventFilters } from "../../events/hooks/useEventFilters";
 import { isFinishedEvent, isPastEvent } from "../../events/utils/event-display.utils";
+import { IdeasInlineCta } from "../../feature-requests/components/IdeasInlineCta";
 import { EventsMap } from "../components/EventsMap";
 
 export function MapPage() {
@@ -26,7 +27,6 @@ export function MapPage() {
     title: buildSeoTitle(t("nav.map")),
     description: t("mapPage.seoDescription"),
     canonicalPath: "/map",
-    noindex: true,
   });
 
   const visibleEvents = useMemo(
@@ -63,7 +63,7 @@ export function MapPage() {
     }
 
     loadEvents();
-  }, [profile?.id]);
+  }, [profile?.id, t]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -127,6 +127,10 @@ export function MapPage() {
           />
         </div>
       )}
+
+      <div className="mt-6">
+        <IdeasInlineCta context="map" tone="sand" />
+      </div>
     </section>
   );
 }

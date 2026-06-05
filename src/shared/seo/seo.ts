@@ -1,7 +1,7 @@
 export const SITE_NAME = "Sandset";
 export const SITE_URL = "https://sandset.app";
 export const DEFAULT_SEO_DESCRIPTION =
-  "Sandset helps players discover beach volleyball matches, open play sessions, private games and competitive events.";
+  "Sandset helps players discover beach volleyball matches, create tournaments with brackets and schedules, organize open plays and track competitive results.";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/logo.png`;
 
 export function buildSeoTitle(pageTitle: string) {

@@ -204,6 +204,13 @@ export const resources = {
                 title: "Create event",
                 body: "Set up your next beach volleyball plan and choose a cover that fits the format.",
                 authRequired: "You need to be logged in to create an event",
+                competitiveRatingRequired:
+                    "Complete your competitive ranking before creating competitive matches.",
+                rankingGateEyebrow: "Competitive locked",
+                rankingGateTitle: "Complete ranking to create this match",
+                rankingGateBody:
+                    "Casual matches and open plays are available now. Competitive matches need a starting rating so players understand the level.",
+                rankingGateCta: "Complete ranking",
                 submit: "Create event",
                 submitting: "Creating...",
             },
@@ -594,7 +601,7 @@ export const resources = {
             eventsPage: {
                 title: "Events",
                 seoDescription:
-                    "Browse public beach volleyball matches, open play sessions and tournaments on Sandset.",
+                    "Browse beach volleyball matches, open play sessions and tournaments with brackets, schedules and competitive results on Sandset.",
                 createEvent: "Create event",
                 loading: "Loading events...",
                 loadError: "Could not load events",
@@ -758,7 +765,7 @@ export const resources = {
             },
             mapPage: {
                 seoDescription:
-                    "Explore beach volleyball events on the Sandset map view.",
+                    "Explore beach volleyball matches, open plays and tournaments by location on the Sandset map.",
                 loading: "Loading map...",
                 loadError: "Could not load map events",
                 details: "Details",
@@ -771,7 +778,7 @@ export const resources = {
             },
             calendar: {
                 seoDescription:
-                    "Review upcoming beach volleyball events in the Sandset calendar view.",
+                    "Review upcoming beach volleyball matches, open plays and tournament schedules in the Sandset calendar.",
                 loading: "Loading calendar...",
                 loadError: "Could not load calendar events",
                 weekDaySun: "Sun",
@@ -2066,6 +2073,13 @@ export const resources = {
                 title: "Crear evento",
                 body: "Prepara tu siguiente plan de voley playa y elige una portada que encaje con el formato.",
                 authRequired: "Tienes que iniciar sesion para crear un evento",
+                competitiveRatingRequired:
+                    "Completa tu ranking competitivo antes de crear partidos competitivos.",
+                rankingGateEyebrow: "Competitivo bloqueado",
+                rankingGateTitle: "Completa ranking para crear este partido",
+                rankingGateBody:
+                    "Los partidos casuales y open plays estan disponibles ahora. Los partidos competitivos necesitan un rating inicial para que el nivel quede claro.",
+                rankingGateCta: "Completar ranking",
                 submit: "Crear evento",
                 submitting: "Creando...",
             },
@@ -2461,7 +2475,7 @@ export const resources = {
             eventsPage: {
                 title: "Eventos",
                 seoDescription:
-                    "Explora partidos publicos, quedadas y torneos de voley playa en Sandset.",
+                    "Explora partidos, quedadas y torneos de voley playa con cuadros, horarios y resultados competitivos en Sandset.",
                 createEvent: "Crear evento",
                 loading: "Cargando eventos...",
                 loadError: "No se pudieron cargar los eventos",
@@ -2625,7 +2639,7 @@ export const resources = {
             },
             mapPage: {
                 seoDescription:
-                    "Explora eventos de voley playa en la vista de mapa de Sandset.",
+                    "Explora partidos, quedadas y torneos de voley playa por ubicacion en el mapa de Sandset.",
                 loading: "Cargando mapa...",
                 loadError: "No se pudieron cargar los eventos del mapa",
                 details: "Detalles",
@@ -2638,7 +2652,7 @@ export const resources = {
             },
             calendar: {
                 seoDescription:
-                    "Revisa los proximos eventos de voley playa en la vista de calendario de Sandset.",
+                    "Revisa partidos, quedadas y horarios de torneos de voley playa en el calendario de Sandset.",
                 loading: "Cargando calendario...",
                 loadError: "No se pudieron cargar los eventos del calendario",
                 weekDaySun: "Dom",

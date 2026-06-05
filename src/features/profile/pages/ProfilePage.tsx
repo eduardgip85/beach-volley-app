@@ -24,6 +24,7 @@ import { MyEventInvitationsSection } from "../../event-invitations/components/My
 import { useMyEventJoinRequests } from "../../event-join-requests/hooks/useMyEventJoinRequests";
 import { MyEventJoinRequestsSection } from "../../event-join-requests/components/MyEventJoinRequestsSection";
 import { useMyTournamentInvitations } from "../../tournaments/hooks/useMyTournamentInvitations";
+import { IdeasInlineCta } from "../../feature-requests/components/IdeasInlineCta";
 
 export function ProfilePage() {
   const { t } = useTranslation();
@@ -162,6 +163,8 @@ export function ProfilePage() {
         selectedFilter={selectedFilter}
         onFilterChange={setSelectedFilter}
       />
+
+      <IdeasInlineCta context="profile" tone="sand" />
 
       <div className="grid gap-5 xl:grid-cols-2">
         <MyEventJoinRequestsSection

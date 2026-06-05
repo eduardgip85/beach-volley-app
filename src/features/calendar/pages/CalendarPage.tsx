@@ -10,6 +10,7 @@ import { getAccessibleEventsForUser } from "../../events/services/events.service
 import { useEventFilters } from "../../events/hooks/useEventFilters";
 import type { Event } from "../../events/types/event.types";
 import { isFinishedEvent } from "../../events/utils/event-display.utils";
+import { IdeasInlineCta } from "../../feature-requests/components/IdeasInlineCta";
 import { EventsCalendar } from "../components/EventsCalendar";
 
 export function CalendarPage() {
@@ -24,7 +25,6 @@ export function CalendarPage() {
     title: buildSeoTitle(t("nav.calendar")),
     description: t("calendar.seoDescription"),
     canonicalPath: "/calendar",
-    noindex: true,
   });
 
   const hasCountryContext = Boolean(profile?.country?.trim());
@@ -59,7 +59,7 @@ export function CalendarPage() {
     }
 
     loadEvents();
-  }, [profile?.id]);
+  }, [profile?.id, t]);
 
   const isPageLoading = loading || countryScopedLoading;
 
@@ -85,6 +85,8 @@ export function CalendarPage() {
       )}
 
       {!isPageLoading && !error && <EventsCalendar events={calendarEvents} />}
+
+      <IdeasInlineCta context="calendar" tone="light" />
     </section>
   );
 }

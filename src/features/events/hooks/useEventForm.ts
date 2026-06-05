@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent, type SetStateAction } from "react";
 import i18n from "../../../i18n";
 import {
     reverseGeocodeLocation,
@@ -6,7 +6,6 @@ import {
 } from "../services/geocoding.service";
 import {
     getDefaultEventCoverForType,
-    getEventCoverOptions,
 } from "../constants/eventCoverOptions";
 import { UNLIMITED_EVENT_CAPACITY, isUnlimitedEventCapacity } from "../types/event.types";
 import type {
@@ -23,6 +22,7 @@ import type {
 
 interface UseEventFormOptions {
     initialEvent?: Event;
+    initialType?: EventType;
     onSubmit: (payload: CreateEventPayload) => Promise<void>;
 }
 
@@ -34,16 +34,16 @@ function getTimeValue(date: string) {
     return new Date(date).toTimeString().slice(0, 5);
 }
 
-function getInitialType(initialEvent?: Event): EventType {
-    return initialEvent?.type ?? "match";
+function getInitialType(initialEvent?: Event, initialType?: EventType): EventType {
+    return initialEvent?.type ?? initialType ?? "match";
 }
 
 function getInitialVisibility(initialEvent?: Event): EventVisibility {
     return initialEvent?.visibility ?? "public";
 }
 
-function getInitialMode(initialEvent?: Event): EventMode | null {
-    const type = getInitialType(initialEvent);
+function getInitialMode(initialEvent?: Event, initialType?: EventType): EventMode | null {
+    const type = getInitialType(initialEvent, initialType);
 
     if (type === "match") {
         return initialEvent?.mode ?? "casual";
@@ -52,8 +52,8 @@ function getInitialMode(initialEvent?: Event): EventMode | null {
     return null;
 }
 
-function getInitialMaxParticipants(initialEvent?: Event) {
-    const type = getInitialType(initialEvent);
+function getInitialMaxParticipants(initialEvent?: Event, initialType?: EventType) {
+    const type = getInitialType(initialEvent, initialType);
 
     if (type === "match") {
         return 4;
@@ -66,8 +66,8 @@ function getInitialMaxParticipants(initialEvent?: Event) {
     return initialEvent?.maxParticipants ?? 8;
 }
 
-function getInitialUnlimitedParticipants(initialEvent?: Event) {
-    const type = getInitialType(initialEvent);
+function getInitialUnlimitedParticipants(initialEvent?: Event, initialType?: EventType) {
+    const type = getInitialType(initialEvent, initialType);
 
     if (type === "match") {
         return false;
@@ -124,12 +124,12 @@ function getInitialTournamentCourtCount(initialEvent?: Event) {
     return initialEvent?.tournamentSettings?.courtCount ?? 1;
 }
 
-function getInitialImageUrl(initialEvent?: Event) {
+function getInitialImageUrl(initialEvent?: Event, initialType?: EventType) {
     if (initialEvent?.imageUrl) {
         return initialEvent.imageUrl;
     }
 
-    return getDefaultEventCoverForType(getInitialType(initialEvent));
+    return getDefaultEventCoverForType(getInitialType(initialEvent, initialType));
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -149,15 +149,17 @@ function getErrorMessage(error: unknown, fallback: string) {
     return fallback;
 }
 
-export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
+export function useEventForm({ initialEvent, initialType, onSubmit }: UseEventFormOptions) {
     const [title, setTitle] = useState(initialEvent?.title ?? "");
     const [description, setDescription] = useState(initialEvent?.description ?? "");
-    const [type, setTypeState] = useState<EventType>(getInitialType(initialEvent));
+    const [type, setTypeState] = useState<EventType>(
+        getInitialType(initialEvent, initialType)
+    );
     const [visibility, setVisibility] = useState<EventVisibility>(
         getInitialVisibility(initialEvent)
     );
     const [mode, setModeState] = useState<EventMode | null>(
-        getInitialMode(initialEvent)
+        getInitialMode(initialEvent, initialType)
     );
     const [tournamentRegistrationType, setTournamentRegistrationType] =
         useState<TournamentRegistrationType>(
@@ -192,10 +194,10 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     );
 
     const [maxParticipants, setMaxParticipantsState] = useState(
-        getInitialMaxParticipants(initialEvent)
+        getInitialMaxParticipants(initialEvent, initialType)
     );
     const [unlimitedParticipants, setUnlimitedParticipants] = useState(
-        getInitialUnlimitedParticipants(initialEvent)
+        getInitialUnlimitedParticipants(initialEvent, initialType)
     );
 
     const [locationName, setLocationName] = useState(
@@ -208,53 +210,34 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
     const [locationSearch, setLocationSearch] = useState("");
     const [searchingLocation, setSearchingLocation] = useState(false);
     const [imageUrl, setImageUrl] = useState<string | null>(
-        getInitialImageUrl(initialEvent)
+        getInitialImageUrl(initialEvent, initialType)
     );
 
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
-    useEffect(() => {
-        if (type === "match") {
-            if (unlimitedParticipants) {
-                setUnlimitedParticipants(false);
-            }
+    function setType(nextType: SetStateAction<EventType>) {
+        const resolvedType =
+            typeof nextType === "function" ? nextType(type) : nextType;
 
-            if (maxParticipants !== 4) {
-                setMaxParticipantsState(4);
-            }
+        setTypeState(resolvedType);
+        setImageUrl(getDefaultEventCoverForType(resolvedType));
 
-            if (!mode) {
-                setModeState("casual");
-            }
-
+        if (resolvedType === "match") {
+            setUnlimitedParticipants(false);
+            setMaxParticipantsState(4);
+            setModeState((currentMode) => currentMode ?? "casual");
             return;
         }
 
-        if (type === "tournament") {
-            if (unlimitedParticipants) {
-                setUnlimitedParticipants(false);
-            }
-
-            if (mode !== null) {
-                setModeState(null);
-            }
-
-            return;
-        }
-
-        if (mode !== null) {
+        if (resolvedType === "tournament") {
+            setUnlimitedParticipants(false);
             setModeState(null);
+            return;
         }
-    }, [type, mode, maxParticipants, unlimitedParticipants]);
 
-    useEffect(() => {
-        const validCoverUrls = getEventCoverOptions(type).map((option) => option.imageUrl);
-
-        if (!imageUrl || !validCoverUrls.includes(imageUrl)) {
-            setImageUrl(getDefaultEventCoverForType(type));
-        }
-    }, [type, imageUrl]);
+        setModeState(null);
+    }
 
     async function handleSearchLocation() {
         if (!locationSearch.trim()) {
@@ -444,7 +427,7 @@ export function useEventForm({ initialEvent, onSubmit }: UseEventFormOptions) {
         setters: {
         setTitle,
         setDescription,
-        setType: setTypeState,
+        setType,
         setVisibility,
         setMode: setModeState,
         setDate,

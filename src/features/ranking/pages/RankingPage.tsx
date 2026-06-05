@@ -2,6 +2,8 @@ import { Globe2, HelpCircle, ShieldCheck, Swords, Trophy } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { buildSeoTitle } from "../../../shared/seo/seo";
+import { usePageSeo } from "../../../shared/seo/usePageSeo";
 import { useAuth } from "../../auth/context/AuthContext";
 import { RankingLegendModal } from "../components/RankingLegendModal";
 import { RankingPlayerCard } from "../components/RankingPlayerCard";
@@ -25,6 +27,12 @@ export function RankingPage() {
     } = useRanking({
         isAuthenticated,
         country: profile?.country ?? null,
+    });
+
+    usePageSeo({
+        title: buildSeoTitle(t("ranking.title")),
+        description: t("ranking.body"),
+        canonicalPath: "/ranking",
     });
 
     return (

@@ -18,6 +18,7 @@ import { useAuth } from "../../auth/context/AuthContext";
 import { EventChatSection } from "../../event-chat/components/EventChatSection";
 import { useEventInvitations } from "../../event-invitations/hooks/useEventInvitations";
 import { useEventJoinRequests } from "../../event-join-requests/hooks/useEventJoinRequests";
+import { IdeasInlineCta } from "../../feature-requests/components/IdeasInlineCta";
 import { useMatchPlayers } from "../../match-players/hooks/useMatchPlayers";
 import { useMatchResult } from "../../match-results/hooks/useMatchResult";
 import { TournamentRegistrationSection } from "../../tournaments/components/TournamentRegistrationSection";
@@ -1011,6 +1012,8 @@ export function EventDetailPage() {
               </div>
             ) : null}
           </div>
+
+          <IdeasInlineCta context="events" tone="light" />
 
           {canAccessEventChat && profile ? (
             <EventChatSection

@@ -56,6 +56,8 @@ export function AppLayout() {
   useGoogleAnalyticsPageTracking();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isOnboardingRoute = location.pathname === "/onboarding/competitive-rating";
+  const onboardingMode = new URLSearchParams(location.search).get("mode");
+  const isRankingOnboardingMode = onboardingMode === "rating";
   const pendingFriendRequestCount = usePendingIncomingFriendRequests(profile?.id);
 
   async function handleLogout() {
@@ -95,7 +97,11 @@ export function AppLayout() {
       return;
     }
 
-    if ((!profile.ratingPlacementCompletedAt || !profile.country) && !isOnboardingRoute) {
+    const hasBasicOnboarding = Boolean(
+      profile.country && profile.preferredMatchMode
+    );
+
+    if (!hasBasicOnboarding && !isOnboardingRoute) {
       const redirectTarget = `${location.pathname}${location.search}`;
       navigate(
         `/onboarding/competitive-rating?redirect=${encodeURIComponent(
@@ -106,7 +112,11 @@ export function AppLayout() {
       return;
     }
 
-    if (profile.ratingPlacementCompletedAt && profile.country && isOnboardingRoute) {
+    if (
+      hasBasicOnboarding &&
+      isOnboardingRoute &&
+      !isRankingOnboardingMode
+    ) {
       const params = new URLSearchParams(location.search);
       const redirectTarget = params.get("redirect");
 
@@ -120,6 +130,7 @@ export function AppLayout() {
   }, [
     isAuthenticated,
     isOnboardingRoute,
+    isRankingOnboardingMode,
     loading,
     location.pathname,
     location.search,

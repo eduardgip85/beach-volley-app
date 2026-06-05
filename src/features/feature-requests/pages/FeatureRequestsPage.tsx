@@ -241,6 +241,7 @@ export function FeatureRequestsPage() {
     title: buildSeoTitle(copy.title),
     description: copy.seoDescription,
     canonicalPath: "/feature-requests",
+    noindex: true,
   });
 
   useEffect(() => {

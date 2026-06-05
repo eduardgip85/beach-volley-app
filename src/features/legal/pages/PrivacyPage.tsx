@@ -3,90 +3,103 @@ import { LegalPageLayout, LegalSection } from "../components/LegalPageLayout";
 
 export function PrivacyPage() {
   const { i18n } = useTranslation();
-  const isSpanish = i18n.language.startsWith("es");
+  const isSpanish =
+    i18n.resolvedLanguage?.startsWith("es") || i18n.language.startsWith("es");
 
   const copy = isSpanish
     ? {
-        title: "Política de privacidad",
+        title: "Politica de privacidad",
         description:
-          "Así explica Sandset cómo recoge, usa y protege los datos personales dentro de la app.",
-        updated: "Última actualización: 21 de mayo de 2026",
-        controllerTitle: "Responsable del tratamiento",
+          "Como Sandset recoge, usa y protege datos personales dentro de la web y la app.",
+        updated: "Ultima actualizacion: 5 de junio de 2026",
+        controllerTitle: "Responsable",
         controllerBody:
-          "Sandset actúa como responsable del tratamiento de los datos personales recogidos a través de la web y de la app, incluyendo registro, gestión de perfil, participación en eventos y comunicación operativa del servicio.",
-        dataTitle: "Qué datos tratamos",
+          "Sandset actua como responsable del tratamiento de los datos personales recogidos al registrarte, usar tu perfil, crear eventos, participar en partidos, votar ideas o comunicarte con la plataforma.",
+        dataTitle: "Datos que tratamos",
         dataItems: [
-          "Datos de cuenta como email, nombre completo y proveedor de acceso.",
-          "Datos de perfil como avatar, país, ciudad, preferencias y visibilidad pública.",
-          "Datos de uso de la app relacionados con eventos creados, participación, amistades, resultados y rating competitivo.",
-          "Datos técnicos básicos necesarios para seguridad, sesiones y funcionamiento del servicio.",
+          "Datos de cuenta: email, nombre, proveedor de acceso y datos tecnicos de sesion.",
+          "Datos de perfil: avatar, pais, ciudad, preferencias de juego, disponibilidad, material, visibilidad publica y ajustes.",
+          "Datos competitivos: respuestas de onboarding, rating provisional, resultados, historial, ranking y estadisticas.",
+          "Datos de actividad: eventos creados, inscripciones, invitaciones, solicitudes, amistades, chat de eventos y votos o propuestas de ideas.",
+          "Datos tecnicos y de seguridad: registros necesarios para autenticar, proteger el servicio, depurar errores y prevenir abuso.",
         ],
-        purposeTitle: "Para qué usamos los datos",
+        purposeTitle: "Para que usamos los datos",
         purposeItems: [
-          "Crear y mantener tu cuenta.",
-          "Mostrar y gestionar tu perfil y tu actividad dentro de la app.",
-          "Permitir crear eventos, unirse a eventos, validar resultados y calcular estadísticas o rating cuando proceda.",
-          "Proteger la seguridad del servicio, prevenir abuso y resolver incidencias.",
+          "Crear y mantener tu cuenta y tu perfil de jugador.",
+          "Recomendar y filtrar eventos por pais, zona, mapa, calendario, preferencias y disponibilidad.",
+          "Permitir crear eventos casuales, open plays, torneos y partidos competitivos cuando tengas ranking.",
+          "Gestionar amistades, invitaciones, solicitudes, ideas de producto, moderacion y soporte.",
+          "Calcular estadisticas, ranking, historial competitivo y senales agregadas de uso.",
+          "Enviar comunicaciones operativas dentro de la app y, si se habilitan en el futuro, notificaciones push con permiso del usuario.",
         ],
-        legalBasisTitle: "Base jurídica",
+        legalBasisTitle: "Base juridica",
         legalBasisBody:
-          "Tratamos tus datos principalmente porque son necesarios para ejecutar el servicio que solicitas al registrarte y usar la app. Algunos tratamientos técnicos o de seguridad también pueden apoyarse en interés legítimo. Cuando usemos tecnologías que requieran consentimiento, se pedirá de forma separada.",
-        sharingTitle: "Con quién se comparten",
+          "La mayoria del tratamiento es necesario para prestar el servicio solicitado al usar Sandset. Algunos tratamientos tecnicos, de seguridad o mejora del producto pueden basarse en interes legitimo. La analitica no esencial y las notificaciones push se activaran solo cuando corresponda con consentimiento o permiso del usuario.",
+        sharingTitle: "Proveedores y terceros",
         sharingBody:
-          "No vendemos tus datos. Pueden intervenir proveedores tecnológicos necesarios para prestar el servicio, como hosting, autenticación, base de datos, analítica o mapas, siempre dentro de la operativa normal de la plataforma.",
-        retentionTitle: "Cuánto tiempo los conservamos",
+          "No vendemos datos personales. Podemos usar proveedores necesarios para hosting, base de datos, autenticacion, analitica, mapas, email, almacenamiento, errores o futuras notificaciones push. Cada proveedor debe usarse solo para operar Sandset y bajo condiciones adecuadas.",
+        retentionTitle: "Conservacion",
         retentionBody:
-          "Conservamos los datos mientras la cuenta siga activa o mientras sean necesarios para prestar el servicio, resolver incidencias, cumplir obligaciones legales o defender posibles reclamaciones. Si solicitas la eliminación de la cuenta, se eliminarán o anonimizarán los datos que corresponda según la arquitectura del servicio y las obligaciones aplicables.",
+          "Conservamos los datos mientras la cuenta este activa o sean necesarios para prestar el servicio, mantener historiales, resolver incidencias, cumplir obligaciones o defender reclamaciones. Al eliminar la cuenta, los datos se eliminaran o anonimizaran segun proceda.",
+        publicProfileTitle: "Perfil publico",
+        publicProfileBody:
+          "Algunos datos pueden mostrarse a otros usuarios, como nombre, avatar, pais, ciudad, rating, historial resumido, preferencias o material. La visibilidad puede gestionarse desde los ajustes disponibles.",
+        ideasTitle: "Ideas y contenido enviado",
+        ideasBody:
+          "Las ideas, votos y comentarios que envies pueden usarse para priorizar el roadmap, moderar propuestas y mostrar senales agregadas a administradores o usuarios.",
         rightsTitle: "Tus derechos",
         rightsBody:
-          "Puedes solicitar acceso, rectificación, supresión, limitación, oposición o portabilidad de tus datos cuando proceda. También puedes eliminar tu cuenta desde la app si esa funcionalidad está disponible. Si consideras que el tratamiento no es correcto, puedes acudir a la autoridad de control competente.",
-        publicProfileTitle: "Perfil público y visibilidad",
-        publicProfileBody:
-          "Algunas partes del perfil pueden mostrarse públicamente según la configuración de privacidad de la app, como nombre, país, rating o historial resumido. Tú controlas parte de esa visibilidad desde los ajustes disponibles.",
+          "Puedes solicitar acceso, rectificacion, supresion, limitacion, oposicion o portabilidad cuando corresponda. Tambien puedes eliminar tu cuenta desde la app si la funcionalidad esta disponible.",
         contactTitle: "Contacto",
         contactBody:
-          "Si necesitas ejercer derechos o pedir información adicional sobre privacidad, añade un canal de contacto válido antes del lanzamiento, por ejemplo un email dedicado de soporte o privacidad.",
+          "Antes del lanzamiento publico debes definir un email real de soporte o privacidad para que los usuarios puedan ejercer derechos y hacer consultas.",
       }
     : {
         title: "Privacy Policy",
         description:
-          "This page explains how Sandset collects, uses and protects personal data across the app.",
-        updated: "Last updated: May 21, 2026",
-        controllerTitle: "Data controller",
+          "How Sandset collects, uses and protects personal data across the website and app.",
+        updated: "Last updated: June 5, 2026",
+        controllerTitle: "Controller",
         controllerBody:
-          "Sandset acts as the controller for personal data collected through the website and app, including registration, profile management, event participation and operational service communications.",
-        dataTitle: "What data we process",
+          "Sandset acts as the controller for personal data collected when you register, use your profile, create events, join matches, vote on ideas or communicate with the platform.",
+        dataTitle: "Data we process",
         dataItems: [
-          "Account data such as email, full name and sign-in provider.",
-          "Profile data such as avatar, country, city, preferences and public visibility settings.",
-          "App activity data related to created events, participation, friendships, results and competitive rating.",
-          "Basic technical data required for security, sessions and service operation.",
+          "Account data: email, name, sign-in provider and session technical data.",
+          "Profile data: avatar, country, city, playing preferences, availability, gear, public visibility and settings.",
+          "Competitive data: onboarding answers, provisional rating, results, history, ranking and statistics.",
+          "Activity data: created events, registrations, invitations, requests, friendships, event chat and product ideas or votes.",
+          "Technical and security data: logs needed to authenticate, protect the service, debug errors and prevent abuse.",
         ],
-        purposeTitle: "Why we use the data",
+        purposeTitle: "Why we use data",
         purposeItems: [
-          "To create and maintain your account.",
-          "To display and manage your profile and in-app activity.",
-          "To let users create events, join events, validate results and calculate stats or rating where applicable.",
-          "To protect service security, prevent abuse and resolve incidents.",
+          "To create and maintain your account and player profile.",
+          "To recommend and filter events by country, area, map, calendar, preferences and availability.",
+          "To let users create casual events, open plays, tournaments and competitive matches when they have ranking.",
+          "To manage friendships, invitations, requests, product ideas, moderation and support.",
+          "To calculate statistics, ranking, competitive history and aggregated usage signals.",
+          "To send operational in-app communications and, if enabled in the future, push notifications with user permission.",
         ],
         legalBasisTitle: "Legal basis",
         legalBasisBody:
-          "We mainly process your data because it is necessary to provide the service you request when registering and using the app. Some technical or security processing may also rely on legitimate interest. Where consent is required for specific technologies, it will be requested separately.",
-        sharingTitle: "Who receives the data",
+          "Most processing is necessary to provide the service requested when using Sandset. Some technical, security or product improvement processing may rely on legitimate interest. Non-essential analytics and push notifications will only be enabled where appropriate with consent or user permission.",
+        sharingTitle: "Providers and third parties",
         sharingBody:
-          "We do not sell personal data. Technology providers necessary to operate the service may process data on our behalf, including hosting, authentication, database, analytics or maps providers, within the normal platform workflow.",
-        retentionTitle: "How long we keep the data",
+          "We do not sell personal data. We may use providers needed for hosting, database, authentication, analytics, maps, email, storage, error tracking or future push notifications. Each provider should only be used to operate Sandset under appropriate terms.",
+        retentionTitle: "Retention",
         retentionBody:
-          "We keep data while the account remains active or while it is needed to provide the service, resolve incidents, comply with legal obligations or defend possible claims. If you request account deletion, applicable data will be deleted or anonymized according to the service architecture and legal requirements.",
+          "We keep data while the account is active or while needed to provide the service, maintain histories, resolve incidents, comply with obligations or defend claims. When an account is deleted, data will be deleted or anonymized where applicable.",
+        publicProfileTitle: "Public profile",
+        publicProfileBody:
+          "Some data may be visible to other users, such as name, avatar, country, city, rating, summarized history, preferences or gear. Visibility can be managed from the available settings.",
+        ideasTitle: "Ideas and submitted content",
+        ideasBody:
+          "Ideas, votes and comments you submit may be used to prioritize the roadmap, moderate proposals and show aggregated signals to admins or users.",
         rightsTitle: "Your rights",
         rightsBody:
-          "You may request access, rectification, deletion, restriction, objection or portability where applicable. You may also delete your account from inside the app if that functionality is available. If you believe the processing is not compliant, you may contact the relevant supervisory authority.",
-        publicProfileTitle: "Public profile and visibility",
-        publicProfileBody:
-          "Some profile details may appear publicly depending on your app privacy settings, such as name, country, rating or summarized history. You control part of that visibility through the available settings.",
+          "You may request access, rectification, deletion, restriction, objection or portability where applicable. You may also delete your account from inside the app if that functionality is available.",
         contactTitle: "Contact",
         contactBody:
-          "Before launch, add a valid support or privacy contact channel so users can exercise their rights or ask privacy questions.",
+          "Before public launch, define a real support or privacy email so users can exercise rights and ask privacy questions.",
       };
 
   return (
@@ -131,12 +144,16 @@ export function PrivacyPage() {
         <p>{copy.retentionBody}</p>
       </LegalSection>
 
-      <LegalSection title={copy.rightsTitle}>
-        <p>{copy.rightsBody}</p>
-      </LegalSection>
-
       <LegalSection title={copy.publicProfileTitle}>
         <p>{copy.publicProfileBody}</p>
+      </LegalSection>
+
+      <LegalSection title={copy.ideasTitle}>
+        <p>{copy.ideasBody}</p>
+      </LegalSection>
+
+      <LegalSection title={copy.rightsTitle}>
+        <p>{copy.rightsBody}</p>
       </LegalSection>
 
       <LegalSection title={copy.contactTitle}>

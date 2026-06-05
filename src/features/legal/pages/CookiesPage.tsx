@@ -1,65 +1,114 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  applyGoogleConsentMode,
+  getStoredCookieConsent,
+  persistCookieConsent,
+  type CookieConsentChoice,
+} from "../../../shared/analytics/cookieConsent";
+import { trackGoogleAnalyticsPageView } from "../../../shared/analytics/googleAnalytics";
 import { LegalPageLayout, LegalSection } from "../components/LegalPageLayout";
 
 export function CookiesPage() {
   const { i18n } = useTranslation();
-  const isSpanish = i18n.language.startsWith("es");
+  const isSpanish =
+    i18n.resolvedLanguage?.startsWith("es") || i18n.language.startsWith("es");
+  const [choice, setChoice] = useState<CookieConsentChoice | null>(() =>
+    getStoredCookieConsent()
+  );
 
   const copy = isSpanish
     ? {
-        title: "Política de cookies",
+        title: "Politica de cookies",
         description:
-          "Información sobre cookies y tecnologías similares utilizadas por Sandset.",
-        updated: "Última actualización: 21 de mayo de 2026",
-        whatTitle: "Qué son las cookies",
+          "Informacion sobre cookies, localStorage y tecnologias similares utilizadas por Sandset.",
+        updated: "Ultima actualizacion: 5 de junio de 2026",
+        whatTitle: "Que son",
         whatBody:
-          "Las cookies y tecnologías similares son pequeños archivos o identificadores que permiten recordar sesiones, preferencias o medir el uso del sitio.",
-        typesTitle: "Qué tipos pueden usarse",
-        typeItems: [
-          "Cookies técnicas o estrictamente necesarias para inicio de sesión, seguridad y funcionamiento básico.",
-          "Cookies de preferencias para recordar idioma u opciones del usuario.",
-          "Cookies analíticas o medición, si activas herramientas de analítica.",
+          "Las cookies y tecnologias similares permiten recordar sesiones, preferencias o senales de uso. En Sandset tambien usamos localStorage para guardar elecciones como idioma, consentimiento de analitica o avisos ya vistos.",
+        usedTitle: "Que puede usar Sandset",
+        usedItems: [
+          "Tecnologias necesarias para login, seguridad, sesion y funcionamiento basico.",
+          "Preferencias locales, como idioma, consentimiento de cookies, filtros o ultima visita a ciertas secciones.",
+          "Analitica de uso si el usuario la acepta desde el banner o esta pagina.",
+          "Servicios externos como mapas, hosting o analitica, que pueden usar sus propias tecnologias si estan integrados.",
         ],
-        consentTitle: "Consentimiento",
-        consentBody:
-          "Las cookies técnicas necesarias pueden utilizarse para que la app funcione correctamente. Si Sandset usa cookies analíticas o similares no necesarias, deben cargarse solo tras el consentimiento válido del usuario.",
-        managementTitle: "Cómo gestionarlas",
-        managementBody:
-          "Puedes aceptar o rechazar determinadas cookies desde el banner o panel de preferencias que implemente la app, y también configurar el navegador para bloquearlas o eliminarlas.",
-        thirdPartyTitle: "Terceros",
-        thirdPartyBody:
-          "Algunos servicios de terceros, como analítica, mapas o contenido externo, pueden usar sus propias cookies o identificadores si se integran en la app.",
-        reviewTitle: "Revisión antes del lanzamiento",
+        analyticsTitle: "Analitica",
+        analyticsBody:
+          "La analitica ayuda a entender uso agregado y mejorar el producto. Si rechazas analitica, Sandset mantendra la app funcionando y no deberia activar medicion no esencial.",
+        pushTitle: "Notificaciones push",
+        pushBody:
+          "Las notificaciones push de una futura app movil no son cookies. Requeriran permiso separado del dispositivo y una politica clara sobre que eventos generan avisos.",
+        manageTitle: "Gestionar preferencia",
+        manageBody:
+          "Puedes cambiar tu eleccion de analitica aqui. Las cookies tecnicas necesarias no se pueden desactivar desde este panel porque hacen funcionar la app.",
+        accept: "Aceptar analitica",
+        reject: "Rechazar analitica",
+        currentAccepted: "Estado actual: analitica aceptada.",
+        currentRejected: "Estado actual: analitica rechazada.",
+        currentUnset: "Estado actual: sin eleccion guardada.",
+        browserTitle: "Gestion desde el navegador",
+        browserBody:
+          "Tambien puedes bloquear o eliminar cookies y almacenamiento local desde la configuracion del navegador. Si lo haces, algunas preferencias o sesiones pueden perderse.",
+        reviewTitle: "Revision antes de lanzamiento",
         reviewBody:
-          "Antes de publicar, conviene revisar exactamente qué herramientas están instaladas para documentar con precisión qué cookies existen y si requieren consentimiento.",
+          "Antes de publicar, conviene auditar las herramientas instaladas para listar proveedores reales, finalidades y duraciones exactas.",
       }
     : {
         title: "Cookie Policy",
         description:
-          "Information about cookies and similar technologies used by Sandset.",
-        updated: "Last updated: May 21, 2026",
-        whatTitle: "What cookies are",
+          "Information about cookies, localStorage and similar technologies used by Sandset.",
+        updated: "Last updated: June 5, 2026",
+        whatTitle: "What they are",
         whatBody:
-          "Cookies and similar technologies are small files or identifiers that help remember sessions, preferences or website usage information.",
-        typesTitle: "What types may be used",
-        typeItems: [
-          "Technical or strictly necessary cookies for sign-in, security and core functionality.",
-          "Preference cookies to remember language or user choices.",
-          "Analytics or measurement cookies if analytics tools are enabled.",
+          "Cookies and similar technologies help remember sessions, preferences or usage signals. Sandset also uses localStorage to save choices such as language, analytics consent or already-seen notices.",
+        usedTitle: "What Sandset may use",
+        usedItems: [
+          "Necessary technologies for login, security, sessions and core functionality.",
+          "Local preferences, such as language, cookie consent, filters or last visit to certain sections.",
+          "Usage analytics if the user accepts it from the banner or this page.",
+          "External services such as maps, hosting or analytics, which may use their own technologies if integrated.",
         ],
-        consentTitle: "Consent",
-        consentBody:
-          "Necessary technical cookies may be used so the app can function properly. If Sandset uses analytics or other non-essential cookies, they should only load after valid user consent.",
-        managementTitle: "How to manage them",
-        managementBody:
-          "You may accept or reject certain cookies through the banner or preferences panel implemented by the app, and you can also configure your browser to block or remove them.",
-        thirdPartyTitle: "Third parties",
-        thirdPartyBody:
-          "Some third-party services, such as analytics, maps or embedded content, may use their own cookies or identifiers if integrated into the app.",
+        analyticsTitle: "Analytics",
+        analyticsBody:
+          "Analytics helps understand aggregated usage and improve the product. If you reject analytics, Sandset will keep the app working and should not enable non-essential measurement.",
+        pushTitle: "Push notifications",
+        pushBody:
+          "Push notifications in a future mobile app are not cookies. They will require separate device permission and a clear policy on which events generate alerts.",
+        manageTitle: "Manage preference",
+        manageBody:
+          "You can change your analytics choice here. Necessary technical cookies cannot be disabled from this panel because they keep the app working.",
+        accept: "Accept analytics",
+        reject: "Reject analytics",
+        currentAccepted: "Current status: analytics accepted.",
+        currentRejected: "Current status: analytics rejected.",
+        currentUnset: "Current status: no saved choice.",
+        browserTitle: "Browser controls",
+        browserBody:
+          "You can also block or delete cookies and local storage from your browser settings. If you do, some preferences or sessions may be lost.",
         reviewTitle: "Pre-launch review",
         reviewBody:
-          "Before launch, it is a good idea to audit the exact tools installed in order to document precisely which cookies exist and whether they require consent.",
+          "Before publishing, audit the installed tools to list real providers, purposes and exact retention periods.",
       };
+
+  function handleChoice(nextChoice: CookieConsentChoice) {
+    persistCookieConsent(nextChoice);
+    applyGoogleConsentMode(nextChoice);
+    setChoice(nextChoice);
+
+    if (nextChoice === "accepted") {
+      trackGoogleAnalyticsPageView(
+        `${window.location.pathname}${window.location.search}${window.location.hash}`
+      );
+    }
+  }
+
+  const currentChoiceLabel =
+    choice === "accepted"
+      ? copy.currentAccepted
+      : choice === "rejected"
+        ? copy.currentRejected
+        : copy.currentUnset;
 
   return (
     <LegalPageLayout
@@ -75,24 +124,47 @@ export function CookiesPage() {
         <p>{copy.whatBody}</p>
       </LegalSection>
 
-      <LegalSection title={copy.typesTitle}>
+      <LegalSection title={copy.usedTitle}>
         <ul className="list-disc space-y-2 pl-5">
-          {copy.typeItems.map((item) => (
+          {copy.usedItems.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
       </LegalSection>
 
-      <LegalSection title={copy.consentTitle}>
-        <p>{copy.consentBody}</p>
+      <LegalSection title={copy.analyticsTitle}>
+        <p>{copy.analyticsBody}</p>
       </LegalSection>
 
-      <LegalSection title={copy.managementTitle}>
-        <p>{copy.managementBody}</p>
+      <LegalSection title={copy.pushTitle}>
+        <p>{copy.pushBody}</p>
       </LegalSection>
 
-      <LegalSection title={copy.thirdPartyTitle}>
-        <p>{copy.thirdPartyBody}</p>
+      <LegalSection title={copy.manageTitle}>
+        <p>{copy.manageBody}</p>
+        <div className="rounded-[1.5rem] bg-slate-50 p-4 ring-1 ring-slate-200">
+          <p className="text-sm font-bold text-slate-900">{currentChoiceLabel}</p>
+          <div className="mt-4 grid gap-3 sm:flex">
+            <button
+              type="button"
+              onClick={() => handleChoice("accepted")}
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700"
+            >
+              {copy.accept}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleChoice("rejected")}
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              {copy.reject}
+            </button>
+          </div>
+        </div>
+      </LegalSection>
+
+      <LegalSection title={copy.browserTitle}>
+        <p>{copy.browserBody}</p>
       </LegalSection>
 
       <LegalSection title={copy.reviewTitle}>
