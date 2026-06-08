@@ -18,7 +18,6 @@ sql
 supabase
 !sql/
 sql/*
-!sql/2026-06-08_notifications.sql
 
 # Editor directories and files
 .vscode/*

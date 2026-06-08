@@ -8,6 +8,7 @@ import {
   Plus,
   Rows2,
   ShieldCheck,
+  Smartphone,
   Trophy,
   Users,
 } from "lucide-react";
@@ -101,10 +102,23 @@ interface HomeCopy {
   finalBody: string;
   finalCta: string;
   profileCta: string;
+  launchEyebrow: string;
+  launchTitle: string;
+  launchBody: string;
+  launchBetaCta: string;
+  launchStoreSoon: string;
+  launchAppleStore: string;
+  launchGooglePlay: string;
+  launchProgress: string;
+  launchProgressLabel: string;
+  launchFeatureOne: string;
+  launchFeatureTwo: string;
+  launchFeatureThree: string;
   footer: string;
   footerPrivacy: string;
   footerCookies: string;
   footerTerms: string;
+  footerDeleteAccount: string;
 }
 
 function getHomeCopy(isSpanish: boolean): HomeCopy {
@@ -188,11 +202,25 @@ function getHomeCopy(isSpanish: boolean): HomeCopy {
         "Crea un evento claro y deja que los jugadores sepan exactamente como unirse.",
       finalCta: "Explorar eventos",
       profileCta: "Ir a mi perfil",
+      launchEyebrow: "Sandset se mueve contigo",
+      launchTitle: "Estamos construyendo la app movil",
+      launchBody:
+        "La experiencia completa de Sandset llegara a iPhone y Android. Encuentra partidos, recibe avisos y gestiona tus eventos desde la pista.",
+      launchBetaCta: "Unirme a la beta",
+      launchStoreSoon: "Proximamente en",
+      launchAppleStore: "App Store",
+      launchGooglePlay: "Google Play",
+      launchProgress: "Beta movil en preparacion",
+      launchProgressLabel: "Construyendo la primera version",
+      launchFeatureOne: "Avisos de eventos y solicitudes",
+      launchFeatureTwo: "Mapa, calendario y ranking",
+      launchFeatureThree: "Partidos y torneos desde el movil",
       footer:
         "Sandset organiza partidos, open plays, torneos y resultados de voley playa en un solo sitio.",
       footerPrivacy: "Privacidad",
       footerCookies: "Cookies",
       footerTerms: "Terminos",
+      footerDeleteAccount: "Eliminar cuenta",
     };
   }
 
@@ -275,11 +303,25 @@ function getHomeCopy(isSpanish: boolean): HomeCopy {
       "Create a clear event and let players know exactly how to join.",
     finalCta: "Explore events",
     profileCta: "Go to my profile",
+    launchEyebrow: "Sandset moves with you",
+    launchTitle: "We are building the mobile app",
+    launchBody:
+      "The complete Sandset experience is coming to iPhone and Android. Find matches, receive alerts and manage events courtside.",
+    launchBetaCta: "Join the beta",
+    launchStoreSoon: "Coming soon on",
+    launchAppleStore: "App Store",
+    launchGooglePlay: "Google Play",
+    launchProgress: "Mobile beta in progress",
+    launchProgressLabel: "Building the first release",
+    launchFeatureOne: "Event and request alerts",
+    launchFeatureTwo: "Map, calendar and ranking",
+    launchFeatureThree: "Matches and tournaments on mobile",
     footer:
       "Sandset organizes beach volleyball matches, open plays, tournaments and results in one place.",
     footerPrivacy: "Privacy",
     footerCookies: "Cookies",
     footerTerms: "Terms",
+    footerDeleteAccount: "Delete account",
   };
 }
 
@@ -427,6 +469,8 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {!isAuthenticated ? <MobileLaunchSection copy={copy} /> : null}
 
       <section className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="relative overflow-hidden rounded-[2rem] bg-slate-950 p-6 text-white shadow-sm sm:p-8">
@@ -746,10 +790,133 @@ export function HomePage() {
             <Link to="/terms" className="transition hover:text-white">
               {copy.footerTerms}
             </Link>
+            <Link to="/delete-account" className="transition hover:text-white">
+              {copy.footerDeleteAccount}
+            </Link>
           </div>
         </div>
       </footer>
     </section>
+  );
+}
+
+function MobileLaunchSection({ copy }: { copy: HomeCopy }) {
+  return (
+    <section className="relative overflow-hidden rounded-[2rem] bg-[#f4ead8] p-4 shadow-sm ring-1 ring-black/5 sm:p-6 lg:p-8">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_12%,rgba(255,255,255,0.9),transparent_25%),radial-gradient(circle_at_85%_15%,rgba(37,99,235,0.18),transparent_30%),radial-gradient(circle_at_72%_88%,rgba(16,185,129,0.22),transparent_28%)]" />
+      <div className="relative grid gap-5 overflow-hidden rounded-[1.75rem] bg-slate-950 p-5 text-white shadow-2xl shadow-slate-950/15 sm:p-7 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.7fr)] lg:items-center lg:p-10">
+        <div className="absolute -left-32 bottom-0 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
+        <div className="absolute -right-24 top-0 h-72 w-72 rounded-full bg-emerald-400/15 blur-3xl" />
+
+        <div className="relative z-10 max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-amber-200 ring-1 ring-white/10">
+            <Smartphone size={14} />
+            {copy.launchEyebrow}
+          </div>
+          <h2 className="mt-5 max-w-[12ch] text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl lg:text-6xl">
+            {copy.launchTitle}
+          </h2>
+          <p className="mt-5 max-w-xl text-sm leading-7 text-slate-300 sm:text-base">
+            {copy.launchBody}
+          </p>
+
+          <div className="mt-6 grid gap-2 text-sm font-bold text-slate-200 sm:grid-cols-3">
+            {[copy.launchFeatureOne, copy.launchFeatureTwo, copy.launchFeatureThree].map(
+              (feature, index) => (
+                <div key={feature} className="rounded-2xl bg-white/7 p-3 ring-1 ring-white/10">
+                  <span className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-400 text-[10px] font-black text-slate-950">
+                    {index + 1}
+                  </span>
+                  {feature}
+                </div>
+              )
+            )}
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Link
+              to="/register"
+              className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-white px-5 py-3 text-sm font-black text-slate-950 transition hover:-translate-y-0.5 hover:bg-slate-100"
+            >
+              {copy.launchBetaCta}
+            </Link>
+            <StoreBadge label={copy.launchAppleStore} eyebrow={copy.launchStoreSoon} />
+            <StoreBadge label={copy.launchGooglePlay} eyebrow={copy.launchStoreSoon} />
+          </div>
+        </div>
+
+        <div className="relative z-10 mx-auto w-full max-w-[340px] lg:mr-0">
+          <div className="absolute -inset-8 rounded-full bg-blue-500/20 blur-3xl" />
+          <div className="relative rotate-[2deg] rounded-[2.5rem] border-[7px] border-slate-800 bg-slate-100 p-3 shadow-2xl shadow-black/40">
+            <div className="mx-auto mb-3 h-1.5 w-20 rounded-full bg-slate-300" />
+            <div className="overflow-hidden rounded-[1.8rem] bg-[#f7efe1] p-3 text-slate-950">
+              <div className="rounded-2xl bg-slate-950 p-4 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <img src="/logo.png" alt="" className="h-8 w-8 rounded-xl object-cover" />
+                    <span className="font-black tracking-[0.16em]">SANDSET</span>
+                  </div>
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                </div>
+                <p className="mt-5 text-[10px] font-black uppercase tracking-[0.18em] text-blue-200">
+                  {copy.launchProgress}
+                </p>
+                <p className="mt-1 text-xl font-black">{copy.launchProgressLabel}</p>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full w-2/3 rounded-full bg-gradient-to-r from-blue-400 to-emerald-400" />
+                </div>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <PhonePreviewTile icon={<Map size={15} />} label={copy.mapTitle} tone="blue" />
+                <PhonePreviewTile icon={<CalendarDays size={15} />} label={copy.calendarTitle} tone="amber" />
+                <PhonePreviewTile icon={<Users size={15} />} label={copy.friendsTitle} tone="emerald" />
+                <PhonePreviewTile icon={<Trophy size={15} />} label={copy.rankingTitle} tone="slate" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StoreBadge({ eyebrow, label }: { eyebrow: string; label: string }) {
+  return (
+    <div className="inline-flex min-h-12 items-center gap-3 rounded-2xl border border-white/15 bg-white/8 px-4 py-2.5 text-left text-white">
+      <Smartphone size={20} className="text-slate-300" />
+      <span>
+        <span className="block text-[9px] font-black uppercase tracking-[0.16em] text-slate-400">
+          {eyebrow}
+        </span>
+        <span className="block text-sm font-black">{label}</span>
+      </span>
+    </div>
+  );
+}
+
+function PhonePreviewTile({
+  icon,
+  label,
+  tone,
+}: {
+  icon: ReactNode;
+  label: string;
+  tone: "blue" | "amber" | "emerald" | "slate";
+}) {
+  const tones = {
+    blue: "bg-blue-50 text-blue-700",
+    amber: "bg-amber-50 text-amber-700",
+    emerald: "bg-emerald-50 text-emerald-700",
+    slate: "bg-slate-200 text-slate-700",
+  };
+
+  return (
+    <div className="rounded-2xl bg-white p-3 shadow-sm">
+      <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${tones[tone]}`}>
+        {icon}
+      </span>
+      <p className="mt-3 truncate text-xs font-black">{label}</p>
+    </div>
   );
 }
 

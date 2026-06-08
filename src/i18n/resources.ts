@@ -1053,6 +1053,9 @@ export const resources = {
                     ideasTitle: "Admin ideas",
                     ideasDescription:
                         "Triage pending ideas, update roadmap status and moderate submissions.",
+                    deletionRequestsTitle: "Account deletion requests",
+                    deletionRequestsDescription:
+                        "Review identity checks and track the outcome of account deletion requests.",
                 },
             },
             eventDetail: {
@@ -3104,6 +3107,9 @@ export const resources = {
                     ideasTitle: "Admin ideas",
                     ideasDescription:
                         "Clasifica ideas pendientes, actualiza el roadmap y modera propuestas.",
+                    deletionRequestsTitle: "Solicitudes de eliminacion",
+                    deletionRequestsDescription:
+                        "Revisa verificaciones de identidad y registra el resultado de las solicitudes.",
                 },
             },
             eventDetail: {

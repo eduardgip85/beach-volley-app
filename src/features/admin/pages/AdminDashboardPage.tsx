@@ -5,6 +5,7 @@ import {
   Lightbulb,
   ShieldCheck,
   UserPlus,
+  UserX,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link, useOutletContext } from "react-router-dom";
@@ -71,6 +72,14 @@ export function AdminDashboardPage() {
       accent: "rose",
       showNotification: showAdminIdeasNotification,
       notificationLabel: t("adminHub.notifications.pendingIdeas"),
+    },
+    {
+      title: t("adminHub.shortcuts.deletionRequestsTitle"),
+      description: t("adminHub.shortcuts.deletionRequestsDescription"),
+      cta: t("adminHub.open"),
+      path: "/admin/deletion-requests",
+      icon: UserX,
+      accent: "rose",
     },
   ];
 

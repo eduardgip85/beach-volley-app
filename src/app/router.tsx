@@ -180,6 +180,11 @@ const TermsPage = lazyWithReload(() =>
     default: module.TermsPage,
   }))
 );
+const DeleteAccountPage = lazyWithReload(() =>
+  import("../features/legal/pages/DeleteAccountPage").then((module) => ({
+    default: module.DeleteAccountPage,
+  }))
+);
 const AdminUsersPage = lazyWithReload(() =>
   import("../features/admin/pages/AdminUsersPage").then((module) => ({
     default: module.AdminUsersPage,
@@ -203,6 +208,11 @@ const AdminEventsPage = lazyWithReload(() =>
 const AdminIdeasPage = lazyWithReload(() =>
   import("../features/admin/pages/AdminIdeasPage").then((module) => ({
     default: module.AdminIdeasPage,
+  }))
+);
+const AdminDeletionRequestsPage = lazyWithReload(() =>
+  import("../features/admin/pages/AdminDeletionRequestsPage").then((module) => ({
+    default: module.AdminDeletionRequestsPage,
   }))
 );
 
@@ -285,6 +295,10 @@ export const router = createBrowserRouter([
         path: "/terms",
         element: withSuspense(<TermsPage />),
       },
+      {
+        path: "/delete-account",
+        element: withSuspense(<DeleteAccountPage />),
+      },
 
       {
         element: <ProtectedRoute />,
@@ -358,6 +372,10 @@ export const router = createBrowserRouter([
               {
                 path: "ideas",
                 element: withSuspense(<AdminIdeasPage />),
+              },
+              {
+                path: "deletion-requests",
+                element: withSuspense(<AdminDeletionRequestsPage />),
               },
             ],
           },
