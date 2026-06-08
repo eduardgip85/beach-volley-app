@@ -100,6 +100,13 @@ export function CalendarEventCard({
                     month: "short",
                 })}
                 </span>
+
+                {typeof event.participantCount === "number" ? (
+                <span className="inline-flex items-center gap-2">
+                    <Users size={15} />
+                    {event.participantCount}/{event.maxParticipants}
+                </span>
+                ) : null}
             </div>
             </div>
         </div>

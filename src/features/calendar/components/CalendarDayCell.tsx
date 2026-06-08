@@ -29,25 +29,28 @@ export function CalendarDayCell({
     const finishedDayEvents = dayEvents.filter((event) => isFinishedEvent(event));
     const activeDayEvents = dayEvents.filter((event) => !isFinishedEvent(event));
     const visibleMobileActiveEvents = activeDayEvents.slice(0, 3);
-    const visibleMobileFinishedEvents = finishedDayEvents.slice(0, 2);
     const visibleDesktopEvents = activeDayEvents.slice(0, 2);
     const remainingActiveEvents = Math.max(activeDayEvents.length - visibleDesktopEvents.length, 0);
+    const remainingMobileEvents = Math.max(dayEvents.length - visibleMobileActiveEvents.length, 0);
 
     const isCurrentMonth = isSameMonth(day, currentMonth);
     const isSelected = isSameDay(day, selectedDate);
     const isToday = isSameDay(day, new Date());
+    const isWeekend = day.getDay() === 0 || day.getDay() === 6;
 
     return (
         <button
             type="button"
             onClick={() => onSelectDay(day)}
-            className={`min-h-[4.75rem] border border-slate-100 p-2 text-left transition-colors md:min-h-28 md:p-2.5 ${
+        className={`relative min-h-[4.75rem] border border-slate-100 p-1.5 text-left transition-all md:min-h-28 md:p-2.5 ${
                 isCurrentMonth
-                    ? "bg-white text-slate-900 hover:bg-slate-50"
+                    ? isWeekend
+                        ? "bg-amber-50/35 text-slate-900 hover:bg-amber-50/70"
+                        : "bg-white text-slate-900 hover:bg-slate-50"
                     : "bg-slate-50/80 text-slate-300 hover:bg-slate-100/80"
             } ${
                 isSelected
-                    ? "bg-blue-50 shadow-[inset_0_0_0_2px_rgba(59,130,246,0.22)]"
+                    ? "z-10 bg-blue-50 shadow-[inset_0_0_0_2px_rgba(37,99,235,0.45)]"
                     : ""
             }`}
         >
@@ -66,7 +69,7 @@ export function CalendarDayCell({
         </div>
 
         <div className="mt-2 min-h-[14px] md:hidden">
-            {visibleMobileActiveEvents.length > 0 || visibleMobileFinishedEvents.length > 0 ? (
+            {visibleMobileActiveEvents.length > 0 || finishedDayEvents.length > 0 ? (
                 <div className="flex flex-wrap items-center justify-center gap-1.5">
                     {visibleMobileActiveEvents.map((event) => (
                         <span
@@ -77,19 +80,16 @@ export function CalendarDayCell({
                         />
                     ))}
 
-                    {visibleMobileFinishedEvents.map((event) => (
-                        <span
-                            key={`finished-${event.id}`}
-                            className="h-1.5 w-1.5 rounded-full bg-red-500 shadow-sm"
-                        />
-                    ))}
+                    {finishedDayEvents.length > 0 ? (
+                        <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                    ) : null}
                 </div>
             ) : null}
 
-            {remainingActiveEvents > 0 ? (
+            {remainingMobileEvents > 0 ? (
                 <div className="mt-1 text-center">
                     <span className="inline-flex rounded-full bg-slate-100 px-1.5 py-0.5 text-[9px] font-bold text-slate-500">
-                    {t("calendar.moreEventsCompact", { count: remainingActiveEvents })}
+                    {t("calendar.moreEventsCompact", { count: remainingMobileEvents })}
                     </span>
                 </div>
             ) : null}
@@ -97,7 +97,7 @@ export function CalendarDayCell({
 
         <div className="mt-2 hidden space-y-1 md:block">
             {finishedDayEvents.length > 0 ? (
-                <div className="truncate rounded-full bg-red-100 px-2 py-1 text-[11px] font-bold text-red-700">
+                <div className="truncate rounded-full bg-slate-100 px-2 py-1 text-[11px] font-bold text-slate-400">
                     {t("calendar.finishedEventsCount", {
                         count: finishedDayEvents.length,
                     })}

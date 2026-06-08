@@ -17,6 +17,7 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
     selectedDayEvents,
     goToPreviousMonth,
     goToNextMonth,
+    goToToday,
     handleSelectDay,
   } = useEventsCalendar(events);
 
@@ -26,21 +27,24 @@ export function EventsCalendar({ events }: EventsCalendarProps) {
         currentMonth={currentMonth}
         onPreviousMonth={goToPreviousMonth}
         onNextMonth={goToNextMonth}
+        onToday={goToToday}
       />
 
-      <CalendarGrid
-        events={events}
-        monthDays={monthDays}
-        currentMonth={currentMonth}
-        selectedDate={selectedDate}
-        onSelectDay={handleSelectDay}
-      />
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(21rem,0.8fr)]">
+        <CalendarGrid
+          events={events}
+          monthDays={monthDays}
+          currentMonth={currentMonth}
+          selectedDate={selectedDate}
+          onSelectDay={handleSelectDay}
+        />
 
-      <CalendarEventsSection
-        selectedDate={selectedDate}
-        selectedDayEvents={selectedDayEvents}
-        monthEvents={monthEvents}
-      />
+        <CalendarEventsSection
+          selectedDate={selectedDate}
+          selectedDayEvents={selectedDayEvents}
+          monthEvents={monthEvents}
+        />
+      </div>
     </section>
   );
 }

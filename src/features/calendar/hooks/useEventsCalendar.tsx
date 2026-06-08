@@ -43,6 +43,12 @@ export function useEventsCalendar(events: Event[]) {
         );
     }
 
+    function goToToday() {
+        const today = new Date();
+        setSelectedDate(today);
+        setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    }
+
     function handleSelectDay(day: Date) {
         setSelectedDate(day);
 
@@ -59,6 +65,7 @@ export function useEventsCalendar(events: Event[]) {
         selectedDayEvents,
         goToPreviousMonth,
         goToNextMonth,
+        goToToday,
         handleSelectDay,
     };
 }
