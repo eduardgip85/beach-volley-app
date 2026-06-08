@@ -1,26 +1,25 @@
-import { CalendarDays, MapPin, X } from "lucide-react";
-import { divIcon } from "leaflet";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import {
-  MapContainer,
-  Marker,
-  TileLayer,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
+  CalendarDays,
+  ChevronRight,
+  LocateFixed,
+  MapPin,
+  Search,
+  Users,
+  X,
+} from "lucide-react";
+import { divIcon, type LatLngBounds, type Map as LeafletMap } from "leaflet";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import { Link } from "react-router-dom";
 import type { Event } from "../../events/types/event.types";
+import { isUnlimitedEventCapacity } from "../../events/types/event.types";
 import {
-  getEventBadgeClasses,
   getEventColorClasses,
-  getEventDisplayStatus,
   getEventFallbackImage,
   getEventModeLabel,
   getEventTournamentPriceLabel,
   getEventTypeLabel,
-  getEventVisibilityBadgeClasses,
-  getEventVisibilityLabel,
 } from "../../events/utils/event-display.utils";
 
 interface EventsMapProps {
@@ -31,34 +30,18 @@ interface EventsMapProps {
 
 function getMarkerIcon(event: Event, isSelected: boolean) {
   const color = getEventColorClasses(event);
-  const selectedClasses = isSelected
-    ? "scale-110 ring-4 ring-blue-300/80 ring-offset-2 ring-offset-white"
-    : "";
 
   return divIcon({
     className: "",
     html: `
-      <div class="flex items-center justify-center">
-        <div class="${color} ${selectedClasses} h-5 w-6 rounded-full border-2 border-white shadow-md transition-all"></div>
+      <div class="relative flex h-10 w-10 items-center justify-center transition-transform ${isSelected ? "scale-125" : ""}">
+        <div class="${color} h-7 w-7 rotate-45 rounded-[0.65rem_0.65rem_0.65rem_0] border-[3px] border-white shadow-lg"></div>
+        <div class="absolute h-2.5 w-2.5 rounded-full bg-white"></div>
       </div>
     `,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [40, 40],
+    iconAnchor: [20, 34],
   });
-}
-
-function MapSelectionReset({
-  onReset,
-}: {
-  onReset: () => void;
-}) {
-  useMapEvents({
-    click: () => {
-      onReset();
-    },
-  });
-
-  return null;
 }
 
 function MapViewportController({
@@ -77,67 +60,199 @@ function MapViewportController({
   return null;
 }
 
+function MapMovementListener({
+  onMove,
+  onMapClick,
+}: {
+  onMove: (bounds: LatLngBounds) => void;
+  onMapClick: () => void;
+}) {
+  useMapEvents({
+    moveend: (event) => onMove(event.target.getBounds()),
+    click: onMapClick,
+  });
+  return null;
+}
+
 export function EventsMap({
   events,
   defaultCenter = [41.3851, 2.1734],
   defaultZoom = 6,
 }: EventsMapProps) {
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const { t } = useTranslation();
+  const [map, setMap] = useState<LeafletMap | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [pendingBounds, setPendingBounds] = useState<LatLngBounds | null>(null);
+  const [appliedBounds, setAppliedBounds] = useState<LatLngBounds | null>(null);
+  const [showSearchArea, setShowSearchArea] = useState(false);
+  const [locating, setLocating] = useState(false);
 
-  useEffect(() => {
-    if (!selectedEvent) {
-      return;
-    }
+  const visibleEvents = useMemo(
+    () =>
+      (appliedBounds
+        ? events.filter((event) => appliedBounds.contains([event.latitude, event.longitude]))
+        : events
+      ).sort((left, right) => left.startDate.localeCompare(right.startDate)),
+    [appliedBounds, events]
+  );
+  const selectedEvent =
+    visibleEvents.find((event) => event.id === selectedEventId) ?? null;
 
-    const selectedStillVisible = events.some((event) => event.id === selectedEvent.id);
+  function selectEvent(event: Event) {
+    setSelectedEventId(event.id);
+    map?.flyTo([event.latitude, event.longitude], Math.max(map.getZoom(), 13), {
+      duration: 0.7,
+    });
+  }
 
-    if (!selectedStillVisible) {
-      setSelectedEvent(null);
-    }
-  }, [events, selectedEvent]);
+  function handleMapMove(bounds: LatLngBounds) {
+    setPendingBounds(bounds);
+    setShowSearchArea(true);
+  }
+
+  function searchVisibleArea() {
+    setAppliedBounds(pendingBounds);
+    setSelectedEventId(null);
+    setShowSearchArea(false);
+  }
+
+  function showAllEvents() {
+    setAppliedBounds(null);
+    setShowSearchArea(false);
+    map?.setView(defaultCenter, defaultZoom);
+  }
+
+  function locateUser() {
+    if (!navigator.geolocation || !map) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        map.flyTo([coords.latitude, coords.longitude], 13);
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full overflow-hidden rounded-[1.75rem] bg-slate-200">
       <MapContainer
+        ref={setMap}
         center={defaultCenter}
-        zoom={12}
+        zoom={defaultZoom}
         scrollWheelZoom
-        className="h-full w-full rounded-3xl"
+        className="h-full w-full"
       >
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
         />
-        <MapViewportController
-          defaultCenter={defaultCenter}
-          defaultZoom={defaultZoom}
+        <MapViewportController defaultCenter={defaultCenter} defaultZoom={defaultZoom} />
+        <MapMovementListener
+          onMove={handleMapMove}
+          onMapClick={() => setSelectedEventId(null)}
         />
-        <MapSelectionReset onReset={() => setSelectedEvent(null)} />
 
-        {events.map((event) => (
+        {visibleEvents.map((event) => (
           <Marker
             key={event.id}
             position={[event.latitude, event.longitude]}
-            icon={getMarkerIcon(event, selectedEvent?.id === event.id)}
-            zIndexOffset={selectedEvent?.id === event.id ? 1000 : 0}
-            eventHandlers={{
-              click: () => setSelectedEvent(event),
-            }}
+            icon={getMarkerIcon(event, selectedEventId === event.id)}
+            zIndexOffset={selectedEventId === event.id ? 1000 : 0}
+            eventHandlers={{ click: () => selectEvent(event) }}
           />
         ))}
       </MapContainer>
 
+      <div className="pointer-events-none absolute inset-x-3 top-3 z-[1300] flex items-start justify-end gap-3 md:left-auto md:right-4 md:top-4">
+        <div className="pointer-events-auto hidden rounded-2xl bg-slate-950/90 px-4 py-3 text-white shadow-xl backdrop-blur-md md:block">
+          <p className="text-lg font-black">
+            {t("mapPage.eventsInArea", { count: visibleEvents.length })}
+          </p>
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-300">
+            {appliedBounds ? t("mapPage.filteredArea") : t("mapPage.allVisibleEvents")}
+          </p>
+        </div>
+
+        <div className="pointer-events-auto flex gap-2">
+          {showSearchArea ? (
+            <button
+              type="button"
+              onClick={searchVisibleArea}
+              className="inline-flex h-11 items-center gap-2 rounded-2xl bg-blue-600 px-4 text-xs font-black text-white shadow-xl transition hover:bg-blue-700"
+            >
+              <Search size={15} />
+              <span className="hidden sm:inline">{t("mapPage.searchArea")}</span>
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={locateUser}
+            aria-label={t("mapPage.myLocation")}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-xl transition hover:text-blue-600"
+          >
+            <LocateFixed size={18} className={locating ? "animate-pulse text-blue-600" : ""} />
+          </button>
+        </div>
+      </div>
+
+      <MapLegend />
+
+      <div className="absolute bottom-4 left-4 top-4 z-[1400] hidden w-[22rem] md:block">
+        <div className="flex h-full flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-2xl">
+          <div className="border-b border-slate-200 p-4">
+            <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-blue-600">
+                {t("mapPage.discoveryEyebrow")}
+              </p>
+              <h2 className="mt-0.5 truncate text-lg font-black text-slate-950 md:text-xl">
+                {t("mapPage.exploreEvents")}
+              </h2>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {appliedBounds ? (
+                <button
+                  type="button"
+                  onClick={showAllEvents}
+                  className="rounded-xl bg-slate-100 px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] text-slate-600"
+                >
+                  {t("mapPage.showAll")}
+                </button>
+              ) : null}
+            </div>
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain bg-slate-100 p-2.5 pb-[max(1rem,env(safe-area-inset-bottom))] [-webkit-overflow-scrolling:touch] md:p-3">
+            {visibleEvents.length === 0 ? (
+              <EmptyMapEvents onShowAll={showAllEvents} />
+            ) : (
+              visibleEvents.map((event) => (
+                <MapEventListCard
+                  key={event.id}
+                  event={event}
+                  selected={event.id === selectedEventId}
+                  onSelect={() => selectEvent(event)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
       {selectedEvent ? (
-        <MapEventPreview
+        <MobileEventPreview
           event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
+          onClose={() => setSelectedEventId(null)}
         />
       ) : null}
     </div>
   );
 }
 
-function MapEventPreview({
+function MobileEventPreview({
   event,
   onClose,
 }: {
@@ -145,183 +260,183 @@ function MapEventPreview({
   onClose: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const image = getEventFallbackImage(event);
-  const modeLabel = event.type === "match" ? getEventModeLabel(event.mode) : null;
-  const displayStatus = getEventDisplayStatus(event);
-  const tournamentPriceLabel = getEventTournamentPriceLabel(event);
+  const registrations = event.participantCount ?? 0;
+  const unlimited = event.type !== "match" && isUnlimitedEventCapacity(event.maxParticipants);
+  const mode = event.type === "match" ? getEventModeLabel(event.mode) : null;
+  const price = getEventTournamentPriceLabel(event);
 
   return (
-    <article className="absolute bottom-28 left-3 right-3 z-[1200] overflow-hidden rounded-3xl bg-white shadow-2xl md:bottom-6 md:left-auto md:right-6 md:w-96">
+    <article className="absolute bottom-3 left-3 right-3 z-[1500] overflow-hidden rounded-[1.5rem] bg-white shadow-2xl ring-1 ring-slate-200 md:hidden">
       <button
         type="button"
         onClick={onClose}
-        className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white text-slate-700 shadow md:left-4 md:right-auto md:top-4"
+        aria-label={t("mapPage.closeEventPreview")}
+        className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-500 shadow-sm"
       >
         <X size={16} />
       </button>
 
-      <div className="flex gap-3 p-3 md:hidden">
+      <div className="flex gap-3 p-3 pr-12">
         <img
-          src={image}
-          alt={event.title}
-          className="h-20 w-24 rounded-2xl object-cover"
+          src={getEventFallbackImage(event)}
+          alt=""
+          className="h-20 w-20 shrink-0 rounded-2xl object-cover"
         />
-
-        <div className="min-w-0 flex-1 pr-8">
-          <div className="mb-2 flex flex-wrap gap-2">
-            <div
-              className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase ${getEventBadgeClasses(
-                event
-              )}`}
-            >
-              {getEventTypeLabel(event.type)}
-            </div>
-
-            <div
-              className={`inline-flex rounded-full px-2 py-1 text-[10px] font-bold uppercase ${getEventVisibilityBadgeClasses(
-                event.visibility
-              )}`}
-            >
-              {getEventVisibilityLabel(event.visibility)}
-            </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${getEventColorClasses(event)}`} />
+            <p className="truncate text-base font-black text-slate-950">{event.title}</p>
           </div>
-
-          <h2 className="truncate text-base font-black text-slate-950">
-            {event.title}
-          </h2>
-
-          <p className="mt-1 text-xs font-semibold text-slate-600">
-            {[modeLabel, displayStatus].filter(Boolean).join(" | ")}
-          </p>
-
           <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
-            <MapPin size={13} />
-            {event.locationName}
+            <MapPin size={12} /> {event.locationName}
           </p>
-
-          <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-slate-600">
-            <CalendarDays size={13} />
-            {new Date(event.startDate).toLocaleTimeString(i18n.language, {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-
-          {tournamentPriceLabel ? (
-            <p className="mt-2 inline-flex rounded-full bg-amber-100 px-2 py-1 text-[10px] font-bold uppercase text-amber-800">
-              {tournamentPriceLabel}
-            </p>
-          ) : null}
-        </div>
-
-        <Link
-          to={`/events/${event.id}`}
-          className="absolute bottom-3 right-3 rounded-2xl bg-blue-600 px-4 py-2 text-xs font-bold text-white"
-        >
-          {t("mapPage.details")}
-        </Link>
-      </div>
-
-      <div className="hidden md:block">
-        <div className="relative h-40 overflow-hidden">
-          <img
-            src={image}
-            alt={event.title}
-            className="h-full w-full object-cover"
-          />
-
-          <span className="absolute right-4 top-4 rounded-full bg-slate-900/80 px-3 py-1 text-xs font-bold uppercase text-white">
-            {displayStatus}
-          </span>
-        </div>
-
-        <div className="p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-black text-slate-950">
-                {event.title}
-              </h2>
-
-              <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
-                <MapPin size={16} />
-                {event.locationName}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-blue-50 px-3 py-2 text-center text-blue-600">
-              <p className="text-lg font-black">
-                {new Date(event.startDate).getDate()}
-              </p>
-              <p className="text-[10px] font-bold uppercase">
-                {new Date(event.startDate).toLocaleString(i18n.language, {
-                  month: "short",
-                })}
-              </p>
-            </div>
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-bold text-slate-600">
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays size={12} />
+              {new Date(event.startDate).toLocaleString(i18n.language, {
+                weekday: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Users size={12} />
+              {unlimited ? registrations : `${registrations}/${event.maxParticipants}`}
+            </span>
           </div>
-
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-2xl bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase text-slate-400">
-                {t("mapPage.type")}
-              </p>
-              <p className="mt-1 text-sm font-bold text-slate-800">
-                {getEventTypeLabel(event.type)}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase text-slate-400">
-                {t("mapPage.status")}
-              </p>
-              <p className="mt-1 text-sm font-bold text-slate-800">
-                {displayStatus}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase text-slate-400">
-                {t("mapPage.visibility")}
-              </p>
-              <p className="mt-1 text-sm font-bold text-slate-800">
-                {getEventVisibilityLabel(event.visibility)}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-slate-50 p-3">
-              <p className="text-[10px] font-bold uppercase text-slate-400">
-                {modeLabel ? t("mapPage.mode") : t("mapPage.date")}
-              </p>
-              <p className="mt-1 text-sm font-bold text-slate-800">
-                {modeLabel ??
-                  new Date(event.startDate).toLocaleTimeString(i18n.language, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-              </p>
-            </div>
-
-            {tournamentPriceLabel ? (
-              <div className="rounded-2xl bg-amber-50 p-3">
-                <p className="text-[10px] font-bold uppercase text-amber-700">
-                  {t("eventDetail.tournament.entryFeeLabel")}
-                </p>
-                <p className="mt-1 text-sm font-bold text-slate-800">
-                  {tournamentPriceLabel}
-                </p>
-              </div>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-slate-600">
+              {mode ?? getEventTypeLabel(event.type)}
+            </span>
+            {price ? (
+              <span className="rounded-full bg-amber-100 px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-amber-800">
+                {price}
+              </span>
             ) : null}
           </div>
-
-          <Link
-            to={`/events/${event.id}`}
-            className="mt-4 block rounded-2xl bg-blue-600 px-5 py-4 text-center font-bold text-white shadow-sm hover:bg-blue-700"
-          >
-            {t("common.viewDetails")}
-          </Link>
         </div>
       </div>
+
+      <Link
+        to={`/events/${event.id}`}
+        className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-3 text-xs font-black text-blue-700"
+      >
+        {t("common.viewDetails")}
+        <ChevronRight size={15} />
+      </Link>
     </article>
   );
 }
 
+function MapEventListCard({
+  event,
+  selected,
+  onSelect,
+}: {
+  event: Event;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const registrations = event.participantCount ?? 0;
+  const unlimited = event.type !== "match" && isUnlimitedEventCapacity(event.maxParticipants);
+  const mode = event.type === "match" ? getEventModeLabel(event.mode) : null;
+  const price = getEventTournamentPriceLabel(event);
+
+  return (
+    <article
+      className={`overflow-hidden rounded-[1.35rem] border bg-white transition ${
+        selected ? "border-blue-500 shadow-lg ring-2 ring-blue-200" : "border-slate-200 shadow-sm"
+      }`}
+    >
+      <button type="button" onClick={onSelect} className="flex w-full gap-2.5 p-2.5 text-left md:gap-3 md:p-3">
+        <img
+          src={getEventFallbackImage(event)}
+          alt=""
+          className="h-14 w-14 shrink-0 rounded-xl object-cover md:h-16 md:w-16 md:rounded-2xl"
+        />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-start justify-between gap-2">
+            <span className="truncate text-sm font-black text-slate-950">{event.title}</span>
+            <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${getEventColorClasses(event)}`} />
+          </span>
+          <span className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
+            <MapPin size={12} /> {event.locationName}
+          </span>
+          <span className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-bold text-slate-600">
+            <span className="inline-flex items-center gap-1">
+              <CalendarDays size={12} />
+              {new Date(event.startDate).toLocaleString(i18n.language, {
+                weekday: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <Users size={12} />
+              {unlimited ? registrations : `${registrations}/${event.maxParticipants}`}
+            </span>
+          </span>
+          <span className="mt-1.5 flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-slate-600">
+              {mode ?? getEventTypeLabel(event.type)}
+            </span>
+            {price ? (
+              <span className="rounded-full bg-amber-100 px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-amber-800">
+                {price}
+              </span>
+            ) : null}
+          </span>
+        </span>
+      </button>
+      {selected ? (
+        <Link
+          to={`/events/${event.id}`}
+          className="flex items-center justify-between border-t border-blue-100 bg-blue-50 px-4 py-2.5 text-xs font-black text-blue-700"
+        >
+          {t("common.viewDetails")}
+          <ChevronRight size={15} />
+        </Link>
+      ) : null}
+    </article>
+  );
+}
+
+function MapLegend() {
+  const { t } = useTranslation();
+  return (
+    <div className="absolute bottom-20 right-3 z-[1300] hidden flex-col gap-2 rounded-2xl bg-white/95 p-3 text-[10px] font-black uppercase tracking-[0.1em] text-slate-600 shadow-xl backdrop-blur md:flex">
+      <LegendItem color="bg-emerald-500" label={t("mapPage.legendCasual")} />
+      <LegendItem color="bg-violet-600" label={t("mapPage.legendCompetitive")} />
+      <LegendItem color="bg-orange-500" label={t("mapPage.legendOpenPlay")} />
+      <LegendItem color="bg-yellow-500" label={t("mapPage.legendTournament")} />
+    </div>
+  );
+}
+
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-2">
+      <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
+      {label}
+    </span>
+  );
+}
+
+function EmptyMapEvents({ onShowAll }: { onShowAll: () => void }) {
+  const { t } = useTranslation();
+  return (
+    <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white p-6 text-center">
+      <MapPin className="mx-auto text-slate-300" size={30} />
+      <p className="mt-3 font-black text-slate-950">{t("mapPage.emptyAreaTitle")}</p>
+      <p className="mt-2 text-sm leading-6 text-slate-500">{t("mapPage.emptyAreaBody")}</p>
+      <button
+        type="button"
+        onClick={onShowAll}
+        className="mt-4 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white"
+      >
+        {t("mapPage.showAll")}
+      </button>
+    </div>
+  );
+}

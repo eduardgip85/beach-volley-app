@@ -118,7 +118,7 @@ export function MapPage() {
       )}
 
       {!isPageLoading && !error && (
-        <div className="mt-6 h-[65vh] min-h-[360px] overflow-hidden rounded-3xl bg-white p-2 shadow-sm md:h-[calc(100vh-240px)] md:min-h-[600px]">
+        <div className="mt-6 h-[72vh] min-h-[480px] overflow-hidden rounded-[2rem] bg-white p-2 shadow-sm md:h-[calc(100dvh-220px)] md:min-h-[650px]">
 
           <EventsMap
             events={filteredEvents}
