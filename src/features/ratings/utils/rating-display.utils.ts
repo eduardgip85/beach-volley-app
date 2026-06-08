@@ -7,6 +7,7 @@ export const MAX_COMPETITIVE_RATING = 10;
 export interface CompetitiveRatingLegendBand {
     range: string;
     label: string;
+    description: string;
 }
 
 export interface CompetitiveRatingLegendLevel {
@@ -45,12 +46,36 @@ export function formatCompetitiveRatingDelta(value: number | null | undefined) {
 
 export function getCompetitiveRatingLegend() {
     return [
-        { range: "0.00 - 1.99", label: i18n.t("ratingGuide.bandStarter") },
-        { range: "2.00 - 3.99", label: i18n.t("ratingGuide.bandBeginner") },
-        { range: "4.00 - 5.99", label: i18n.t("ratingGuide.bandIntermediate") },
-        { range: "6.00 - 7.49", label: i18n.t("ratingGuide.bandAdvanced") },
-        { range: "7.50 - 8.99", label: i18n.t("ratingGuide.bandExpert") },
-        { range: "9.00 - 10.00", label: i18n.t("ratingGuide.bandElite") },
+        {
+            range: "0 - 1.99",
+            label: i18n.t("ratingGuide.bandStarter"),
+            description: i18n.t("ratingGuide.bandStarterDescription"),
+        },
+        {
+            range: "2 - 3.99",
+            label: i18n.t("ratingGuide.bandBeginner"),
+            description: i18n.t("ratingGuide.bandBeginnerDescription"),
+        },
+        {
+            range: "4 - 5.99",
+            label: i18n.t("ratingGuide.bandIntermediate"),
+            description: i18n.t("ratingGuide.bandIntermediateDescription"),
+        },
+        {
+            range: "6 - 7.49",
+            label: i18n.t("ratingGuide.bandAdvanced"),
+            description: i18n.t("ratingGuide.bandAdvancedDescription"),
+        },
+        {
+            range: "7.5 - 8.99",
+            label: i18n.t("ratingGuide.bandExpert"),
+            description: i18n.t("ratingGuide.bandExpertDescription"),
+        },
+        {
+            range: "9 - 10",
+            label: i18n.t("ratingGuide.bandElite"),
+            description: i18n.t("ratingGuide.bandEliteDescription"),
+        },
     ] satisfies CompetitiveRatingLegendBand[];
 }
 

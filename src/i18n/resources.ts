@@ -652,6 +652,7 @@ export const resources = {
                     "This scale runs from 0.0 to 10.0. It is a practical skill guide to help players understand what each rating roughly means inside the app.",
                 closeLegend: "Close legend",
                 closeRatingLegend: "Close rating legend",
+                fullScale: "Full competitive scale",
                 tabs: {
                     global: "Global",
                     country: "Country",
@@ -1791,6 +1792,18 @@ export const resources = {
                 bandAdvanced: "Advanced",
                 bandExpert: "Expert",
                 bandElite: "Elite",
+                bandStarterDescription:
+                    "Learning the basic contacts, movement and rules of the game.",
+                bandBeginnerDescription:
+                    "Can play casual rallies and is building control and consistency.",
+                bandIntermediateDescription:
+                    "Plays structured points with reliable technique and positioning.",
+                bandAdvancedDescription:
+                    "Competes with pace, tactical intent and few unforced errors.",
+                bandExpertDescription:
+                    "High-level player with strong reading, execution and match control.",
+                bandEliteDescription:
+                    "National, professional or world-class competitive level.",
                 newToTheGameTitle: "New to the game",
                 newToTheGameDescription:
                     "Has never really played beach volleyball or is just starting to understand the basics.",
@@ -2526,6 +2539,7 @@ export const resources = {
                     "Esta escala va de 0.0 a 10.0. Es una guía práctica para ayudar a los jugadores a entender qué significa aproximadamente cada nivel dentro de la app.",
                 closeLegend: "Cerrar leyenda",
                 closeRatingLegend: "Cerrar leyenda del rating",
+                fullScale: "Escala competitiva completa",
                 tabs: {
                     global: "Global",
                     country: "País",
@@ -3665,6 +3679,18 @@ export const resources = {
                 bandAdvanced: "Avanzado",
                 bandExpert: "Experto",
                 bandElite: "Elite",
+                bandStarterDescription:
+                    "Aprende los contactos basicos, el movimiento y las reglas del juego.",
+                bandBeginnerDescription:
+                    "Puede jugar rallies casuales y esta ganando control y consistencia.",
+                bandIntermediateDescription:
+                    "Juega puntos estructurados con tecnica y posicionamiento fiables.",
+                bandAdvancedDescription:
+                    "Compite con ritmo, intencion tactica y pocos errores no forzados.",
+                bandExpertDescription:
+                    "Jugador de alto nivel con gran lectura, ejecucion y control del partido.",
+                bandEliteDescription:
+                    "Nivel competitivo nacional, profesional o de clase mundial.",
                 newToTheGameTitle: "Nuevo en el juego",
                 newToTheGameDescription:
                     "Apenas ha jugado voley playa o esta empezando a entender los fundamentos.",
