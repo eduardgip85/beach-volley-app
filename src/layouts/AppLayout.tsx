@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  Bell,
   Home,
   LayoutDashboard,
   Lightbulb,
@@ -22,6 +23,7 @@ import { useGoogleAnalyticsPageTracking } from "../shared/analytics/googleAnalyt
 import { CookieConsentBanner } from "../shared/components/CookieConsentBanner";
 import { useAuth } from "../features/auth/context/AuthContext";
 import { usePendingIncomingFriendRequests } from "../features/friends/hooks/usePendingIncomingFriendRequests";
+import { useUnreadNotifications } from "../features/notifications/hooks/useUnreadNotifications";
 
 interface NavItem {
   label: string;
@@ -59,6 +61,7 @@ export function AppLayout() {
   const onboardingMode = new URLSearchParams(location.search).get("mode");
   const isRankingOnboardingMode = onboardingMode === "rating";
   const pendingFriendRequestCount = usePendingIncomingFriendRequests(profile?.id);
+  const unreadNotificationCount = useUnreadNotifications(profile?.id);
 
   async function handleLogout() {
     try {
@@ -149,6 +152,7 @@ export function AppLayout() {
   const authenticatedNavItems: NavItem[] = [
     { label: t("nav.ideas"), path: "/feature-requests", icon: Lightbulb },
     { label: t("nav.friends"), path: "/friends", icon: Users },
+    { label: t("nav.notifications"), path: "/notifications", icon: Bell },
     { label: t("nav.profile"), path: "/profile", icon: User },
     { label: t("nav.settings"), path: "/settings", icon: Settings },
   ];
@@ -255,7 +259,8 @@ export function AppLayout() {
             {desktopNavItems.map((item) => {
               const Icon = item.icon;
               const shouldShowNotification =
-                item.path === "/friends" && showFriendsNotification;
+                (item.path === "/friends" && showFriendsNotification) ||
+                (item.path === "/notifications" && unreadNotificationCount > 0);
 
               return (
                 <NavLink
@@ -269,10 +274,16 @@ export function AppLayout() {
                   </span>
                   <span>{item.label}</span>
                   {shouldShowNotification ? (
-                    <span
-                      aria-hidden="true"
-                      className="ml-auto h-2.5 w-2.5 rounded-full bg-rose-500"
-                    />
+                    item.path === "/notifications" ? (
+                      <span className="ml-auto min-w-6 rounded-full bg-rose-500 px-1.5 py-0.5 text-center text-[10px] font-black text-white">
+                        {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                      </span>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="ml-auto h-2.5 w-2.5 rounded-full bg-rose-500"
+                      />
+                    )
                   ) : null}
                 </NavLink>
               );
@@ -393,7 +404,8 @@ export function AppLayout() {
             {mobileNavItems.map((item) => {
               const Icon = item.icon;
               const shouldShowNotification =
-                item.path === "/friends" && showFriendsNotification;
+                (item.path === "/friends" && showFriendsNotification) ||
+                (item.path === "/notifications" && unreadNotificationCount > 0);
 
               return (
                 <NavLink
@@ -407,10 +419,16 @@ export function AppLayout() {
                   <Icon size={18} />
                   <span>{item.label}</span>
                   {shouldShowNotification ? (
-                    <span
-                      aria-hidden="true"
-                      className="ml-auto h-2.5 w-2.5 rounded-full bg-rose-500"
-                    />
+                    item.path === "/notifications" ? (
+                      <span className="ml-auto min-w-6 rounded-full bg-rose-500 px-1.5 py-0.5 text-center text-[10px] font-black text-white">
+                        {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                      </span>
+                    ) : (
+                      <span
+                        aria-hidden="true"
+                        className="ml-auto h-2.5 w-2.5 rounded-full bg-rose-500"
+                      />
+                    )
                   ) : null}
                 </NavLink>
               );

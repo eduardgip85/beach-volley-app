@@ -1,4 +1,4 @@
-import { AlertCircle, Info, MapPin, X } from "lucide-react";
+import { AlertCircle, HelpCircle, Info, MapPin, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
@@ -292,6 +292,7 @@ export function EventForm({
 }: EventFormProps) {
     const { t } = useTranslation();
     const [isRegistrationHelpOpen, setIsRegistrationHelpOpen] = useState(false);
+    const [isBracketHelpOpen, setIsBracketHelpOpen] = useState(false);
 
     const resolvedCancelLabel = cancelLabel ?? t("eventForm.cancel");
     const timeParts = getTimeParts(time);
@@ -313,26 +314,31 @@ export function EventForm({
         value: TournamentBracketType;
         title: string;
         body: string;
+        recommendation: string;
     }> = [
         {
             value: "single_elimination",
             title: t("eventForm.tournament.brackets.singleElimination"),
             body: t("eventForm.tournament.brackets.singleEliminationBody"),
+            recommendation: t("eventForm.tournament.brackets.singleEliminationRecommendation"),
         },
         {
             value: "round_robin",
             title: t("eventForm.tournament.brackets.roundRobin"),
             body: t("eventForm.tournament.brackets.roundRobinBody"),
+            recommendation: t("eventForm.tournament.brackets.roundRobinRecommendation"),
         },
         {
             value: "group_knockout",
             title: t("eventForm.tournament.brackets.groupKnockout"),
             body: t("eventForm.tournament.brackets.groupKnockoutBody"),
+            recommendation: t("eventForm.tournament.brackets.groupKnockoutRecommendation"),
         },
         {
             value: "double_elimination",
             title: t("eventForm.tournament.brackets.doubleElimination"),
             body: t("eventForm.tournament.brackets.doubleEliminationBody"),
+            recommendation: t("eventForm.tournament.brackets.doubleEliminationRecommendation"),
         },
     ];
     const coverOptions = getEventCoverOptions(type);
@@ -350,6 +356,27 @@ export function EventForm({
             window.clearTimeout(timeoutId);
         };
     }, [error, onDismissError]);
+
+    useEffect(() => {
+        if (!isBracketHelpOpen) {
+            return;
+        }
+
+        const previousOverflow = document.body.style.overflow;
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                setIsBracketHelpOpen(false);
+            }
+        };
+
+        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", closeOnEscape);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [isBracketHelpOpen]);
 
     function handleHourChange(nextHours: string) {
         setTime(`${nextHours}:${timeParts.minutes || "00"}`);
@@ -451,6 +478,94 @@ export function EventForm({
                             </button>
                         </div>
                     </div>
+                </div>
+            ) : null}
+
+            {isBracketHelpOpen ? (
+                <div className="fixed inset-0 z-[2400] flex items-center justify-center p-3 sm:p-6">
+                    <button
+                        type="button"
+                        aria-label={t("eventForm.tournament.bracketHelpClose")}
+                        onClick={() => setIsBracketHelpOpen(false)}
+                        className="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]"
+                    />
+
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="bracket-help-title"
+                        className="relative z-10 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[1.75rem] bg-white shadow-[0_30px_90px_rgba(15,23,42,0.3)] sm:max-h-[calc(100dvh-3rem)] sm:rounded-[2rem]"
+                    >
+                        <header className="relative shrink-0 border-b border-slate-200 bg-[linear-gradient(135deg,_#fffbea_0%,_#f8fafc_60%,_#eef6ff_100%)] p-5 pr-16 sm:p-7 sm:pr-20">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-yellow-700">
+                                {t("eventForm.tournament.bracketHelpEyebrow")}
+                            </p>
+                            <h3
+                                id="bracket-help-title"
+                                className="mt-2 text-2xl font-black text-slate-950 sm:text-3xl"
+                            >
+                                {t("eventForm.tournament.bracketHelpTitle")}
+                            </h3>
+                            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                                {t("eventForm.tournament.bracketHelpBody")}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setIsBracketHelpOpen(false)}
+                                aria-label={t("eventForm.tournament.bracketHelpClose")}
+                                className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-500 shadow-sm ring-1 ring-slate-200 transition hover:text-slate-950 sm:right-6 sm:top-6"
+                            >
+                                <X size={18} />
+                            </button>
+                        </header>
+
+                        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-100 p-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-5">
+                            <div className="grid gap-3 md:grid-cols-2">
+                                {bracketCards.map((bracketCard) => (
+                                    <article
+                                        key={bracketCard.value}
+                                        className={`rounded-[1.5rem] border bg-white p-5 shadow-sm ${
+                                            tournamentBracketType === bracketCard.value
+                                                ? getBracketCardClass(bracketCard.value, true)
+                                                : "border-slate-200"
+                                        }`}
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <h4 className="text-lg font-black text-slate-950">
+                                                {bracketCard.title}
+                                            </h4>
+                                            {tournamentBracketType === bracketCard.value ? (
+                                                <span className="rounded-full bg-slate-950 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-white">
+                                                    {t("eventForm.tournament.bracketHelpSelected")}
+                                                </span>
+                                            ) : null}
+                                        </div>
+                                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                                            {t(`eventForm.tournament.brackets.${bracketCard.value}Detail`)}
+                                        </p>
+                                        <div className="mt-4 rounded-2xl bg-slate-100 p-3">
+                                            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                                                {t("eventForm.tournament.bracketHelpRecommended")}
+                                            </p>
+                                            <p className="mt-1 text-sm font-black text-slate-950">
+                                                {bracketCard.recommendation}
+                                            </p>
+                                        </div>
+                                        <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                                            <p className="rounded-2xl bg-emerald-50 p-3 leading-5 text-emerald-900">
+                                                <strong>{t("eventForm.tournament.bracketHelpIdeal")}:</strong>{" "}
+                                                {t(`eventForm.tournament.brackets.${bracketCard.value}Ideal`)}
+                                            </p>
+                                            <p className="rounded-2xl bg-amber-50 p-3 leading-5 text-amber-900">
+                                                <strong>{t("eventForm.tournament.bracketHelpConsider")}:</strong>{" "}
+                                                {t(`eventForm.tournament.brackets.${bracketCard.value}Consider`)}
+                                            </p>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
                 </div>
             ) : null}
 
@@ -820,9 +935,19 @@ export function EventForm({
                                 </div>
 
                                 <div>
-                                    <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
-                                        {t("eventForm.tournament.bracketType")}
-                                    </label>
+                                    <div className="flex items-center gap-2">
+                                        <label className="text-xs font-bold uppercase tracking-widest text-slate-900">
+                                            {t("eventForm.tournament.bracketType")}
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsBracketHelpOpen(true)}
+                                            aria-label={t("eventForm.tournament.bracketHelpOpen")}
+                                            className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-yellow-700 shadow-sm ring-1 ring-yellow-200 transition hover:bg-yellow-100"
+                                        >
+                                            <HelpCircle size={16} />
+                                        </button>
+                                    </div>
 
                                     <div className="mt-3 grid gap-3 md:grid-cols-2">
                                         {bracketCards.map((bracketCard) => (
@@ -845,6 +970,11 @@ export function EventForm({
                                                 </p>
                                                 <p className="mt-2 text-xs leading-5 text-slate-500">
                                                     {bracketCard.body}
+                                                </p>
+                                                <p className="mt-3 rounded-xl bg-slate-100 px-3 py-2 text-[11px] font-black leading-4 text-slate-700">
+                                                    {t("eventForm.tournament.bracketRecommended", {
+                                                        recommendation: bracketCard.recommendation,
+                                                    })}
                                                 </p>
                                             </button>
                                         ))}

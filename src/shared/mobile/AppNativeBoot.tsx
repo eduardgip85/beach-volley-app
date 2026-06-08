@@ -13,6 +13,7 @@ const topLevelRoutes = new Set([
   "/friends",
   "/profile",
   "/settings",
+  "/notifications",
 ]);
 
 export function AppNativeBoot() {

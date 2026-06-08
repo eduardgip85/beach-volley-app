@@ -155,6 +155,11 @@ const SettingsPage = lazyWithReload(() =>
     default: module.SettingsPage,
   }))
 );
+const NotificationsPage = lazyWithReload(() =>
+  import("../features/notifications/pages/NotificationsPage").then((module) => ({
+    default: module.NotificationsPage,
+  }))
+);
 const PublicProfilePage = lazyWithReload(() =>
   import("../features/players/pages/PublicProfilePage").then((module) => ({
     default: module.PublicProfilePage,
@@ -315,6 +320,10 @@ export const router = createBrowserRouter([
           {
             path: "/settings",
             element: withSuspense(<SettingsPage />),
+          },
+          {
+            path: "/notifications",
+            element: withSuspense(<NotificationsPage />),
           },
         ],
       },
