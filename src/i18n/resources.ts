@@ -56,8 +56,11 @@ export const resources = {
                 emptyUnreadTitle: "You are all caught up",
                 emptyUnreadBody: "There are no unread notifications.",
                 preferencesTitle: "Choose what reaches you",
-                preferencesBody: "These preferences will also be used by future mobile push notifications.",
+                preferencesBody: "Choose which updates can reach you in-app and through mobile push notifications.",
                 pushSoon: "Push ready",
+                pushToggle: "Push notifications",
+                pushToggleBody:
+                    "Receive invitations, access requests, results and tournament updates on this device.",
                 saving: "Saving...",
                 savePreferences: "Save preferences",
                 filters: {
@@ -2105,8 +2108,11 @@ export const resources = {
                 emptyUnreadTitle: "Estas al dia",
                 emptyUnreadBody: "No tienes notificaciones sin leer.",
                 preferencesTitle: "Elige que quieres recibir",
-                preferencesBody: "Estas preferencias tambien se usaran para las futuras notificaciones push de la app movil.",
+                preferencesBody: "Elige que novedades pueden llegarte dentro de la app y mediante notificaciones push.",
                 pushSoon: "Preparado para push",
+                pushToggle: "Notificaciones push",
+                pushToggleBody:
+                    "Recibe invitaciones, solicitudes de acceso, resultados y novedades de torneos en este dispositivo.",
                 saving: "Guardando...",
                 savePreferences: "Guardar preferencias",
                 filters: {

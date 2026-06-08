@@ -9,6 +9,7 @@ import {
   getStoredCookieConsent,
 } from "../shared/analytics/cookieConsent";
 import { AppNativeBoot } from "../shared/mobile/AppNativeBoot";
+import { PushNotificationsBoot } from "../features/notifications/components/PushNotificationsBoot";
 
 function AppDocumentLanguageSync() {
   const { i18n } = useTranslation();
@@ -37,6 +38,7 @@ export function App() {
     <AuthProvider>
       <AppNativeBoot />
       <AuthNativeLinkBoot />
+      <PushNotificationsBoot />
       <AppDocumentLanguageSync />
       <AppConsentBoot />
       <RouterProvider router={router} />

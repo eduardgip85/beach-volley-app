@@ -12,6 +12,11 @@ import type {
     AppNotification,
     NotificationPreferences,
 } from "../types/notification.types";
+import {
+    notifyPushDeviceUpdated,
+    registerForPushNotifications,
+    unregisterFromPushNotifications,
+} from "../services/pushDevices.service";
 
 export function useNotifications(userId?: string) {
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -93,8 +98,15 @@ export function useNotifications(userId?: string) {
         if (!userId) return;
         setSavingPreferences(true);
         try {
+            if (nextPreferences.pushEnabled) {
+                const granted = await registerForPushNotifications();
+                nextPreferences = { ...nextPreferences, pushEnabled: granted };
+            } else {
+                await unregisterFromPushNotifications();
+            }
             await saveNotificationPreferences(userId, nextPreferences);
             setPreferences(nextPreferences);
+            notifyPushDeviceUpdated();
             setError("");
         } catch (saveError) {
             console.error(saveError);

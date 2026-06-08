@@ -346,58 +346,42 @@ export function AppLayout() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.3),_transparent_35%),linear-gradient(180deg,_rgba(15,23,42,1)_0%,_rgba(2,6,23,1)_100%)]" />
         <div className="flex h-full flex-col overscroll-contain">
           <div className="relative border-b border-white/10 px-4 py-4">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <img
-                    src="/logo.png"
-                    alt={t("app.name")}
-                    className="h-11 w-11 rounded-2xl object-cover shadow-lg shadow-slate-950/30"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-blue-300">
-                      {t("app.name")}
-                    </p>
-                    <h2 className="truncate text-lg font-black text-white">
-                      {t("app.tagline")}
-                    </h2>
+            <div className="flex items-start justify-between gap-3">
+              {profile ? (
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl bg-white/8 p-3 ring-1 ring-white/10 transition hover:bg-white/12"
+                >
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white shadow-lg shadow-blue-950/30">
+                    {profile.fullName.charAt(0).toUpperCase()}
                   </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-black text-white">
+                      {profile.fullName}
+                    </p>
+                    <p className="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-blue-300">
+                      {t(`roles.${profile.role}`)}
+                    </p>
+                  </div>
+                </Link>
+              ) : (
+                <div className="min-w-0 flex-1 rounded-2xl bg-white/8 p-3 ring-1 ring-white/10">
+                  <p className="text-sm font-black text-white">{t("nav.welcomeShort")}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">
+                    {t("nav.welcomeBody")}
+                  </p>
                 </div>
-              </div>
-
+              )}
               <button
                 type="button"
                 aria-label={t("nav.closeMenu")}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10 text-white transition hover:bg-white/15"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-white transition hover:bg-white/15"
               >
                 <X size={18} />
               </button>
             </div>
-
-            {profile ? (
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-black text-white">
-                  {profile.fullName.charAt(0).toUpperCase()}
-                </div>
-
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold text-white">
-                    {profile.fullName}
-                  </p>
-                  <p className="mt-1 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
-                    {t(`roles.${profile.role}`)}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm font-bold text-white">{t("nav.welcomeShort")}</p>
-                <p className="mt-1 text-sm text-slate-300">
-                  {t("nav.welcomeBody")}
-                </p>
-              </div>
-            )}
           </div>
 
           <nav className="relative flex-1 space-y-2 overflow-y-auto px-4 py-5 [scrollbar-gutter:stable]">

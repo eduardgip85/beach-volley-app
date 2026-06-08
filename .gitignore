@@ -18,6 +18,23 @@ sql
 supabase
 !sql/
 sql/*
+!sql/2026-06-08_notifications.sql
+!sql/2026-06-08_account_deletion_requests.sql
+!sql/2026-06-08_push_notifications.sql
+!supabase/
+supabase/*
+!supabase/functions/
+supabase/functions/*
+!supabase/functions/_shared/
+!supabase/functions/_shared/cors.ts
+!supabase/functions/delete-account/
+!supabase/functions/delete-account/index.ts
+!supabase/functions/send-push/
+!supabase/functions/send-push/index.ts
+
+# Mobile credentials must never be committed
+android/app/google-services.json
+firebase-service-account*.json
 
 # Editor directories and files
 .vscode/*

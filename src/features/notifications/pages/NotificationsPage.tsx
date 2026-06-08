@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/context/AuthContext";
+import { isNativePlatform } from "../../../shared/mobile/capacitor";
 import { useNotifications } from "../hooks/useNotifications";
 import type {
     NotificationCategory,
@@ -209,6 +210,7 @@ function NotificationPreferencesPanel({
     onSave: (preferences: NotificationPreferences) => Promise<void>;
 }) {
     const { t } = useTranslation();
+    const nativePushAvailable = isNativePlatform();
     const [draft, setDraft] = useState(preferences);
     const categories: Array<{ key: NotificationCategory; field: keyof NotificationPreferences }> = [
         { key: "friends", field: "friendsEnabled" },
@@ -233,6 +235,30 @@ function NotificationPreferencesPanel({
                     {t("notifications.pushSoon")}
                 </span>
             </div>
+
+            {nativePushAvailable ? (
+              <label className="mt-5 flex items-center justify-between gap-4 rounded-2xl bg-slate-950 px-4 py-4 text-white">
+                <span>
+                    <span className="block text-sm font-black">
+                        {t("notifications.pushToggle")}
+                    </span>
+                    <span className="mt-1 block text-xs leading-5 text-slate-300">
+                        {t("notifications.pushToggleBody")}
+                    </span>
+                </span>
+                <input
+                    type="checkbox"
+                    checked={draft.pushEnabled}
+                    onChange={(event) =>
+                        setDraft((current) => ({
+                            ...current,
+                            pushEnabled: event.target.checked,
+                        }))
+                    }
+                    className="h-5 w-5 shrink-0 accent-yellow-300"
+                />
+              </label>
+            ) : null}
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {categories.map(({ key, field }) => (

@@ -4,4 +4,5 @@
     <string name="title_activity_main">Sandset</string>
     <string name="package_name">app.sandset.mobile</string>
     <string name="custom_url_scheme">app.sandset.mobile</string>
+    <string name="default_notification_channel_id">sandset_activity</string>
 </resources>
